@@ -1,0 +1,98 @@
+# Babblr Backend
+
+FastAPI backend for the Babblr language learning application.
+
+## Features
+
+- **Speech-to-Text**: OpenAI Whisper for accurate transcription
+- **AI Conversation**: Anthropic Claude for natural conversation and error correction
+- **Text-to-Speech**: Edge TTS for audio playback
+- **Database**: SQLite with SQLAlchemy for conversation and vocabulary storage
+- **Languages**: Spanish, Italian, German, French, Dutch
+
+## Setup
+
+1. Install dependencies:
+```bash
+pip install -r requirements.txt
+```
+
+2. Create `.env` file from `.env.example`:
+```bash
+cp .env.example .env
+```
+
+3. Add your Anthropic API key to `.env`:
+```
+ANTHROPIC_API_KEY=your_api_key_here
+```
+
+## Running
+
+```bash
+cd app
+python main.py
+```
+
+Or with uvicorn:
+```bash
+uvicorn app.main:app --reload
+```
+
+The API will be available at http://localhost:8000
+
+## API Documentation
+
+Once running, visit:
+- Swagger UI: http://localhost:8000/docs
+- ReDoc: http://localhost:8000/redoc
+
+## API Endpoints
+
+### Conversations
+- `POST /conversations` - Create new conversation
+- `GET /conversations` - List all conversations
+- `GET /conversations/{id}` - Get specific conversation
+- `GET /conversations/{id}/messages` - Get conversation messages
+- `GET /conversations/{id}/vocabulary` - Get learned vocabulary
+- `DELETE /conversations/{id}` - Delete conversation
+
+### Chat
+- `POST /chat` - Send message and get AI response
+
+### Speech
+- `POST /speech/transcribe` - Transcribe audio to text
+
+### Text-to-Speech
+- `POST /tts/synthesize` - Convert text to speech
+
+## Database
+
+SQLite database (`babblr.db`) will be created automatically on first run.
+
+Tables:
+- `conversations` - Conversation sessions
+- `messages` - Individual messages
+- `vocabulary_items` - Learned vocabulary
+
+## Architecture
+
+```
+app/
+├── main.py              # FastAPI application
+├── config.py            # Configuration settings
+├── database/
+│   └── db.py           # Database setup
+├── models/
+│   ├── models.py       # SQLAlchemy models
+│   └── schemas.py      # Pydantic schemas
+├── routes/
+│   ├── conversations.py # Conversation endpoints
+│   ├── chat.py         # Chat endpoints
+│   ├── speech.py       # STT endpoints
+│   └── tts.py          # TTS endpoints
+└── services/
+    ├── whisper_service.py  # Whisper integration
+    ├── claude_service.py   # Claude integration
+    └── tts_service.py      # TTS integration
+```

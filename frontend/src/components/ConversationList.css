@@ -1,0 +1,90 @@
+.conversation-list {
+  background: var(--surface);
+  border-radius: 16px;
+  padding: 2rem;
+  box-shadow: 0 4px 16px var(--shadow);
+}
+
+.conversation-list h2 {
+  color: var(--text-primary);
+  margin-bottom: 1.5rem;
+  font-size: 1.5rem;
+}
+
+.conversation-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+.conversation-card {
+  background: var(--background);
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  padding: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.2s ease;
+}
+
+.conversation-card:hover {
+  border-color: var(--primary-color);
+  background: white;
+  box-shadow: 0 4px 12px var(--shadow);
+}
+
+.conversation-info {
+  flex: 1;
+  cursor: pointer;
+}
+
+.conversation-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.conversation-header .flag {
+  font-size: 1.5rem;
+}
+
+.conversation-header .language {
+  font-weight: 600;
+  color: var(--text-primary);
+  text-transform: capitalize;
+}
+
+.conversation-header .difficulty {
+  background: var(--primary-color);
+  color: white;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+}
+
+.conversation-date {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+}
+
+.delete-button {
+  background: transparent;
+  color: var(--text-secondary);
+  padding: 0.5rem;
+  font-size: 1.2rem;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.delete-button:hover {
+  background: #ff4444;
+  color: white;
+  transform: scale(1.1);
+}
