@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from datetime import datetime
+from datetime import datetime, timezone
+from zoneinfo import ZoneInfo
 from app.database.db import get_db
 from app.models.models import Conversation, Message
 from app.models.schemas import ChatRequest, ChatResponse
@@ -9,6 +10,10 @@ from app.services.claude_service import claude_service
 import tempfile
 import os
 import json
+
+
+# Configure timezone (defaults to Europe/Amsterdam, configurable via env)
+DEFAULT_TIMEZONE = os.getenv("TIMEZONE", "Europe/Amsterdam")
 
 
 router = APIRouter(prefix="/chat", tags=["chat"])
@@ -77,8 +82,9 @@ async def chat(
     )
     db.add(assistant_message)
     
-    # Update conversation timestamp
-    conversation.updated_at = datetime.utcnow()
+    # Update conversation timestamp using configured timezone
+    tz = ZoneInfo(DEFAULT_TIMEZONE)
+    conversation.updated_at = datetime.now(tz).replace(tzinfo=None)
     
     await db.commit()
     

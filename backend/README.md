@@ -12,7 +12,16 @@ FastAPI backend for the Babblr language learning application.
 
 ## Setup
 
-1. Install dependencies:
+1. Install dependencies using uv (recommended):
+```bash
+# Install uv if you haven't already
+pip install uv
+
+# Install project dependencies
+uv pip install -e .
+```
+
+Or using pip:
 ```bash
 pip install -r requirements.txt
 ```
