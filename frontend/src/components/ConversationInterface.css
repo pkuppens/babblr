@@ -1,0 +1,232 @@
+.conversation-interface {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 180px);
+  background: var(--surface);
+  border-radius: 16px;
+  box-shadow: 0 4px 16px var(--shadow);
+  overflow: hidden;
+}
+
+.conversation-header {
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  color: white;
+  padding: 1rem 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.back-button {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-weight: 500;
+}
+
+.back-button:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.conversation-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.conversation-info h2 {
+  margin: 0;
+  text-transform: capitalize;
+  font-size: 1.5rem;
+}
+
+.difficulty-badge {
+  background: rgba(255, 255, 255, 0.2);
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+}
+
+.messages-container {
+  flex: 1;
+  overflow-y: auto;
+  padding: 2rem;
+  background: var(--background);
+}
+
+.empty-state {
+  text-align: center;
+  color: var(--text-secondary);
+  padding: 4rem 2rem;
+}
+
+.empty-state p:first-child {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+}
+
+.corrections-panel {
+  background: #fff3cd;
+  border-top: 2px solid #ffc107;
+  padding: 1rem 1.5rem;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.corrections-panel h4 {
+  color: #856404;
+  margin-bottom: 0.75rem;
+  font-size: 1rem;
+}
+
+.correction-item {
+  background: white;
+  border-radius: 8px;
+  padding: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.correction-type {
+  display: inline-block;
+  background: #ffc107;
+  color: #856404;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  margin-bottom: 0.5rem;
+}
+
+.correction-text {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.correction-text .original {
+  color: #dc3545;
+  text-decoration: line-through;
+}
+
+.correction-text .arrow {
+  color: var(--text-secondary);
+}
+
+.correction-text .corrected {
+  color: #28a745;
+  font-weight: 600;
+}
+
+.correction-explanation {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.input-container {
+  display: flex;
+  gap: 0.75rem;
+  padding: 1rem 1.5rem;
+  background: var(--surface);
+  border-top: 2px solid var(--border);
+}
+
+.message-input {
+  flex: 1;
+}
+
+.send-button {
+  background: var(--primary-color);
+  color: white;
+  padding: 0.75rem 2rem;
+  font-weight: 600;
+}
+
+.send-button:hover:not(:disabled) {
+  background: var(--primary-hover);
+}
+
+.message {
+  margin-bottom: 1rem;
+  display: flex;
+  flex-direction: column;
+  max-width: 70%;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.message.user {
+  align-self: flex-end;
+  align-items: flex-end;
+}
+
+.message.assistant {
+  align-self: flex-start;
+  align-items: flex-start;
+}
+
+.message-content {
+  padding: 1rem 1.25rem;
+  border-radius: 16px;
+  word-wrap: break-word;
+  line-height: 1.5;
+}
+
+.message.user .message-content {
+  background: var(--primary-color);
+  color: white;
+  border-bottom-right-radius: 4px;
+}
+
+.message.assistant .message-content {
+  background: white;
+  color: var(--text-primary);
+  border: 2px solid var(--border);
+  border-bottom-left-radius: 4px;
+}
+
+.message-content.loading {
+  padding: 1rem 2rem;
+}
+
+.message-content.loading .dot {
+  animation: pulse 1.4s infinite;
+  font-size: 1.5rem;
+}
+
+.message-content.loading .dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.message-content.loading .dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes pulse {
+  0%, 60%, 100% {
+    opacity: 0.3;
+  }
+  30% {
+    opacity: 1;
+  }
+}
+
+.message-time {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  margin-top: 0.25rem;
+  padding: 0 0.5rem;
+}

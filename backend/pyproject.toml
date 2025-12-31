@@ -1,0 +1,60 @@
+[project]
+name = "babblr-backend"
+version = "1.0.0"
+description = "Backend API for Babblr language learning app"
+readme = "README.md"
+requires-python = ">=3.12"
+license = {text = "MIT"}
+authors = [
+    {name = "Babblr Contributors"}
+]
+
+dependencies = [
+    "fastapi>=0.115.5",
+    "uvicorn[standard]>=0.32.1",
+    "python-multipart>=0.0.18",
+    "anthropic>=0.39.0",
+    "openai-whisper>=20231117",
+    "python-dotenv>=1.0.1",
+    "sqlalchemy>=2.0.36",
+    "aiosqlite>=0.20.0",
+    "pydantic>=2.10.3",
+    "pydantic-settings>=2.6.1",
+    "edge-tts>=6.1.18",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.3.4",
+    "pytest-asyncio>=0.24.0",
+    "httpx>=0.28.1",
+    "ruff>=0.8.4",
+]
+
+[project.scripts]
+babblr-backend = "app.main:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.uv]
+dev-dependencies = [
+    "pytest>=8.3.4",
+    "pytest-asyncio>=0.24.0",
+    "httpx>=0.28.1",
+    "ruff>=0.8.4",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+pythonpath = ["."]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W"]
+ignore = ["E501"]

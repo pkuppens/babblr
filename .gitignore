@@ -138,11 +138,17 @@ celerybeat.pid
 .env
 .envrc
 .venv
+backend/.venv
 env/
 venv/
+backend/venv/
 ENV/
 env.bak/
 venv.bak/
+
+# uv
+uv.lock
+.python-version
 
 # Spyder project settings
 .spyderproject
@@ -205,3 +211,19 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# Node.js
+node_modules/
+package-lock.json
+
+# Build outputs
+frontend/dist/
+frontend/release/
+
+# Database
+backend/babblr.db
+backend/audio_output/
+
+# IDE
+.vscode/
+.idea/
