@@ -24,6 +24,15 @@ echo ""
 echo "📦 Setting up backend..."
 cd backend
 
+# Create virtual environment if it doesn't exist
+if [ ! -d "venv" ]; then
+    echo "Creating Python virtual environment..."
+    python3 -m venv venv
+fi
+
+echo "Activating virtual environment..."
+source venv/bin/activate
+
 if [ ! -f .env ]; then
     echo "Creating .env file from .env.example..."
     cp .env.example .env
@@ -31,6 +40,7 @@ if [ ! -f .env ]; then
 fi
 
 echo "Installing Python dependencies..."
+pip install --upgrade pip
 pip install -r requirements.txt
 
 if [ $? -ne 0 ]; then
@@ -61,7 +71,8 @@ echo "✨ Setup complete!"
 echo ""
 echo "Next steps:"
 echo "1. Add your Anthropic API key to backend/.env"
-echo "2. Start the backend: cd backend/app && python main.py"
-echo "3. Start the frontend: cd frontend && npm run electron:dev"
+echo "2. Start the backend: ./run-backend.sh"
+echo "3. Start the frontend: ./run-frontend.sh"
 echo ""
+echo "Note: Backend will use the virtual environment (backend/venv)"
 echo "Happy learning! 🗣️"

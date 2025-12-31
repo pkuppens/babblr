@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from datetime import datetime
 from app.database.db import get_db
 from app.models.models import Conversation, Message
 from app.models.schemas import ChatRequest, ChatResponse
@@ -75,6 +76,10 @@ async def chat(
         content=assistant_response
     )
     db.add(assistant_message)
+    
+    # Update conversation timestamp
+    conversation.updated_at = datetime.utcnow()
+    
     await db.commit()
     
     return ChatResponse(

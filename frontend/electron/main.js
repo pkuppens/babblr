@@ -6,6 +6,8 @@ function createWindow() {
     width: 1200,
     height: 800,
     webPreferences: {
+      // NOTE: For MVP, using nodeIntegration for simplicity
+      // For production, should use contextIsolation: true with IPC
       nodeIntegration: true,
       contextIsolation: false,
     },

@@ -32,9 +32,8 @@ class TTSService:
             # For MVP, we'll create a placeholder response
             # In production, integrate with a TTS API
             
-            # Create a unique filename
-            import hashlib
-            text_hash = hashlib.md5(text.encode()).hexdigest()[:8]
+            # Create a unique filename using hash
+            text_hash = str(hash(text))[-8:]
             output_path = self.output_dir / f"tts_{text_hash}.mp3"
             
             # For MVP: If edge-tts is available, use it (it's free)

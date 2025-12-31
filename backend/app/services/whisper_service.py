@@ -14,10 +14,11 @@ class WhisperService:
     """Service for speech-to-text using OpenAI Whisper."""
     
     def __init__(self):
-        # Load the base model (good balance between speed and accuracy)
+        # Load the model based on configuration
         # For production, you might want to make this configurable
         if WHISPER_AVAILABLE and whisper is not None:
-            self.model = whisper.load_model("base")
+            from app.config import settings
+            self.model = whisper.load_model(settings.whisper_model)
         else:
             self.model = None
             print("⚠️  Whisper not available. Speech-to-text will not work. Install with: pip install openai-whisper")

@@ -9,7 +9,7 @@ class ClaudeService:
     
     def __init__(self):
         self.client = Anthropic(api_key=settings.anthropic_api_key)
-        self.model = "claude-3-5-sonnet-20241022"  # Latest model as of writing
+        self.model = settings.claude_model
     
     async def correct_text(self, text: str, language: str, difficulty_level: str) -> Tuple[str, List[Dict]]:
         """
