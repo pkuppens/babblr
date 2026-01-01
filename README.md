@@ -52,7 +52,7 @@ See [UV_SETUP.md](UV_SETUP.md) for detailed uv usage and troubleshooting.
 - **Python 3.12+** (3.13 not required, but 3.12 recommended for latest features)
 - **Node.js 22+ LTS** (or Node.js 24+ for latest performance and security)
 - **uv** (automatically installed by setup.sh, or install manually: `curl -LsSf https://astral.sh/uv/install.sh | sh`)
-- **Anthropic API Key** (free tier available at https://console.anthropic.com/)
+- **Anthropic API Key** - See [ENVIRONMENT.md](ENVIRONMENT.md) for how to get and configure API keys
 
 ### Manual Backend Setup
 
@@ -73,17 +73,20 @@ uv venv
 uv pip install -e ".[dev]"
 ```
 
-4. Create a `.env` file from the example:
-```bash
-cp .env.example .env
-```
+4. **Configure environment variables:**
 
-5. Add your Anthropic API key to `.env`:
-```
-ANTHROPIC_API_KEY=your_api_key_here
-```
+   See **[ENVIRONMENT.md](ENVIRONMENT.md)** for detailed instructions on:
+   - Getting your Anthropic API key
+   - All available configuration options
+   - Troubleshooting common issues
 
-6. Run the backend:
+   **Quick start:**
+   ```bash
+   cp .env.example .env
+   # Edit .env and add your ANTHROPIC_API_KEY
+   ```
+
+5. Run the backend:
 ```bash
 # Using uv (recommended)
 source .venv/bin/activate

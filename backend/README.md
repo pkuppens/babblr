@@ -35,6 +35,7 @@ uv pip install -e ".[dev]"
 
 ### Using pip (Alternative)
 
+**On Linux/macOS (bash):**
 ```bash
 # Create venv
 python -m venv .venv
@@ -44,17 +45,39 @@ source .venv/bin/activate
 pip install -e ".[dev]"
 ```
 
+**On Windows (CMD):**
+```cmd
+# Create venv
+python -m venv .venv
+.venv\Scripts\activate
+
+# Install from pyproject.toml
+pip install -e ".[dev]"
+```
+
 **Note**: `requirements.txt` is kept for backward compatibility but `pyproject.toml` is the primary source.
 
-2. Create `.env` file from `.env.example`:
-```bash
-cp .env.example .env
-```
+2. **Configure environment variables:**
 
-3. Add your Anthropic API key to `.env`:
-```
-ANTHROPIC_API_KEY=your_api_key_here
-```
+   See **[../ENVIRONMENT.md](../ENVIRONMENT.md)** for complete documentation on:
+   - How to get your Anthropic API key
+   - All configuration options
+   - Platform-specific instructions
+   - Troubleshooting
+
+   **Quick start:**
+
+   **On Linux/macOS (bash):**
+   ```bash
+   cp .env.example .env
+   # Edit .env and add your ANTHROPIC_API_KEY
+   ```
+
+   **On Windows (CMD):**
+   ```cmd
+   copy .env.example .env
+   REM Edit .env and add your ANTHROPIC_API_KEY
+   ```
 
 ## Running
 
@@ -67,10 +90,19 @@ cd /path/to/babblr
 This script automatically uses uv if available, falling back to standard Python if not.
 
 **Option 2: Using uv directly**
+
+**On Linux/macOS (bash):**
 ```bash
 cd backend
 source .venv/bin/activate  # Activate venv
 babblr-backend            # Run the installed script
+```
+
+**On Windows (CMD):**
+```cmd
+cd backend
+.venv\Scripts\activate  # Activate venv
+babblr-backend         # Run the installed script
 ```
 
 **Option 3: Using uv run**
@@ -80,6 +112,8 @@ uv run babblr-backend
 ```
 
 **Option 4: Manual run with Python**
+
+**On Linux/macOS (bash):**
 ```bash
 cd backend
 export PYTHONPATH=$(pwd)
@@ -91,6 +125,21 @@ Or with uvicorn:
 ```bash
 cd backend
 export PYTHONPATH=$(pwd)
+uvicorn app.main:app --reload
+```
+
+**On Windows (CMD):**
+```cmd
+cd backend
+set PYTHONPATH=%CD%
+cd app
+python main.py
+```
+
+Or with uvicorn:
+```cmd
+cd backend
+set PYTHONPATH=%CD%
 uvicorn app.main:app --reload
 ```
 
