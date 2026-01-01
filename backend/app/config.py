@@ -11,6 +11,7 @@ class Settings(BaseSettings):
     port: int = 8000
     database_url: str = "sqlite+aiosqlite:///./babblr.db"
     frontend_url: str = "http://localhost:3000"
+    timezone: str = "Europe/Amsterdam"
     
     class Config:
         env_file = ".env"

@@ -1,7 +1,10 @@
-from anthropic import Anthropic
+from anthropic import Anthropic, AuthenticationError, APIError
 from typing import List, Dict, Tuple, Optional
 from app.config import settings
 import json
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class ClaudeService:
@@ -48,11 +51,18 @@ Response format:
                 max_tokens=1024,
                 messages=[{"role": "user", "content": prompt}]
             )
-            
+
             result = json.loads(response.content[0].text)
             return result.get('corrected_text', text), result.get('corrections', [])
+        except AuthenticationError as e:
+            logger.error(f"Authentication error in correct_text: {e}")
+            # Don't fail the request - just skip corrections
+            return text, []
+        except APIError as e:
+            logger.error(f"API error in correct_text: {e}")
+            return text, []
         except Exception as e:
-            print(f"Error in correct_text: {e}")
+            logger.error(f"Unexpected error in correct_text: {e}")
             return text, []
     
     async def generate_response(
@@ -94,16 +104,25 @@ Response format:
                 system=system_prompt,
                 messages=messages
             )
-            
+
             assistant_message = response.content[0].text
-            
+
             # Extract vocabulary items (simple extraction for MVP)
             vocabulary_items = self._extract_vocabulary(assistant_message, language)
-            
+
             return assistant_message, vocabulary_items
+        except AuthenticationError as e:
+            logger.error(f"Authentication error in generate_response: {e}")
+            raise AuthenticationError(
+                message="Invalid Anthropic API key. Please check your ANTHROPIC_API_KEY in .env file",
+                response=e.response if hasattr(e, 'response') else None
+            )
+        except APIError as e:
+            logger.error(f"API error in generate_response: {e}")
+            raise
         except Exception as e:
-            print(f"Error in generate_response: {e}")
-            raise Exception(f"Failed to generate response: {str(e)}")
+            logger.error(f"Unexpected error in generate_response: {e}")
+            raise
     
     def _build_system_prompt(self, language: str, difficulty_level: str) -> str:
         """Build system prompt based on language and difficulty."""
