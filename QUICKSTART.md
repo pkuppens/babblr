@@ -6,8 +6,8 @@ Get Babblr running in 5 minutes!
 
 Before you start, make sure you have:
 
-1. **Python 3.12.9+** - Check with: `python3 --version`
-2. **Node.js 24+** - Check with: `node --version`
+1. **Python 3.12+** - Check with: `python3 --version`
+2. **Node.js 22+** - Check with: `node --version`
 3. **Anthropic API Key** - Get free tier at: https://console.anthropic.com/
 
 ## Step 1: Clone & Setup (2 minutes)
@@ -41,7 +41,7 @@ The setup script will:
 
 **Note:** The virtual environment is created in `backend/.venv` only. There should be no `.venv` in the project root directory.
 
-**What is uv?** uv is a blazingly fast Python package installer (10-100x faster than pip). The setup script installs it automatically. See [UV_SETUP.md](UV_SETUP.md) for details.
+**What is uv?** uv is a blazingly fast Python package installer (10-100x faster than pip). The setup script installs it automatically. See [UV_SETUP.md](backend/UV_SETUP.md) for details.
 
 ## Step 2: Configure API Key (1 minute)
 
@@ -73,7 +73,7 @@ run-backend.bat
 
 You should see:
 ```
-🚀 Starting Babblr backend with uv...
+[START] Starting Babblr backend with uv...
 INFO:     Uvicorn running on http://127.0.0.1:8000
 INFO:     Application startup complete.
 ```

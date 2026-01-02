@@ -122,7 +122,7 @@ echo 2. Start the backend: run-backend.bat
 echo 3. Start the frontend: run-frontend.bat
 echo.
 echo Documentation:
-echo    - See UV_SETUP.md for detailed uv usage
+echo    - See backend\UV_SETUP.md for detailed uv usage
 echo    - See QUICKSTART.md for quick start guide
 echo.
 echo Note: Backend uses uv for fast package management (.venv)

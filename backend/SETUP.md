@@ -70,7 +70,7 @@ cd backend
 uv venv --python 3.12
 ```
 
-###3. Install Dependencies
+### 3. Install Dependencies
 
 ```bash
 cd backend
@@ -99,7 +99,7 @@ cd backend
 # Uninstall CPU-only PyTorch
 uv pip uninstall torch torchvision torchaudio
 
-# Install CUDA-enabled PyTorch (CUDA 12.1 - compatible with CUDA 13.0+ drivers)
+# Install CUDA-enabled PyTorch (CUDA 12.1 - compatible with CUDA 12.x drivers)
 uv pip install --upgrade torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
 ```
 

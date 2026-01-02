@@ -44,7 +44,8 @@ try:
         print()
         
         # Check if it's CPU-only PyTorch
-        if '+cpu' in torch.__version__ or 'cpu' in torch.version.cuda.lower():
+        cuda_version = getattr(torch.version, "cuda", None)
+        if '+cpu' in torch.__version__ or (cuda_version and 'cpu' in cuda_version.lower()):
             print("   🔍 Detected: CPU-only PyTorch installation")
             print("   💡 Solution: Install CUDA-enabled PyTorch (see instructions below)")
         else:
@@ -111,7 +112,7 @@ try:
         print()
         print("2. Install CUDA-enabled PyTorch using uv (recommended):")
         print()
-        print("   For CUDA 12.1 (recommended for CUDA 13.0 drivers):")
+        print("   For CUDA 12.1 (recommended for CUDA 12.x drivers):")
         print("   cd backend")
         print("   uv pip uninstall torch torchvision torchaudio")
         print("   uv pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121")

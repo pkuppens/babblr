@@ -54,7 +54,7 @@ This will:
 
 **Windows users:** Use `setup.bat` instead of `./setup.sh`
 
-See [UV_SETUP.md](UV_SETUP.md) for detailed uv usage and troubleshooting.
+See [UV_SETUP.md](backend/UV_SETUP.md) for detailed uv usage and troubleshooting.
 
 ### Prerequisites
 
