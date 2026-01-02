@@ -50,6 +50,22 @@ pip install --upgrade uv
 
 ### Backend Setup
 
+**Important:** The virtual environment (`.venv`) should be created **only in the `backend/` directory**, not in the project root. This prevents conflicts and ensures all dependencies are in the correct location.
+
+#### Option 1: Using the Setup Script (Recommended)
+
+```bash
+cd backend
+./setup-venv.sh
+```
+
+This script will:
+- Create `.venv` in the backend directory
+- Install all dependencies (including dev dependencies)
+- Verify the installation
+
+#### Option 2: Manual Setup
+
 1. Navigate to the backend directory:
 ```bash
 cd backend
@@ -58,16 +74,17 @@ cd backend
 2. Create a virtual environment with uv:
 ```bash
 # uv automatically creates and manages virtual environments
+# This creates .venv in the current (backend) directory
 uv venv
 ```
 
 3. Install dependencies:
 ```bash
-# Install all dependencies from pyproject.toml
-uv pip install -e .
-
-# Or install with dev dependencies
+# Install all dependencies from pyproject.toml (including dev dependencies)
 uv pip install -e ".[dev]"
+
+# Or install without dev dependencies
+# uv pip install -e .
 ```
 
 4. Create `.env` file:
@@ -76,21 +93,50 @@ cp .env.example .env
 # Edit .env and add your ANTHROPIC_API_KEY
 ```
 
+**Note:** Never create a `.venv` in the project root directory. It should only exist in `backend/.venv`.
+
 ### Running the Backend
 
-With uv, you can run the backend using the installed script:
+**Option 1: Using the convenience script (recommended)**
 
+**Linux/macOS:**
 ```bash
+# From project root
+./run-backend.sh
+```
+
+**Windows:**
+```cmd
+REM From project root
+run-backend.bat
+```
+
+**Option 2: Using uv directly**
+
+**Linux/macOS:**
+```bash
+cd backend
 # Activate the virtual environment (optional with uv)
-source .venv/bin/activate  # On macOS/Linux
-# or
-.venv\Scripts\activate  # On Windows
+source .venv/bin/activate
 
 # Run using the installed script
 babblr-backend
 
-# Or run directly with uv
-uv run python -m app.main
+# Or run directly with uv (no activation needed)
+uv run babblr-backend
+```
+
+**Windows:**
+```cmd
+cd backend
+REM Activate the virtual environment (optional with uv)
+.venv\Scripts\activate.bat
+
+REM Run using the installed script
+babblr-backend
+
+REM Or run directly with uv (no activation needed)
+uv run babblr-backend
 ```
 
 ### Running Tests

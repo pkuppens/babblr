@@ -16,22 +16,42 @@ FastAPI backend for the Babblr language learning application.
 
 [uv](https://github.com/astral-sh/uv) is a fast Python package installer and resolver.
 
+**Important:** The virtual environment (`.venv`) must be created in the `backend/` directory, not in the project root.
+
+#### Quick Setup (Recommended)
+
+```bash
+cd backend
+./setup-venv.sh
+```
+
+This script creates the virtual environment and installs all dependencies.
+
+#### Manual Setup
+
 1. Install uv if not already installed:
 ```bash
 curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 
-2. Create virtual environment and install dependencies:
+2. Navigate to backend directory:
 ```bash
-# Create venv
+cd backend
+```
+
+3. Create virtual environment and install dependencies:
+```bash
+# Create venv (creates .venv in current directory)
 uv venv
 
-# Install all dependencies from pyproject.toml
-uv pip install -e .
-
-# Or install with dev dependencies (includes pytest, ruff, etc.)
+# Install all dependencies from pyproject.toml (including dev dependencies)
 uv pip install -e ".[dev]"
+
+# Or install without dev dependencies
+# uv pip install -e .
 ```
+
+**Note:** Always run `uv venv` and `uv pip install` from the `backend/` directory to ensure the virtual environment is created in the correct location.
 
 ### Using pip (Alternative)
 
@@ -82,30 +102,38 @@ pip install -e ".[dev]"
 ## Running
 
 **Option 1: Using the convenience script (recommended)**
+
+**Linux/macOS:**
 ```bash
-cd /path/to/babblr
+# From project root
 ./run-backend.sh
+```
+
+**Windows:**
+```cmd
+REM From project root
+run-backend.bat
 ```
 
 This script automatically uses uv if available, falling back to standard Python if not.
 
 **Option 2: Using uv directly**
 
-**On Linux/macOS (bash):**
+**Linux/macOS:**
 ```bash
 cd backend
-source .venv/bin/activate  # Activate venv
+source .venv/bin/activate  # Activate venv (optional with uv)
 babblr-backend            # Run the installed script
 ```
 
-**On Windows (CMD):**
+**Windows:**
 ```cmd
 cd backend
-.venv\Scripts\activate  # Activate venv
-babblr-backend         # Run the installed script
+.venv\Scripts\activate.bat  # Activate venv (optional with uv)
+babblr-backend              # Run the installed script
 ```
 
-**Option 3: Using uv run**
+**Option 3: Using uv run (no activation needed)**
 ```bash
 cd backend
 uv run babblr-backend

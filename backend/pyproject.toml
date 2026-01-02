@@ -3,7 +3,7 @@ name = "babblr-backend"
 version = "1.0.0"
 description = "Backend API for Babblr language learning app"
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.12,<3.13"
 license = {text = "MIT"}
 authors = [
     {name = "Babblr Contributors"}
@@ -21,6 +21,11 @@ dependencies = [
     "pydantic>=2.10.3",
     "pydantic-settings>=2.6.1",
     "edge-tts>=6.1.18",
+    # NOTE: PyTorch is NOT listed here - must be installed separately for CUDA support
+    # After installing base dependencies, run:
+    #   uv pip install --upgrade torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+    # Or for CPU only:
+    #   uv pip install torch torchvision torchaudio
 ]
 
 [project.optional-dependencies]

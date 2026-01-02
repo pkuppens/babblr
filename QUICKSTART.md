@@ -6,12 +6,13 @@ Get Babblr running in 5 minutes!
 
 Before you start, make sure you have:
 
-1. **Python 3.12+** - Check with: `python3 --version`
-2. **Node.js 22+** - Check with: `node --version`
+1. **Python 3.12.9+** - Check with: `python3 --version`
+2. **Node.js 24+** - Check with: `node --version`
 3. **Anthropic API Key** - Get free tier at: https://console.anthropic.com/
 
 ## Step 1: Clone & Setup (2 minutes)
 
+**Linux/macOS:**
 ```bash
 # Clone the repository
 git clone https://github.com/pkuppens/babblr.git
@@ -21,12 +22,24 @@ cd babblr
 ./setup.sh
 ```
 
+**Windows:**
+```cmd
+REM Clone the repository
+git clone https://github.com/pkuppens/babblr.git
+cd babblr
+
+REM Run setup script (installs uv and everything else)
+setup.bat
+```
+
 The setup script will:
 - Install **uv** (fast Python package manager) if not present
-- Create a Python virtual environment with uv
+- Create a Python virtual environment in `backend/.venv` (not root)
 - Install backend dependencies with uv
 - Install frontend dependencies with npm
 - Create configuration file
+
+**Note:** The virtual environment is created in `backend/.venv` only. There should be no `.venv` in the project root directory.
 
 **What is uv?** uv is a blazingly fast Python package installer (10-100x faster than pip). The setup script installs it automatically. See [UV_SETUP.md](UV_SETUP.md) for details.
 
@@ -48,8 +61,14 @@ Save and close.
 
 Open a terminal and run:
 
+**Linux/macOS:**
 ```bash
 ./run-backend.sh
+```
+
+**Windows:**
+```cmd
+run-backend.bat
 ```
 
 You should see:
@@ -65,8 +84,14 @@ INFO:     Application startup complete.
 
 Open a **second terminal** and run:
 
+**Linux/macOS:**
 ```bash
 ./run-frontend.sh
+```
+
+**Windows:**
+```cmd
+run-frontend.bat
 ```
 
 The Electron app window will open automatically.

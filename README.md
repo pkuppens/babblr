@@ -34,9 +34,16 @@ A desktop language learning app that lets you speak naturally with an AI tutor. 
 
 Use the automated setup script with uv package manager:
 
+**Linux/macOS:**
 ```bash
 # Run the setup script (installs uv if needed)
 ./setup.sh
+```
+
+**Windows:**
+```cmd
+REM Run the setup script (installs uv if needed)
+setup.bat
 ```
 
 This will:
@@ -44,6 +51,8 @@ This will:
 - Set up backend with uv virtual environment
 - Install all dependencies
 - Set up frontend
+
+**Windows users:** Use `setup.bat` instead of `./setup.sh`
 
 See [UV_SETUP.md](UV_SETUP.md) for detailed uv usage and troubleshooting.
 

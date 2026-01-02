@@ -43,6 +43,12 @@ babblr is a Duolingo successor designed to help users learn foreign languages in
 - Keep components small and focused
 - Use meaningful component and variable names
 
+### Shell Scripts (.sh, .bat)
+- **NEVER use Unicode characters or emojis** in shell scripts
+- Shell scripts have poor Unicode support and can cause parsing errors
+- Use ASCII text prefixes instead: `[ERROR]`, `[WARNING]`, `[INFO]`, `[OK]`, `[SETUP]`, `[START]`
+- This applies to all `.sh`, `.bat`, and other shell script files
+
 ## Project Structure
 ```
 babblr/
