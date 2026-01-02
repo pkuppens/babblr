@@ -23,6 +23,12 @@ async def transcribe_audio(
     """
     Transcribe audio to text using Whisper.
     """
+    print(f"🎙️ Received audio transcription request:")
+    print(f"  - Conversation ID: {conversation_id}")
+    print(f"  - Language: {language}")
+    print(f"  - Filename: {audio.filename}")
+    print(f"  - Content Type: {audio.content_type}")
+    
     # Verify conversation exists
     result = await db.execute(
         select(Conversation).where(Conversation.id == conversation_id)
@@ -40,14 +46,18 @@ async def transcribe_audio(
         
         # Write uploaded content
         content = await audio.read()
+        print(f"  - Audio size: {len(content)} bytes")
         temp_file.write(content)
         temp_file.close()
         
+        print(f"📝 Starting transcription...")
         # Transcribe
         transcribed_text, result = await whisper_service.transcribe_audio(
             temp_file.name,
             language
         )
+        
+        print(f"✅ Transcription complete: '{transcribed_text}'")
         
         return TranscriptionResponse(
             text=transcribed_text,
@@ -55,6 +65,7 @@ async def transcribe_audio(
         )
     
     except Exception as e:
+        print(f"❌ Transcription failed: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Transcription failed: {str(e)}")
     
     finally:

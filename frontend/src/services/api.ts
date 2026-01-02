@@ -109,6 +109,13 @@ export const speechService = {
     conversation_id: number,
     language: string
   ): Promise<TranscriptionResponse> {
+    console.log('🎙️ Transcribing audio:', {
+      conversation_id,
+      language,
+      blobSize: audioBlob.size,
+      blobType: audioBlob.type,
+    });
+    
     try {
       const formData = new FormData();
       formData.append('audio', audioBlob, 'recording.webm');
@@ -122,8 +129,11 @@ export const speechService = {
           },
         }
       );
+      
+      console.log('✅ Transcription response:', response.data);
       return response.data;
     } catch (error) {
+      console.error('❌ Transcription failed');
       handleError(error);
       throw error;
     }

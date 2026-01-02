@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import type { Conversation, Message, Correction } from '../types';
 import { conversationService, chatService, speechService, ttsService } from '../services/api';
-import VoiceRecorder from './VoiceRecorder';
+import AudioRecorder from './AudioRecorder';
 import MessageBubble from './MessageBubble';
 import './ConversationInterface.css';
 
@@ -18,7 +18,6 @@ const ConversationInterface: React.FC<ConversationInterfaceProps> = ({
   const [inputText, setInputText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [corrections, setCorrections] = useState<Correction[]>([]);
-  const [isRecording, setIsRecording] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -85,6 +84,7 @@ const ConversationInterface: React.FC<ConversationInterfaceProps> = ({
   };
 
   const handleVoiceRecording = async (audioBlob: Blob) => {
+    console.log('🎤 Processing voice recording from AudioRecorder component');
     setIsLoading(true);
     try {
       const transcription = await speechService.transcribe(
@@ -156,10 +156,8 @@ const ConversationInterface: React.FC<ConversationInterfaceProps> = ({
       )}
 
       <div className="input-container">
-        <VoiceRecorder
-          onRecordingComplete={handleVoiceRecording}
-          isRecording={isRecording}
-          setIsRecording={setIsRecording}
+        <AudioRecorder
+          onSubmit={handleVoiceRecording}
           disabled={isLoading}
         />
         
@@ -175,13 +173,13 @@ const ConversationInterface: React.FC<ConversationInterfaceProps> = ({
               handleSendMessage(inputText);
             }
           }}
-          disabled={isLoading || isRecording}
+          disabled={isLoading}
         />
         
         <button
           className="send-button"
           onClick={() => handleSendMessage(inputText)}
-          disabled={!inputText.trim() || isLoading || isRecording}
+          disabled={!inputText.trim() || isLoading}
         >
           Send
         </button>
