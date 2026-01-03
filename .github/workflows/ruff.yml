@@ -13,13 +13,15 @@ jobs:
 
       - name: Ruff format (check)
         uses: astral-sh/ruff-action@v1
+        working-directory: backend
         with:
           version: "0.14.10"
-          args: "format --check --config backend/pyproject.toml backend"
+          args: "format --check --config pyproject.toml ."
 
       - name: Ruff lint (check)
         uses: astral-sh/ruff-action@v1
+        working-directory: backend
         with:
           version: "0.14.10"
-          args: "check --fix --exit-non-zero-on-fix --config backend/pyproject.toml backend"
+          args: "check --fix --exit-non-zero-on-fix --config pyproject.toml ."
 
