@@ -100,6 +100,9 @@ class WhisperService(STTService):
     # Available Whisper models
     AVAILABLE_MODELS = ["tiny", "base", "small", "medium", "large"]
 
+    # Default confidence when no segments available
+    DEFAULT_CONFIDENCE = 0.9
+
     def __init__(self, model_size: str = "base", device: str = "auto"):
         """
         Initialize Whisper service.
@@ -263,7 +266,7 @@ class WhisperService(STTService):
             confidences = [1.0 - seg.get("no_speech_prob", 0.0) for seg in segments]
             avg_confidence = sum(confidences) / len(confidences)
         else:
-            avg_confidence = 0.9  # Default if no segments
+            avg_confidence = self.DEFAULT_CONFIDENCE  # Default if no segments
 
         # Get audio duration from segments
         if segments:
@@ -338,7 +341,7 @@ class WhisperService(STTService):
         audio = AudioSegment.from_file(audio_path)
 
         # Export as WAV
-        output_path = audio_path + ".converted.wav"
+        output_path = f"{audio_path}.converted.wav"
         audio.export(output_path, format="wav")
 
         return output_path

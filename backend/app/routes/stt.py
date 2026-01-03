@@ -22,6 +22,9 @@ from app.services.whisper_service import whisper_service
 
 logger = logging.getLogger(__name__)
 
+# Configuration constants
+DEFAULT_TRANSCRIPTION_TIMEOUT = 30  # seconds
+
 router = APIRouter(prefix="/api/stt", tags=["stt"])
 
 
@@ -78,7 +81,9 @@ async def transcribe_audio(audio_file: UploadFile = File(...), language: Optiona
         logger.info("Starting transcription...")
 
         # Transcribe with timeout
-        result = await whisper_service.transcribe(temp_file.name, language=language, timeout=30)
+        result = await whisper_service.transcribe(
+            temp_file.name, language=language, timeout=DEFAULT_TRANSCRIPTION_TIMEOUT
+        )
 
         logger.info(
             "Transcription successful: language=%s, confidence=%.2f, duration=%.2fs",
