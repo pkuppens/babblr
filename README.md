@@ -232,9 +232,20 @@ This app focuses on:
 
 This is an MVP for portfolio purposes. Feel free to fork and customize for your own use!
 
-## License
+## Licensing
 
-MIT
+Babblr is **dual-licensed**:
+
+- **Open source license (AGPL-3.0)**: You may use, modify, and distribute Babblr under the terms of the GNU Affero General Public License v3.  
+  Important: If you run a modified version and make it available to users over a network, you must offer the corresponding source code to those users (AGPL network copyleft).
+- **Commercial license**: If you want to use Babblr in a **proprietary / closed-source** product or service (for example, you cannot comply with AGPL source-sharing requirements), you must obtain a commercial license.
+
+See:
+- `LICENSE` (AGPL-3.0)
+- `COMMERCIAL_LICENSE.md` (commercial terms overview + how to request)
+- `LICENSING.md` (plain-English guidance)
+- `POLICIES.md` (acceptable use + AI output disclaimer)
+- `TRADEMARKS.md` (branding guidance)
 
 ## Acknowledgments
 

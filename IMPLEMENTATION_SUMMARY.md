@@ -152,7 +152,7 @@ babblr/
 ├── DEVELOPMENT.md                 # Developer guide
 ├── TROUBLESHOOTING.md             # Common issues
 ├── VISUAL_GUIDE.md                # UI/UX reference
-└── LICENSE                        # MIT License
+└── LICENSE                        # AGPL-3.0 (dual-licensed with commercial option)
 ```
 
 ## API Endpoints
@@ -354,7 +354,12 @@ Requires ffmpeg for Whisper audio processing.
 
 ## License
 
-MIT License - Free to use, modify, and distribute.
+Babblr is dual-licensed:
+
+- **AGPL-3.0** for open-source use (including commercial use if you comply with AGPL obligations)
+- **Commercial license** for proprietary / closed-source use
+
+See `LICENSE`, `LICENSING.md`, and `COMMERCIAL_LICENSE.md`.
 
 ## Credits
 

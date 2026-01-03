@@ -4,7 +4,7 @@ version = "1.0.0"
 description = "Backend API for Babblr language learning app"
 readme = "README.md"
 requires-python = ">=3.12,<3.13"
-license = {text = "MIT"}
+license = {text = "AGPL-3.0-only OR LicenseRef-Babblr-Commercial"}
 authors = [
     {name = "Babblr Contributors"}
 ]

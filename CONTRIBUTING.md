@@ -242,13 +242,13 @@ We trust our contributors to use AI responsibly and maintain high-quality standa
 Babblr uses a dual licensing model:
 
 1. **AGPL-3.0** - For open-source use
-   - Free for personal, educational, and open-source projects
-   - Requires that modifications be shared under AGPL-3.0
-   - Network use triggers copyleft requirements
+   - Free to use for personal, educational, and commercial purposes *if you comply with the AGPL*
+   - Requires that modifications be shared under AGPL-3.0 when distributed
+   - Network use triggers source-availability requirements (AGPL copyleft)
 
-2. **Commercial License** - For commercial use
-   - Required for proprietary/closed-source applications
-   - Contact the project maintainers for commercial licensing terms
+2. **Commercial License** - For proprietary use
+   - Required for proprietary / closed-source applications or services when you cannot comply with AGPL source-sharing requirements
+   - Contact the project maintainers for commercial licensing terms (see `COMMERCIAL_LICENSE.md`)
 
 ### Contributing Your Code
 
@@ -258,6 +258,14 @@ By contributing to Babblr, you agree that:
 2. **You have the right** to submit the code and grant these licenses
 3. **You understand** that the project maintainers may use your contribution in both open-source and commercial contexts
 4. **You retain copyright** of your contributions, but grant the project necessary rights
+
+### Contributor License Agreement (CLA)
+
+To keep dual licensing possible, Babblr requires a CLA for code contributions.
+
+- Read: `CLA.md`
+- How to sign: include the sentence **"I agree to the Babblr CLA"** in your PR description (or first comment).
+  This is treated as your electronic signature for the CLA.
 
 ### Contributor Rights
 
