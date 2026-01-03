@@ -1,31 +1,26 @@
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
-from datetime import datetime, timezone
+import json
+import logging
+from datetime import datetime
 from zoneinfo import ZoneInfo
+
+from anthropic import APIError, AuthenticationError
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.config import settings
 from app.database.db import get_db
 from app.models.models import Conversation, Message
 from app.models.schemas import ChatRequest, ChatResponse
 from app.services.claude_service import claude_service
-from anthropic import AuthenticationError, APIError
-import tempfile
-import json
-import logging
 
 logger = logging.getLogger(__name__)
-
-# Import settings for timezone configuration
-from app.config import settings
-
 
 router = APIRouter(prefix="/chat", tags=["chat"])
 
 
 @router.post("", response_model=ChatResponse)
-async def chat(
-    request: ChatRequest,
-    db: AsyncSession = Depends(get_db)
-):
+async def chat(request: ChatRequest, db: AsyncSession = Depends(get_db)):
     """
     Process a chat message and get AI tutor response.
     Includes error correction and vocabulary extraction.
@@ -49,16 +44,11 @@ async def chat(
         )
         messages = messages_result.scalars().all()
 
-        conversation_history = [
-            {"role": msg.role, "content": msg.content}
-            for msg in messages
-        ]
+        conversation_history = [{"role": msg.role, "content": msg.content} for msg in messages]
 
         # First, correct the user's message if needed
         corrected_text, corrections = await claude_service.correct_text(
-            request.user_message,
-            request.language,
-            request.difficulty_level
+            request.user_message, request.language, request.difficulty_level
         )
 
         # Save user message (with original text)
@@ -66,7 +56,7 @@ async def chat(
             conversation_id=request.conversation_id,
             role="user",
             content=request.user_message,
-            corrections=json.dumps(corrections) if corrections else None
+            corrections=json.dumps(corrections) if corrections else None,
         )
         db.add(user_message)
         await db.commit()
@@ -76,14 +66,12 @@ async def chat(
             corrected_text if corrections else request.user_message,
             request.language,
             request.difficulty_level,
-            conversation_history
+            conversation_history,
         )
 
         # Save assistant message
         assistant_message = Message(
-            conversation_id=request.conversation_id,
-            role="assistant",
-            content=assistant_response
+            conversation_id=request.conversation_id, role="assistant", content=assistant_response
         )
         db.add(assistant_message)
 
@@ -98,7 +86,7 @@ async def chat(
         return ChatResponse(
             assistant_message=assistant_response,
             corrections=corrections,
-            vocabulary_items=vocabulary_items
+            vocabulary_items=vocabulary_items,
         )
 
     except AuthenticationError as e:
@@ -109,8 +97,8 @@ async def chat(
                 "error": "authentication_error",
                 "message": "Invalid Anthropic API key configured on the server",
                 "technical_details": str(e),
-                "fix": "Server admin needs to set valid ANTHROPIC_API_KEY in .env file"
-            }
+                "fix": "Server admin needs to set valid ANTHROPIC_API_KEY in .env file",
+            },
         )
     except APIError as e:
         logger.error(f"API error: {e}")
@@ -119,8 +107,8 @@ async def chat(
             detail={
                 "error": "api_error",
                 "message": "AI service temporarily unavailable",
-                "technical_details": str(e)
-            }
+                "technical_details": str(e),
+            },
         )
     except HTTPException:
         # Re-raise HTTP exceptions (like 404)
@@ -132,6 +120,6 @@ async def chat(
             detail={
                 "error": "internal_error",
                 "message": "An unexpected error occurred",
-                "technical_details": str(e)
-            }
+                "technical_details": str(e),
+            },
         )

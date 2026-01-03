@@ -4,9 +4,8 @@ These tests require the backend to be running.
 Run with: pytest tests/test_integration.py
 """
 
-import pytest
 import httpx
-
+import pytest
 
 BASE_URL = "http://localhost:8000"
 
@@ -124,3 +123,56 @@ class TestMessagesEndpoint:
         assert response.status_code == 200
         data = response.json()
         assert isinstance(data, list)
+
+
+@pytest.mark.integration
+class TestSTTEndpoints:
+    """Test STT (Speech-to-Text) endpoints."""
+
+    def test_stt_languages_endpoint(self, client):
+        """Test getting supported languages."""
+        response = client.get("/api/stt/languages")
+        assert response.status_code == 200
+        data = response.json()
+        assert "languages" in data
+        assert "count" in data
+        assert isinstance(data["languages"], list)
+        assert data["count"] >= 5  # At least 5 languages
+
+        # Check for expected languages
+        language_codes = [lang["code"] for lang in data["languages"]]
+        assert "es" in language_codes
+        assert "it" in language_codes
+        assert "de" in language_codes
+        assert "fr" in language_codes
+        assert "nl" in language_codes
+
+    def test_stt_models_endpoint(self, client):
+        """Test getting available models."""
+        response = client.get("/api/stt/models")
+        assert response.status_code == 200
+        data = response.json()
+        assert "models" in data
+        assert "current_model" in data
+        assert "device" in data
+        assert "count" in data
+        assert isinstance(data["models"], list)
+        assert data["count"] >= 5  # At least 5 models
+
+        # Check for expected models
+        model_names = [model["name"] for model in data["models"]]
+        assert "tiny" in model_names
+        assert "base" in model_names
+        assert "small" in model_names
+        assert "medium" in model_names
+        assert "large" in model_names
+
+    def test_stt_transcribe_endpoint_structure(self, client):
+        """Test transcribe endpoint accepts correct structure."""
+        # Note: This test checks the endpoint structure without actual audio
+        # Real transcription tests would require audio files
+
+        # Test with missing file
+        response = client.post("/api/stt/transcribe")
+        # Should return 422 (validation error) for missing required field
+        assert response.status_code == 422
