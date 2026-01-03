@@ -85,7 +85,7 @@ export const chatService = {
     language: string,
     difficulty_level: string
   ): Promise<ChatResponse> {
-    console.log('📤 Sending chat message:', { conversation_id, user_message, language, difficulty_level });
+    console.log('[Chat] Sending message:', { conversation_id, user_message, language, difficulty_level });
     try {
       const response = await api.post('/chat', {
         conversation_id,
@@ -93,10 +93,10 @@ export const chatService = {
         language,
         difficulty_level,
       });
-      console.log('✅ Chat response received:', response.data);
+      console.log('[Chat] Response received:', response.data);
       return response.data;
     } catch (error) {
-      console.error('❌ Chat request failed');
+      console.error('[Chat] Request failed');
       handleError(error);
       throw error;
     }
@@ -109,6 +109,13 @@ export const speechService = {
     conversation_id: number,
     language: string
   ): Promise<TranscriptionResponse> {
+    console.log('[Speech] Transcribing audio:', {
+      conversation_id,
+      language,
+      blobSize: audioBlob.size,
+      blobType: audioBlob.type,
+    });
+    
     try {
       const formData = new FormData();
       formData.append('audio', audioBlob, 'recording.webm');
@@ -122,8 +129,11 @@ export const speechService = {
           },
         }
       );
+      
+      console.log('[Speech] Transcription response:', response.data);
       return response.data;
     } catch (error) {
+      console.error('[Speech] Transcription failed');
       handleError(error);
       throw error;
     }
