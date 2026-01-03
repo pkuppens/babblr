@@ -4,6 +4,7 @@ Speech-to-text routes for audio transcription.
 This module handles audio file uploads and transcription using OpenAI Whisper.
 It supports multiple languages and integrates with the conversation system.
 """
+
 import logging
 import os
 import tempfile
@@ -27,7 +28,7 @@ async def transcribe_audio(
     conversation_id: int,
     language: str,
     audio: UploadFile = File(...),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
 ):
     """
     Transcribe audio to text using OpenAI Whisper.
@@ -52,13 +53,14 @@ async def transcribe_audio(
     logger.info(
         "Received audio transcription request: conversation_id=%s, language=%s, "
         "filename=%s, content_type=%s",
-        conversation_id, language, audio.filename, audio.content_type
+        conversation_id,
+        language,
+        audio.filename,
+        audio.content_type,
     )
 
     # Verify conversation exists
-    result = await db.execute(
-        select(Conversation).where(Conversation.id == conversation_id)
-    )
+    result = await db.execute(select(Conversation).where(Conversation.id == conversation_id))
     conversation = result.scalar_one_or_none()
     if not conversation:
         logger.warning("Conversation not found: id=%s", conversation_id)
@@ -68,7 +70,7 @@ async def transcribe_audio(
     temp_file = None
     try:
         # Create temp file
-        suffix = os.path.splitext(audio.filename)[1] if audio.filename else '.wav'
+        suffix = os.path.splitext(audio.filename)[1] if audio.filename else ".wav"
         temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=suffix)
 
         # Write uploaded content
@@ -79,25 +81,31 @@ async def transcribe_audio(
 
         logger.info("Starting transcription for conversation_id=%s", conversation_id)
         # Transcribe
-        transcribed_text, result = await whisper_service.transcribe_audio(
-            temp_file.name,
-            language
-        )
+        result = await whisper_service.transcribe(temp_file.name, language=language, timeout=30)
 
         logger.info(
-            "Transcription complete: conversation_id=%s, text_length=%s",
-            conversation_id, len(transcribed_text)
+            "Transcription complete: conversation_id=%s, text_length=%s, "
+            "language=%s, confidence=%.2f",
+            conversation_id,
+            len(result.text),
+            result.language,
+            result.confidence,
         )
 
         return TranscriptionResponse(
-            text=transcribed_text,
-            corrections=None  # Corrections will be done in chat endpoint
+            text=result.text,
+            language=result.language,
+            confidence=result.confidence,
+            duration=result.duration,
+            corrections=None,  # Corrections will be done in chat endpoint
         )
 
     except Exception as e:
         logger.error(
             "Transcription failed: conversation_id=%s, error=%s",
-            conversation_id, str(e), exc_info=True
+            conversation_id,
+            str(e),
+            exc_info=True,
         )
         raise HTTPException(status_code=500, detail=f"Transcription failed: {str(e)}")
 

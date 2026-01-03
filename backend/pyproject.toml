@@ -21,6 +21,7 @@ dependencies = [
     "pydantic>=2.10.3",
     "pydantic-settings>=2.6.1",
     "edge-tts>=6.1.18",
+    "pydub>=0.25.1",
     # NOTE: PyTorch is NOT listed here - must be installed separately for CUDA support
     # After installing base dependencies, run:
     #   uv pip install --upgrade torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121

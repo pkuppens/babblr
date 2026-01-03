@@ -226,6 +226,8 @@ frontend/release/
 # Database
 backend/babblr.db
 backend/audio_output/
+backend/audio_files/
+audio_files/
 
 # IDE
 .vscode/

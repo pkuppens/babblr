@@ -3,10 +3,9 @@ Unit tests for Babblr backend.
 Run with: pytest tests/
 """
 
-import pytest
 from app.models.schemas import (
-    ConversationCreate,
     ChatRequest,
+    ConversationCreate,
     TranscriptionRequest,
     TTSRequest,
 )
@@ -46,6 +45,19 @@ class TestSchemas:
         assert req.conversation_id == 1
         assert req.language == "spanish"
 
+    def test_transcription_response(self):
+        """Test transcription response schema with new fields."""
+        from app.models.schemas import TranscriptionResponse
+
+        resp = TranscriptionResponse(
+            text="Hola mundo", language="es", confidence=0.95, duration=2.5
+        )
+        assert resp.text == "Hola mundo"
+        assert resp.language == "es"
+        assert resp.confidence == 0.95
+        assert resp.duration == 2.5
+        assert resp.corrections is None
+
     def test_tts_request(self):
         """Test TTS request schema."""
         req = TTSRequest(text="Hola mundo", language="spanish")
@@ -74,6 +86,9 @@ class TestConfig:
         assert settings.port == 8000
         assert settings.claude_model == "claude-3-5-sonnet-20241022"
         assert settings.whisper_model == "base"
+        assert settings.whisper_device == "auto"
+        assert settings.development_mode is False
+        assert settings.audio_storage_path == "./audio_files"
 
 
 class TestModels:
@@ -102,3 +117,67 @@ class TestModels:
         assert VocabularyItem is not None
         assert hasattr(VocabularyItem, "__tablename__")
         assert VocabularyItem.__tablename__ == "vocabulary_items"
+
+
+class TestWhisperService:
+    """Test Whisper service functionality."""
+
+    def test_whisper_service_import(self):
+        """Test that WhisperService can be imported."""
+        from app.services.whisper_service import WhisperService
+
+        assert WhisperService is not None
+
+    def test_whisper_service_initialization(self):
+        """Test WhisperService initialization."""
+        from app.services.whisper_service import WhisperService
+
+        service = WhisperService(model_size="base", device="cpu")
+        assert service.model_size == "base"
+        assert service.device == "cpu"
+
+    def test_supported_languages(self):
+        """Test supported languages list."""
+        from app.services.whisper_service import whisper_service
+
+        languages = whisper_service.get_supported_languages()
+        assert isinstance(languages, list)
+        assert "es" in languages  # Spanish
+        assert "it" in languages  # Italian
+        assert "de" in languages  # German
+        assert "fr" in languages  # French
+        assert "nl" in languages  # Dutch
+        assert "en" in languages  # English
+
+    def test_available_models(self):
+        """Test available models list."""
+        from app.services.whisper_service import whisper_service
+
+        models = whisper_service.get_available_models()
+        assert isinstance(models, list)
+        assert "tiny" in models
+        assert "base" in models
+        assert "small" in models
+        assert "medium" in models
+        assert "large" in models
+
+    def test_language_code_mapping(self):
+        """Test language name to code mapping."""
+        from app.services.whisper_service import WhisperService
+
+        service = WhisperService(model_size="base", device="cpu")
+
+        # Test full names
+        assert service._map_language_code("spanish") == "es"
+        assert service._map_language_code("italian") == "it"
+        assert service._map_language_code("german") == "de"
+        assert service._map_language_code("french") == "fr"
+        assert service._map_language_code("dutch") == "nl"
+
+        # Test codes (should pass through)
+        assert service._map_language_code("es") == "es"
+        assert service._map_language_code("it") == "it"
+
+        # Test case insensitivity
+        assert service._map_language_code("Spanish") == "es"
+        assert service._map_language_code("FRENCH") == "fr"
