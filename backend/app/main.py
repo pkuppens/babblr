@@ -1,9 +1,11 @@
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from contextlib import asynccontextmanager
+
 from app.config import settings
 from app.database.db import init_db
-from app.routes import conversations, chat, speech, tts
+from app.routes import chat, conversations, speech, tts
 
 
 @asynccontextmanager
@@ -18,7 +20,7 @@ app = FastAPI(
     title="Babblr API",
     description="Language learning app with AI tutor - Backend API",
     version="1.0.0",
-    lifespan=lifespan
+    lifespan=lifespan,
 )
 
 # Configure CORS
@@ -40,11 +42,7 @@ app.include_router(tts.router)
 @app.get("/")
 async def root():
     """Health check endpoint."""
-    return {
-        "status": "ok",
-        "service": "Babblr API",
-        "version": "1.0.0"
-    }
+    return {"status": "ok", "service": "Babblr API", "version": "1.0.0"}
 
 
 @app.get("/health")
@@ -56,27 +54,19 @@ async def health_check():
         "services": {
             "whisper": "loaded",
             "claude": "configured" if settings.anthropic_api_key else "not configured",
-            "tts": "available"
-        }
+            "tts": "available",
+        },
     }
 
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(
-        "main:app",
-        host=settings.host,
-        port=settings.port,
-        reload=True
-    )
+
+    uvicorn.run("main:app", host=settings.host, port=settings.port, reload=True)
 
 
 def main():
     """Entry point for uv script."""
     import uvicorn
-    uvicorn.run(
-        "app.main:app",
-        host=settings.host,
-        port=settings.port,
-        reload=True
-    )
+
+    uvicorn.run("app.main:app", host=settings.host, port=settings.port, reload=True)

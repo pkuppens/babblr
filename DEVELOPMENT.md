@@ -69,6 +69,30 @@ This will:
    PYTHONPATH=$(pwd) python test_backend.py
    ```
 
+## Python Formatting and Linting (Ruff)
+
+The backend uses **Ruff** for formatting and linting. Ruff is installed with the backend dev dependencies:
+
+```bash
+cd backend
+uv pip install -e ".[dev]"
+```
+
+### Enable pre-commit hooks (recommended)
+
+```bash
+cd backend
+uv run pre-commit install
+```
+
+### Run manually
+
+```bash
+cd backend
+uv run ruff format .
+uv run ruff check --fix .
+```
+
 #### Frontend Changes
 
 1. Make your changes in `frontend/src/`

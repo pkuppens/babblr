@@ -3,10 +3,9 @@ Unit tests for Babblr backend.
 Run with: pytest tests/
 """
 
-import pytest
 from app.models.schemas import (
-    ConversationCreate,
     ChatRequest,
+    ConversationCreate,
     TranscriptionRequest,
     TTSRequest,
 )

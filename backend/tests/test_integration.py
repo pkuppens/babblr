@@ -4,9 +4,8 @@ These tests require the backend to be running.
 Run with: pytest tests/test_integration.py
 """
 
-import pytest
 import httpx
-
+import pytest
 
 BASE_URL = "http://localhost:8000"
 

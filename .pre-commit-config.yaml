@@ -1,0 +1,21 @@
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.14.10
+    hooks:
+      - id: ruff
+        args: ["--fix", "--config", "backend/pyproject.toml"]
+        files: ^backend/
+      - id: ruff-format
+        args: ["--config", "backend/pyproject.toml"]
+        files: ^backend/
+
+  - repo: local
+    hooks:
+      - id: pyright
+        name: pyright
+        entry: uv run --directory backend pyright
+        language: system
+        types: [python]
+        files: ^backend/app/
+        pass_filenames: false
+

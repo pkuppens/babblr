@@ -82,7 +82,21 @@ This installs:
 - Anthropic SDK (Claude AI)
 - OpenAI Whisper (speech-to-text)
 - PyTorch (CPU version initially)
-- All dev dependencies (pytest, ruff)
+- All dev dependencies (pytest, ruff, pre-commit)
+
+### 3b. Enable pre-commit hooks (recommended)
+
+```bash
+cd backend
+uv run pre-commit install
+```
+
+Then, before pushing a change, you can also run the hooks manually:
+
+```bash
+cd backend
+uv run pre-commit run --all-files
+```
 
 ### 4. Install PyTorch with CUDA (GPU Acceleration)
 

@@ -7,11 +7,11 @@ Run after starting the backend with: ./run-backend.sh
 Usage: python examples/test_api.py
 """
 
-import requests
 import json
 import sys
 import time
 
+import requests
 
 BASE_URL = "http://localhost:8000"
 
@@ -37,10 +37,7 @@ def test_create_conversation():
     try:
         response = requests.post(
             f"{BASE_URL}/conversations",
-            json={
-                "language": "spanish",
-                "difficulty_level": "beginner"
-            }
+            json={"language": "spanish", "difficulty_level": "beginner"},
         )
         response.raise_for_status()
         conversation = response.json()
@@ -63,19 +60,19 @@ def test_chat(conversation_id):
                 "conversation_id": conversation_id,
                 "user_message": "Hola, ¿cómo estás?",
                 "language": "spanish",
-                "difficulty_level": "beginner"
-            }
+                "difficulty_level": "beginner",
+            },
         )
         response.raise_for_status()
         chat_response = response.json()
-        print(f"✅ Chat response received")
+        print("✅ Chat response received")
         print(f"   Assistant: {chat_response['assistant_message'][:100]}...")
-        if chat_response.get('corrections'):
+        if chat_response.get("corrections"):
             print(f"   Corrections: {len(chat_response['corrections'])} found")
         return True
     except Exception as e:
         print(f"❌ Chat failed: {e}")
-        if hasattr(e, 'response') and e.response is not None:
+        if hasattr(e, "response") and e.response is not None:
             print(f"   Error details: {e.response.text}")
         return False
 
@@ -115,11 +112,7 @@ def test_tts():
     print("\nTesting text-to-speech...")
     try:
         response = requests.post(
-            f"{BASE_URL}/tts/synthesize",
-            json={
-                "text": "Hola",
-                "language": "spanish"
-            }
+            f"{BASE_URL}/tts/synthesize", json={"text": "Hola", "language": "spanish"}
         )
         if response.status_code == 503:
             print("⚠️  TTS not available (edge-tts not installed)")
@@ -138,36 +131,36 @@ def main():
     print("Babblr Backend API Test")
     print("=" * 60)
     print("\nMake sure the backend is running: ./run-backend.sh\n")
-    
+
     time.sleep(1)
-    
+
     # Test 1: Health check
     if not test_health_check():
         print("\n❌ Backend is not responding. Make sure it's running!")
         print("   Start with: ./run-backend.sh")
         sys.exit(1)
-    
+
     # Test 2: Create conversation
     conversation = test_create_conversation()
     if not conversation:
         print("\n❌ Could not create conversation")
         sys.exit(1)
-    
-    conversation_id = conversation['id']
-    
+
+    conversation_id = conversation["id"]
+
     # Test 3: Chat
     if not test_chat(conversation_id):
         print("\n⚠️  Chat test failed. Check if ANTHROPIC_API_KEY is set in backend/.env")
-    
+
     # Test 4: Get messages
     test_get_messages(conversation_id)
-    
+
     # Test 5: List conversations
     test_list_conversations()
-    
+
     # Test 6: TTS (optional)
     test_tts()
-    
+
     print("\n" + "=" * 60)
     print("✨ API tests completed!")
     print("=" * 60)
