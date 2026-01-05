@@ -72,7 +72,7 @@ Response format:
         user_message: str,
         language: str,
         difficulty_level: str,
-        conversation_history: List[Dict[str, str]] = None,
+        conversation_history: List[Dict[str, str]] | None = None,
     ) -> Tuple[str, List[Dict]]:
         """
         Generate a conversational response from the AI tutor.
@@ -112,10 +112,6 @@ Response format:
             return assistant_message, vocabulary_items
         except AuthenticationError as e:
             logger.error(f"Authentication error in generate_response: {e}")
-            raise AuthenticationError(
-                message="Invalid Anthropic API key. Please check your ANTHROPIC_API_KEY in .env file",
-                response=e.response if hasattr(e, "response") else None,
-            )
             raise
         except APIError as e:
             logger.error(f"API error in generate_response: {e}")

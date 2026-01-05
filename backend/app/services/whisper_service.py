@@ -124,6 +124,7 @@ class WhisperService(STTService):
             start_time = time.time()
 
             # Load model
+            assert whisper is not None
             self.model = whisper.load_model(model_size, device=self.device)
 
             load_time = time.time() - start_time
@@ -248,6 +249,9 @@ class WhisperService(STTService):
         Returns:
             TranscriptionResult
         """
+        if self.model is None:
+            raise RuntimeError("Whisper model is not loaded")
+
         options = {}
         if language_code:
             options["language"] = language_code
@@ -316,9 +320,7 @@ class WhisperService(STTService):
 
             # Run conversion in thread pool to avoid blocking
             loop = asyncio.get_event_loop()
-            output_path = await loop.run_in_executor(
-                None, self._do_audio_conversion, audio_path
-            )
+            output_path = await loop.run_in_executor(None, self._do_audio_conversion, audio_path)
 
             logger.info("Audio converted successfully to %s", output_path)
             return output_path
@@ -337,6 +339,9 @@ class WhisperService(STTService):
         Returns:
             Path to converted file
         """
+        if AudioSegment is None:
+            raise RuntimeError("pydub is not installed")
+
         # Load audio
         audio = AudioSegment.from_file(audio_path)
 

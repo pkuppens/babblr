@@ -75,6 +75,16 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
+if command -v git &> /dev/null && git rev-parse --is-inside-work-tree &> /dev/null; then
+    HOOKS_DIR="$(git rev-parse --git-path hooks 2>/dev/null || true)"
+    if [ -n "$HOOKS_DIR" ] && [ ! -f "$HOOKS_DIR/pre-commit" ]; then
+        echo "[SETUP] Installing pre-commit hooks..."
+        uv run pre-commit install || echo "[WARNING] Could not install pre-commit hooks"
+    else
+        echo "[OK] pre-commit hooks already installed"
+    fi
+fi
+
 echo "[OK] Backend setup complete"
 echo ""
 

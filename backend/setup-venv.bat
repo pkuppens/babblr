@@ -67,6 +67,23 @@ if %errorlevel% neq 0 (
 echo [OK] Dependencies installed
 echo.
 
+REM Install pre-commit hooks (idempotent) if this is a git repo
+where git >nul 2>&1
+if %errorlevel% equ 0 (
+    git rev-parse --is-inside-work-tree >nul 2>&1
+    if %errorlevel% equ 0 (
+        for /f "delims=" %%H in ('git rev-parse --git-path hooks 2^>nul') do set "GIT_HOOKS=%%H"
+        if defined GIT_HOOKS (
+            if not exist "%GIT_HOOKS%\pre-commit" (
+                echo [SETUP] Installing pre-commit hooks...
+                uv run pre-commit install 2>nul || echo [WARNING] Could not install pre-commit hooks
+            ) else (
+                echo [OK] pre-commit hooks already installed
+            )
+        )
+    )
+)
+
 REM Verify installation
 echo [INFO] Verifying installation...
 uv run python -c "import fastapi; import whisper; print('[OK] Core dependencies verified')" 2>nul

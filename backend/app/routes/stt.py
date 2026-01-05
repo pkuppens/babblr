@@ -219,7 +219,7 @@ async def get_available_models():
     )
 
 
-async def _save_audio_file(temp_path: str, original_filename: str) -> str:
+async def _save_audio_file(temp_path: str, original_filename: str) -> str | None:
     """
     Save audio file to storage in development mode.
 
@@ -228,7 +228,7 @@ async def _save_audio_file(temp_path: str, original_filename: str) -> str:
         original_filename: Original filename from upload
 
     Returns:
-        Path to saved file
+        Path to saved file, or None if saving failed
     """
     try:
         # Create storage directory if it doesn't exist

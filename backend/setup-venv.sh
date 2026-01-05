@@ -54,6 +54,16 @@ fi
 echo "[OK] Dependencies installed"
 echo ""
 
+if command -v git &> /dev/null && git rev-parse --is-inside-work-tree &> /dev/null; then
+    HOOKS_DIR="$(git rev-parse --git-path hooks 2>/dev/null || true)"
+    if [ -n "$HOOKS_DIR" ] && [ ! -f "$HOOKS_DIR/pre-commit" ]; then
+        echo "[SETUP] Installing pre-commit hooks..."
+        uv run pre-commit install || echo "[WARNING] Could not install pre-commit hooks"
+    else
+        echo "[OK] pre-commit hooks already installed"
+    fi
+fi
+
 # Verify installation
 echo "[INFO] Verifying installation..."
 if uv run python -c "import fastapi; import whisper; print('[OK] Core dependencies verified')" 2>/dev/null; then
