@@ -7,6 +7,7 @@ future replacement with other STT implementations (e.g., cloud-based services).
 """
 
 import asyncio
+import importlib.util
 import logging
 import os
 import time
@@ -26,14 +27,15 @@ except ImportError:
     whisper = None
     torch = None
 
-# Check if pydub is available for audio format conversion
-try:
-    from pydub import AudioSegment
 
-    PYDUB_AVAILABLE = True
-except ImportError:
-    PYDUB_AVAILABLE = False
-    AudioSegment = None
+def _is_pydub_available() -> bool:
+    """Check whether pydub is available without importing it.
+
+    Importing pydub at module import time can emit third-party warnings
+    (e.g., ffmpeg discovery warnings) during unit tests. We keep it lazy
+    and only import it when audio conversion is actually needed.
+    """
+    return importlib.util.find_spec("pydub") is not None
 
 
 class TranscriptionResult:
@@ -308,7 +310,7 @@ class WhisperService(STTService):
             return audio_path
 
         # For other formats, try to convert using pydub
-        if not PYDUB_AVAILABLE:
+        if not _is_pydub_available():
             logger.warning(
                 "pydub not available, cannot convert %s format. Install with: pip install pydub",
                 ext,
@@ -339,8 +341,10 @@ class WhisperService(STTService):
         Returns:
             Path to converted file
         """
-        if AudioSegment is None:
-            raise RuntimeError("pydub is not installed")
+        try:
+            from pydub import AudioSegment
+        except ImportError as e:
+            raise RuntimeError("pydub is not installed") from e
 
         # Load audio
         audio = AudioSegment.from_file(audio_path)
