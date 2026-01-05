@@ -84,11 +84,15 @@ class TestConfig:
 
         assert settings.host == "127.0.0.1"
         assert settings.port == 8000
-        assert settings.claude_model == "claude-3-5-sonnet-20241022"
+        assert settings.claude_model == "claude-sonnet-4-20250514"
         assert settings.whisper_model == "base"
         assert settings.whisper_device == "auto"
         assert settings.development_mode is False
         assert settings.audio_storage_path == "./audio_files"
+        # New LLM provider settings
+        assert settings.llm_provider == "ollama"
+        assert settings.ollama_base_url == "http://localhost:11434"
+        assert settings.ollama_model == "llama3.2:latest"
 
 
 class TestModels:
