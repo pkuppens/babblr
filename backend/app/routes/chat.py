@@ -1,9 +1,8 @@
 import json
 import logging
 from datetime import datetime
-from zoneinfo import ZoneInfo
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
-from anthropic import APIError, AuthenticationError
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -12,7 +11,8 @@ from app.config import settings
 from app.database.db import get_db
 from app.models.models import Conversation, Message
 from app.models.schemas import ChatRequest, ChatResponse
-from app.services.claude_service import claude_service
+from app.services.conversation_service import get_conversation_service
+from app.services.llm.exceptions import LLMAuthenticationError, LLMError, RateLimitError
 
 logger = logging.getLogger(__name__)
 
@@ -46,8 +46,11 @@ async def chat(request: ChatRequest, db: AsyncSession = Depends(get_db)):
 
         conversation_history = [{"role": msg.role, "content": msg.content} for msg in messages]
 
+        # Get conversation service (uses configured provider, defaults to Ollama)
+        conversation_service = get_conversation_service()
+
         # First, correct the user's message if needed
-        corrected_text, corrections = await claude_service.correct_text(
+        corrected_text, corrections = await conversation_service.correct_text(
             request.user_message, request.language, request.difficulty_level
         )
 
@@ -62,7 +65,7 @@ async def chat(request: ChatRequest, db: AsyncSession = Depends(get_db)):
         await db.commit()
 
         # Generate AI response
-        assistant_response, vocabulary_items = await claude_service.generate_response(
+        assistant_response, vocabulary_items = await conversation_service.generate_response(
             corrected_text if corrections else request.user_message,
             request.language,
             request.difficulty_level,
@@ -75,8 +78,21 @@ async def chat(request: ChatRequest, db: AsyncSession = Depends(get_db)):
         )
         db.add(assistant_message)
 
-        # Update conversation timestamp using configured timezone
-        tz = ZoneInfo(settings.babblr_timezone)
+        # Update conversation timestamp using configured timezone.
+        #
+        # On Windows, `zoneinfo` needs the `tzdata` package to resolve IANA timezone
+        # names like "Europe/Amsterdam". If not available (or misconfigured), we
+        # fall back to UTC rather than failing the whole chat request.
+        try:
+            tz = ZoneInfo(settings.timezone)
+        except ZoneInfoNotFoundError:
+            logger.warning(
+                "Invalid/unavailable timezone '%s'; falling back to UTC. "
+                "Tip: on Windows, install the 'tzdata' Python package.",
+                settings.timezone,
+            )
+            tz = ZoneInfo("UTC")
+
         conversation.updated_at = datetime.now(tz).replace(tzinfo=None)
 
         await db.commit()
@@ -89,26 +105,36 @@ async def chat(request: ChatRequest, db: AsyncSession = Depends(get_db)):
             vocabulary_items=vocabulary_items,
         )
 
-    except AuthenticationError as e:
-        # This is *server-to-upstream* authentication (Anthropic), not end-user auth.
+    except LLMAuthenticationError as e:
+        # This is *server-to-upstream* authentication (LLM provider), not end-user auth.
         # Return 503 to avoid confusing the UI with a "you are unauthorized" message.
-        logger.error("Upstream authentication error (Anthropic): %s", str(e))
+        logger.error("LLM authentication error: %s", str(e))
         raise HTTPException(
             status_code=503,
             detail={
                 "error": "llm_authentication_error",
                 "message": "The AI tutor service is not configured (missing/invalid API key).",
-                # Avoid returning full upstream payloads; keep details high-level.
-                "technical_details": "Anthropic authentication failed (invalid API key).",
-                "fix": "Set a valid ANTHROPIC_API_KEY in backend/.env, or switch LLM_PROVIDER to 'ollama' or 'mock'.",
+                "technical_details": str(e),
+                "fix": f"Set a valid API key for {settings.llm_provider} in backend/.env, or switch LLM_PROVIDER to 'ollama' or 'mock'.",
             },
         )
-    except APIError as e:
-        logger.error(f"API error: {e}")
+    except RateLimitError as e:
+        logger.error(f"Rate limit error: {e}")
+        raise HTTPException(
+            status_code=429,
+            detail={
+                "error": "rate_limit_error",
+                "message": "AI service rate limit exceeded. Please try again later.",
+                "technical_details": str(e),
+                "retry_after": getattr(e, "retry_after", 60),
+            },
+        )
+    except LLMError as e:
+        logger.error(f"LLM error: {e}")
         raise HTTPException(
             status_code=503,
             detail={
-                "error": "api_error",
+                "error": "llm_error",
                 "message": "AI service temporarily unavailable",
                 "technical_details": str(e),
             },
