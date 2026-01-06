@@ -1,3 +1,4 @@
+from pydantic import AliasChoices, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -32,13 +33,31 @@ class Settings(BaseSettings):
     # Application settings
     development_mode: bool = False
     audio_storage_path: str = "./audio_files"
-    host: str = "127.0.0.1"
-    port: int = 8000
-    database_url: str = "sqlite+aiosqlite:///./babblr.db"
-    frontend_url: str = "http://localhost:3000"
-    timezone: str = "Europe/Amsterdam"
+    host: str = Field(
+        default="127.0.0.1",
+        validation_alias=AliasChoices("host", "babblr_api_host"),
+    )
+    port: int = Field(
+        default=8000,
+        validation_alias=AliasChoices("port", "babblr_api_port"),
+    )
+    database_url: str = Field(
+        default="sqlite+aiosqlite:///./babblr.db",
+        validation_alias=AliasChoices("database_url", "babblr_conversation_database_url"),
+    )
+    frontend_url: str = Field(
+        default="http://localhost:3000",
+        validation_alias=AliasChoices("frontend_url", "babblr_frontend_url"),
+    )
+    timezone: str = Field(
+        default="Europe/Amsterdam",
+        validation_alias=AliasChoices("timezone", "babblr_timezone"),
+    )
 
-    model_config = SettingsConfigDict(env_file=".env", case_sensitive=False)
+    # Note: `pydantic-settings` loads all `.env` keys and then validates them.
+    # We intentionally ignore unknown keys to avoid breaking startup when `.env`
+    # contains variables for other components or older configuration names.
+    model_config = SettingsConfigDict(env_file=".env", case_sensitive=False, extra="ignore")
 
 
 settings = Settings()

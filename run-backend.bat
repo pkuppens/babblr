@@ -1,16 +1,24 @@
 @echo off
+setlocal EnableExtensions EnableDelayedExpansion
 REM Start backend server using uv (Windows)
 
 REM Get script directory
 set "SCRIPT_DIR=%~dp0"
-set "BACKEND_DIR=%SCRIPT_DIR%backend"
+set "PROJECT_ROOT=%SCRIPT_DIR%"
+set "BACKEND_DIR=%PROJECT_ROOT%backend"
 
-REM Change to backend directory
-cd /d "%BACKEND_DIR%"
+REM Add project root to PATH (idempotent)
+set "PATH_CHECK=;!PATH!;"
+set "ROOT_TOKEN=;!PROJECT_ROOT!;"
+if "!PATH_CHECK:%ROOT_TOKEN%=!"=="!PATH_CHECK!" (
+    set "PATH=!PROJECT_ROOT!;!PATH!"
+)
+
+REM Change to backend directory (idempotent) and remember where we came from
+pushd "%BACKEND_DIR%"
 if %errorlevel% neq 0 (
     echo [ERROR] Cannot access backend directory: %BACKEND_DIR%
-    pause
-    exit /b 1
+    goto :cleanup_fail
 )
 
 REM Unset VIRTUAL_ENV if it points to a different location (e.g., root .venv)
@@ -70,5 +78,14 @@ if %errorlevel% equ 0 (
     python main.py
 )
 
+:cleanup_ok
+popd
 pause
+endlocal
+exit /b 0
 
+:cleanup_fail
+popd
+pause
+endlocal
+exit /b 1
