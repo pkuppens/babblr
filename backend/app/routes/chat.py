@@ -90,14 +90,17 @@ async def chat(request: ChatRequest, db: AsyncSession = Depends(get_db)):
         )
 
     except AuthenticationError as e:
-        logger.error(f"Authentication error: {e}")
+        # This is *server-to-upstream* authentication (Anthropic), not end-user auth.
+        # Return 503 to avoid confusing the UI with a "you are unauthorized" message.
+        logger.error("Upstream authentication error (Anthropic): %s", str(e))
         raise HTTPException(
-            status_code=401,
+            status_code=503,
             detail={
-                "error": "authentication_error",
-                "message": "Invalid Anthropic API key configured on the server",
-                "technical_details": str(e),
-                "fix": "Server admin needs to set valid ANTHROPIC_API_KEY in .env file",
+                "error": "llm_authentication_error",
+                "message": "The AI tutor service is not configured (missing/invalid API key).",
+                # Avoid returning full upstream payloads; keep details high-level.
+                "technical_details": "Anthropic authentication failed (invalid API key).",
+                "fix": "Set a valid ANTHROPIC_API_KEY in backend/.env, or switch LLM_PROVIDER to 'ollama' or 'mock'.",
             },
         )
     except APIError as e:

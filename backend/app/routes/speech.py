@@ -100,14 +100,54 @@ async def transcribe_audio(
             corrections=None,  # Corrections will be done in chat endpoint
         )
 
-    except Exception as e:
+    except FileNotFoundError as e:
+        # On Windows, Whisper relies on FFmpeg for decoding audio. If ffmpeg/ffprobe
+        # is missing from PATH, this typically surfaces as FileNotFoundError.
         logger.error(
-            "Transcription failed: conversation_id=%s, error=%s",
+            "Transcription failed (missing dependency): conversation_id=%s, error=%s",
             conversation_id,
             str(e),
             exc_info=True,
         )
-        raise HTTPException(status_code=500, detail=f"Transcription failed: {str(e)}")
+        raise HTTPException(
+            status_code=503,
+            detail={
+                "error": "stt_dependency_missing",
+                "message": "Speech transcription requires FFmpeg on this machine.",
+                "technical_details": str(e),
+                "fix": "Install FFmpeg and ensure 'ffmpeg' and 'ffprobe' are available in PATH, then restart the backend.",
+            },
+        )
+    except Exception as e:
+        error_text = str(e)
+        logger.error(
+            "Transcription failed: conversation_id=%s, error=%s",
+            conversation_id,
+            error_text,
+            exc_info=True,
+        )
+
+        # Heuristic: missing ffmpeg sometimes bubbles up as a generic exception string.
+        if "ffmpeg" in error_text.lower() or "ffprobe" in error_text.lower():
+            raise HTTPException(
+                status_code=503,
+                detail={
+                    "error": "stt_dependency_missing",
+                    "message": "Speech transcription requires FFmpeg on this machine.",
+                    "technical_details": error_text,
+                    "fix": "Install FFmpeg and ensure 'ffmpeg' and 'ffprobe' are available in PATH, then restart the backend.",
+                },
+            )
+
+        raise HTTPException(
+            status_code=500,
+            detail={
+                "error": "stt_failed",
+                "message": "Speech transcription failed on the server.",
+                "technical_details": error_text,
+                "fix": "Check backend logs for details. If this persists, try a shorter recording or a different audio input device.",
+            },
+        )
 
     finally:
         # Clean up temp file

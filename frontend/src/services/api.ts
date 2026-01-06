@@ -85,7 +85,13 @@ export const chatService = {
     language: string,
     difficulty_level: string
   ): Promise<ChatResponse> {
-    console.log('[Chat] Sending message:', { conversation_id, user_message, language, difficulty_level });
+    // Avoid logging raw user messages to reduce accidental sensitive-data exposure.
+    console.log('[Chat] Sending message:', {
+      conversation_id,
+      language,
+      difficulty_level,
+      messageLength: user_message.length,
+    });
     try {
       const response = await api.post('/chat', {
         conversation_id,
