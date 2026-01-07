@@ -197,7 +197,7 @@ Want to test the backend API directly?
 ./run-backend.sh
 
 # In another terminal:
-python examples/test_api.py
+python backend/tests/manual_api_check.py
 ```
 
 ## What's Next?
@@ -245,7 +245,7 @@ rm backend/babblr.db
 # http://localhost:8000/docs
 
 # Test backend
-python examples/test_api.py
+python backend/tests/manual_api_check.py
 ```
 
 ## Need Help?
