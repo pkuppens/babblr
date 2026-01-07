@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef } from 'react';
 
 interface RetryOptions {
   maxRetries?: number;
@@ -6,8 +6,23 @@ interface RetryOptions {
   maxDelay?: number;
 }
 
-export const useRetry = (
-  operation: (...args: any[]) => Promise<any>,
+type HttpErrorLike = {
+  response?: {
+    status?: number;
+  };
+};
+
+function isHttpErrorLike(error: unknown): error is HttpErrorLike {
+  return typeof error === 'object' && error !== null && 'response' in error;
+}
+
+function toError(error: unknown): Error {
+  if (error instanceof Error) return error;
+  return new Error(typeof error === 'string' ? error : 'Unknown error');
+}
+
+export const useRetry = <Args extends unknown[], Result>(
+  operation: (...args: Args) => Promise<Result>,
   options: RetryOptions = {}
 ) => {
   const { maxRetries = 3, initialDelay = 1000, maxDelay = 10000 } = options;
@@ -18,7 +33,7 @@ export const useRetry = (
   const cancelRef = useRef(false);
 
   const execute = useCallback(
-    async (...args: any[]) => {
+    async (...args: Args): Promise<Result> => {
       setError(null);
       cancelRef.current = false;
       let currentDelay = initialDelay;
@@ -33,8 +48,8 @@ export const useRetry = (
           const result = await operation(...args);
           setIsRetrying(false);
           return result;
-        } catch (err: any) {
-          setError(err);
+        } catch (err: unknown) {
+          setError(toError(err));
 
           if (i === maxRetries || !shouldRetry(err) || cancelRef.current) {
             setIsRetrying(false);
@@ -42,7 +57,7 @@ export const useRetry = (
           }
 
           // Exponential backoff
-          await new Promise((resolve) => setTimeout(resolve, currentDelay));
+          await new Promise(resolve => setTimeout(resolve, currentDelay));
           currentDelay = Math.min(currentDelay * 2, maxDelay);
         }
       }
@@ -58,9 +73,9 @@ export const useRetry = (
   return { execute, isRetrying, retryCount, error, cancel };
 };
 
-function shouldRetry(error: any): boolean {
+function shouldRetry(error: unknown): boolean {
   // Retry on network errors or specific status codes (429, 503, 504)
-  if (!error.response) return true;
+  if (!isHttpErrorLike(error) || !error.response) return true;
   const status = error.response.status;
   return [429, 503, 504].includes(status);
 }

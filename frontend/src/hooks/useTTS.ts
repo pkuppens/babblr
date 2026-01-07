@@ -66,7 +66,7 @@ function selectVoicesForLanguage(
   const base = getBaseLanguageTag(targetBCP47);
   if (!base) return [];
 
-  const matches = allVoices.filter((v) => getBaseLanguageTag(v.lang) === base);
+  const matches = allVoices.filter(v => getBaseLanguageTag(v.lang) === base);
   return matches.sort((a, b) => rankVoice(b) - rankVoice(a));
 }
 
@@ -94,7 +94,7 @@ export function useTTS(): UseTTS {
       try {
         const list = synth.getVoices();
         setVoices(list);
-      } catch (e) {
+      } catch {
         setVoices([]);
       }
     };
@@ -157,7 +157,7 @@ export function useTTS(): UseTTS {
 
       const candidates = selectVoicesForLanguage(voices, utterance.lang);
       const preferred = config.voiceURI
-        ? voices.find((v) => v.voiceURI === config.voiceURI)
+        ? voices.find(v => v.voiceURI === config.voiceURI)
         : undefined;
       utterance.voice = preferred ?? candidates[0] ?? null;
 
@@ -170,7 +170,7 @@ export function useTTS(): UseTTS {
         setIsPaused(false);
         activeUtteranceRef.current = null;
       };
-      utterance.onerror = (event) => {
+      utterance.onerror = event => {
         setIsSpeaking(false);
         setIsPaused(false);
         activeUtteranceRef.current = null;
@@ -197,5 +197,3 @@ export function useTTS(): UseTTS {
     lastError,
   };
 }
-
-

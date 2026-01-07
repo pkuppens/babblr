@@ -20,25 +20,29 @@ const STARTER_MESSAGES: Record<string, Record<StarterTier, string>> = {
   },
   italian: {
     beginner: 'Ciao! Sono il tuo tutor di italiano.\nCome ti chiami? Di dove sei?',
-    intermediate: 'Ciao! Sono il tuo tutor di italiano.\nRaccontami la tua giornata. Che cosa hai fatto oggi?',
+    intermediate:
+      'Ciao! Sono il tuo tutor di italiano.\nRaccontami la tua giornata. Che cosa hai fatto oggi?',
     advanced:
       "Ciao. Sono il tuo tutor di italiano.\nDiscutiamo un tema attuale: qual è, secondo te, l'impatto della tecnologia sulla vita quotidiana?",
   },
   german: {
     beginner: 'Hallo! Ich bin dein Deutsch-Tutor.\nWie heißt du? Woher kommst du?',
-    intermediate: 'Hallo! Ich bin dein Deutsch-Tutor.\nErzähl mir von deinem Tag. Was hast du heute gemacht?',
+    intermediate:
+      'Hallo! Ich bin dein Deutsch-Tutor.\nErzähl mir von deinem Tag. Was hast du heute gemacht?',
     advanced:
       'Hallo. Ich bin dein Deutsch-Tutor.\nLass uns über ein aktuelles Thema sprechen: Wie beeinflusst Technologie unser tägliches Leben?',
   },
   french: {
     beginner: "Bonjour ! Je suis ton tuteur de français.\nComment t'appelles-tu ? D'où viens-tu ?",
-    intermediate: "Bonjour ! Je suis ton tuteur de français.\nParle-moi de ta journée. Qu'as-tu fait aujourd'hui ?",
+    intermediate:
+      "Bonjour ! Je suis ton tuteur de français.\nParle-moi de ta journée. Qu'as-tu fait aujourd'hui ?",
     advanced:
       "Bonjour. Je suis ton tuteur de français.\nDiscutons d'un sujet actuel : quel est, selon toi, l'impact de la technologie sur la vie quotidienne ?",
   },
   dutch: {
     beginner: 'Hoi! Ik ben je docent Nederlands.\nHoe heet je? Waar kom je vandaan?',
-    intermediate: 'Hoi! Ik ben je docent Nederlands.\nVertel me over je dag. Wat heb je vandaag gedaan?',
+    intermediate:
+      'Hoi! Ik ben je docent Nederlands.\nVertel me over je dag. Wat heb je vandaag gedaan?',
     advanced:
       'Hoi. Ik ben je docent Nederlands.\nLaten we een actueel onderwerp bespreken: wat vind jij van de invloed van technologie op het dagelijks leven?',
   },
@@ -54,5 +58,3 @@ export function getStarterMessage(language: string, level: string): string {
   // Fallback: keep it simple and safe if a new language is added later.
   return 'Hello! I am your language tutor.\nIntroduce yourself and ask me a question.';
 }
-
-

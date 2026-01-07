@@ -45,5 +45,3 @@ export function sanitizeTtsText(input: string): string {
 
   return text;
 }
-
-

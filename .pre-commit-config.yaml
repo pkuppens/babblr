@@ -36,3 +36,20 @@ repos:
         files: ^backend/app/
         pass_filenames: false
 
+  # Frontend formatting/linting (TypeScript/React)
+  - repo: local
+    hooks:
+      - id: frontend-prettier
+        name: frontend-prettier
+        entry: bash -lc "npm --prefix frontend run format"
+        language: system
+        files: ^frontend/src/.*\.(ts|tsx|js|jsx|json|css)$
+        pass_filenames: false
+
+      - id: frontend-eslint
+        name: frontend-eslint
+        entry: bash -lc "npm --prefix frontend run lint:fix"
+        language: system
+        files: ^frontend/src/.*\.(ts|tsx|js|jsx)$
+        pass_filenames: false
+

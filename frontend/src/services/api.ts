@@ -1,11 +1,11 @@
 import axios from 'axios';
 import { handleError } from '../utils/errorHandler';
-import type { 
-  Conversation, 
-  Message, 
-  ChatResponse, 
+import type {
+  Conversation,
+  Message,
+  ChatResponse,
   TranscriptionResponse,
-  VocabularyItem 
+  VocabularyItem,
 } from '../types';
 
 const API_BASE_URL = 'http://localhost:8000';
@@ -121,7 +121,7 @@ export const speechService = {
       blobSize: audioBlob.size,
       blobType: audioBlob.type,
     });
-    
+
     try {
       const formData = new FormData();
       formData.append('audio', audioBlob, 'recording.webm');
@@ -135,7 +135,7 @@ export const speechService = {
           },
         }
       );
-      
+
       console.log('[Speech] Transcription response:', response.data);
       return response.data;
     } catch (error) {

@@ -75,17 +75,14 @@ function App() {
             <ConversationList
               conversations={conversations}
               onSelect={handleSelectConversation}
-              onDelete={async (id) => {
+              onDelete={async id => {
                 await conversationService.delete(id);
                 await loadConversations();
               }}
             />
           </div>
         ) : currentConversation ? (
-          <ConversationInterface
-            conversation={currentConversation}
-            onBack={handleBackToHome}
-          />
+          <ConversationInterface conversation={currentConversation} onBack={handleBackToHome} />
         ) : null}
       </main>
 

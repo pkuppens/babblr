@@ -85,6 +85,7 @@ asyncio_mode = "auto"
 pythonpath = ["."]
 markers = [
     "asyncio: mark a test as using asyncio (provided by pytest-asyncio)",
+    "integration: mark a test as an integration test (may require a running backend server)",
 ]
 
 [tool.ruff]

@@ -1,6 +1,6 @@
-import { Component, ErrorInfo, ReactNode } from "react";
-import { AlertTriangle, RefreshCcw, Copy, Check } from "lucide-react";
-import "./ErrorBoundary.css";
+import { Component, ErrorInfo, ReactNode } from 'react';
+import { AlertTriangle, RefreshCcw, Copy, Check } from 'lucide-react';
+import './ErrorBoundary.css';
 
 interface Props {
   children?: ReactNode;
@@ -24,7 +24,7 @@ class ErrorBoundary extends Component<Props, State> {
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error("Uncaught error:", error, errorInfo);
+    console.error('Uncaught error:', error, errorInfo);
   }
 
   private handleReset = () => {
@@ -34,9 +34,7 @@ class ErrorBoundary extends Component<Props, State> {
 
   private copyToClipboard = () => {
     if (this.state.error) {
-      navigator.clipboard.writeText(
-        this.state.error.stack || this.state.error.message
-      );
+      navigator.clipboard.writeText(this.state.error.stack || this.state.error.message);
       this.setState({ copied: true });
       setTimeout(() => this.setState({ copied: false }), 2000);
     }
@@ -51,10 +49,7 @@ class ErrorBoundary extends Component<Props, State> {
               <AlertTriangle size={48} color="#ef4444" />
             </div>
             <h1>Something went wrong</h1>
-            <p>
-              We've encountered an unexpected error. Don't worry, your data is
-              safe.
-            </p>
+            <p>We've encountered an unexpected error. Don't worry, your data is safe.</p>
 
             <div className="error-details">
               <pre>{this.state.error?.message}</pre>
@@ -67,13 +62,12 @@ class ErrorBoundary extends Component<Props, State> {
               </button>
               <button onClick={this.copyToClipboard} className="btn-secondary">
                 {this.state.copied ? <Check size={18} /> : <Copy size={18} />}
-                {this.state.copied ? "Copied!" : "Copy Error Text"}
+                {this.state.copied ? 'Copied!' : 'Copy Error Text'}
               </button>
             </div>
 
             <p className="support-hint">
-              If the problem persists, please contact support and include the
-              error text.
+              If the problem persists, please contact support and include the error text.
             </p>
           </div>
         </div>

@@ -1,0 +1,5 @@
+* text=auto
+
+# Bash scripts must use LF, otherwise Git Bash/pre-commit can fail on Windows.
+*.sh text eol=lf
+

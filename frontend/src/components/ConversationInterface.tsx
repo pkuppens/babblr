@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect, useRef } from 'react';
+import React, { useCallback, useMemo, useState, useEffect, useRef } from 'react';
 import type { Conversation, Message, Correction } from '../types';
 import { conversationService, chatService, speechService } from '../services/api';
 import AudioRecorder from './AudioRecorder';
@@ -14,10 +14,7 @@ interface ConversationInterfaceProps {
   onBack: () => void;
 }
 
-const ConversationInterface: React.FC<ConversationInterfaceProps> = ({
-  conversation,
-  onBack,
-}) => {
+const ConversationInterface: React.FC<ConversationInterfaceProps> = ({ conversation, onBack }) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -49,7 +46,9 @@ const ConversationInterface: React.FC<ConversationInterfaceProps> = ({
     [conversation.language]
   );
 
-  const [ttsRate, setTtsRate] = useState<number>(() => getDefaultTtsRateForLevel(conversation.difficulty_level));
+  const [ttsRate, setTtsRate] = useState<number>(() =>
+    getDefaultTtsRateForLevel(conversation.difficulty_level)
+  );
   const [ttsRateCustomized, setTtsRateCustomized] = useState<boolean>(false);
   const [ttsAutoPlay, setTtsAutoPlay] = useState<boolean>(() => {
     if (typeof window === 'undefined') return false;
@@ -60,9 +59,22 @@ const ConversationInterface: React.FC<ConversationInterfaceProps> = ({
     return window.localStorage.getItem(voiceStorageKey);
   });
 
+  const scrollToBottom = useCallback(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, []);
+
+  const loadMessages = useCallback(async () => {
+    try {
+      const msgs = await conversationService.getMessages(conversation.id);
+      setMessages(msgs);
+    } catch (error) {
+      console.error('Failed to load messages:', error);
+    }
+  }, [conversation.id]);
+
   useEffect(() => {
     loadMessages();
-  }, [conversation.id]);
+  }, [loadMessages]);
 
   useEffect(() => {
     // Load TTS rate per CEFR level.
@@ -114,7 +126,7 @@ const ConversationInterface: React.FC<ConversationInterfaceProps> = ({
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);
+  }, [messages, scrollToBottom]);
 
   useEffect(() => {
     // Load voice preference per language (rate/autoplay are global).
@@ -125,12 +137,12 @@ const ConversationInterface: React.FC<ConversationInterfaceProps> = ({
   useEffect(() => {
     if (typeof window === 'undefined') return;
     window.localStorage.setItem(rateStorageKey, String(ttsRate));
-  }, [ttsRate]);
+  }, [rateStorageKey, ttsRate]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
     window.localStorage.setItem(rateCustomizedStorageKey, String(ttsRateCustomized));
-  }, [ttsRateCustomized]);
+  }, [rateCustomizedStorageKey, ttsRateCustomized]);
 
   useEffect(() => {
     // Apply level-based default rate unless the user customized it.
@@ -162,7 +174,7 @@ const ConversationInterface: React.FC<ConversationInterfaceProps> = ({
     if (!supported || !ttsAutoPlay) return;
     if (isSpeaking) return;
 
-    const lastAssistant = [...messages].reverse().find((m) => m.role === 'assistant');
+    const lastAssistant = [...messages].reverse().find(m => m.role === 'assistant');
     if (!lastAssistant) return;
 
     if (lastAutoPlayedAssistantId !== null && lastAssistant.id <= lastAutoPlayedAssistantId) {
@@ -210,19 +222,6 @@ const ConversationInterface: React.FC<ConversationInterfaceProps> = ({
     }),
     [conversation.id, conversation.language, conversation.difficulty_level, conversation.created_at]
   );
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
-
-  const loadMessages = async () => {
-    try {
-      const msgs = await conversationService.getMessages(conversation.id);
-      setMessages(msgs);
-    } catch (error) {
-      console.error('Failed to load messages:', error);
-    }
-  };
 
   const handleSendMessage = async (text: string) => {
     if (!text.trim() || isLoading) return;
@@ -283,7 +282,9 @@ const ConversationInterface: React.FC<ConversationInterfaceProps> = ({
           </button>
           <div className="conversation-info">
             <h2>{conversation.language}</h2>
-            <span className="difficulty-badge">{formatLevelLabel(conversation.difficulty_level)}</span>
+            <span className="difficulty-badge">
+              {formatLevelLabel(conversation.difficulty_level)}
+            </span>
           </div>
         </div>
 
@@ -315,7 +316,7 @@ const ConversationInterface: React.FC<ConversationInterfaceProps> = ({
             ttsSupported={supported}
             isSpeaking={isSpeaking}
             isActive={activeMessageId === starterMessage.id}
-            onPlay={(textToSpeak) => {
+            onPlay={textToSpeak => {
               setActiveMessageId(starterMessage.id);
               speak(textToSpeak, {
                 language: conversation.language,
@@ -326,14 +327,14 @@ const ConversationInterface: React.FC<ConversationInterfaceProps> = ({
             }}
           />
         ) : (
-          messages.map((message) => (
+          messages.map(message => (
             <MessageBubble
               key={message.id}
               message={message}
               ttsSupported={supported}
               isSpeaking={isSpeaking}
               isActive={activeMessageId === message.id}
-              onPlay={(textToSpeak) => {
+              onPlay={textToSpeak => {
                 setActiveMessageId(message.id);
                 speak(textToSpeak, {
                   language: conversation.language,
@@ -375,18 +376,15 @@ const ConversationInterface: React.FC<ConversationInterfaceProps> = ({
       )}
 
       <div className="input-container">
-        <AudioRecorder
-          onSubmit={handleVoiceRecording}
-          disabled={isLoading}
-        />
-        
+        <AudioRecorder onSubmit={handleVoiceRecording} disabled={isLoading} />
+
         <input
           type="text"
           className="message-input"
           placeholder="Type your message or use voice..."
           value={inputText}
-          onChange={(e) => setInputText(e.target.value)}
-          onKeyPress={(e) => {
+          onChange={e => setInputText(e.target.value)}
+          onKeyPress={e => {
             if (e.key === 'Enter' && !e.shiftKey) {
               e.preventDefault();
               handleSendMessage(inputText);
@@ -394,7 +392,7 @@ const ConversationInterface: React.FC<ConversationInterfaceProps> = ({
           }}
           disabled={isLoading}
         />
-        
+
         <button
           className="send-button"
           onClick={() => handleSendMessage(inputText)}

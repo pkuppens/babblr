@@ -38,11 +38,11 @@ function Settings({ isOpen, onClose }: SettingsProps) {
     try {
       const settings = await settingsService.loadSettings();
       setLlmProvider(settings.llmProvider);
-      
+
       // Check if keys exist but don't show them for security
       setHasAnthropicKey(!!settings.anthropicApiKey);
       setHasGoogleKey(!!settings.googleApiKey);
-      
+
       // Show masked keys
       if (settings.anthropicApiKey) {
         setAnthropicApiKey(maskApiKey(settings.anthropicApiKey));
@@ -178,11 +178,12 @@ function Settings({ isOpen, onClose }: SettingsProps) {
           <div className="settings-section">
             <h3>LLM Provider</h3>
             <p className="settings-description">
-              Choose which AI provider to use for conversations. Ollama runs locally and requires no API key.
+              Choose which AI provider to use for conversations. Ollama runs locally and requires no
+              API key.
             </p>
             <select
               value={llmProvider}
-              onChange={(e) => setLlmProvider(e.target.value as LLMProvider)}
+              onChange={e => setLlmProvider(e.target.value as LLMProvider)}
               className="settings-select"
             >
               <option value="ollama">Ollama (Local - No API Key Required)</option>
@@ -198,7 +199,11 @@ function Settings({ isOpen, onClose }: SettingsProps) {
               <h3>Anthropic API Key</h3>
               <p className="settings-description">
                 Get your API key from{' '}
-                <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener noreferrer">
+                <a
+                  href="https://console.anthropic.com/settings/keys"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
                   Anthropic Console
                 </a>
               </p>
@@ -207,7 +212,7 @@ function Settings({ isOpen, onClose }: SettingsProps) {
                   <input
                     type={showAnthropicKey ? 'text' : 'password'}
                     value={anthropicApiKey}
-                    onChange={(e) => {
+                    onChange={e => {
                       setAnthropicApiKey(e.target.value);
                       setIsAnthropicKeyMasked(false);
                     }}
@@ -255,7 +260,11 @@ function Settings({ isOpen, onClose }: SettingsProps) {
               <h3>Google API Key</h3>
               <p className="settings-description">
                 Get your API key from{' '}
-                <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer">
+                <a
+                  href="https://aistudio.google.com/app/apikey"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
                   Google AI Studio
                 </a>
               </p>
@@ -264,7 +273,7 @@ function Settings({ isOpen, onClose }: SettingsProps) {
                   <input
                     type={showGoogleKey ? 'text' : 'password'}
                     value={googleApiKey}
-                    onChange={(e) => {
+                    onChange={e => {
                       setGoogleApiKey(e.target.value);
                       setIsGoogleKeyMasked(false);
                     }}
@@ -314,8 +323,8 @@ function Settings({ isOpen, onClose }: SettingsProps) {
                 <div>
                   <h4>Using Ollama (Local AI)</h4>
                   <p>
-                    Ollama runs AI models locally on your computer. No API key needed!
-                    Make sure Ollama is installed and running on <code>http://localhost:11434</code>
+                    Ollama runs AI models locally on your computer. No API key needed! Make sure
+                    Ollama is installed and running on <code>http://localhost:11434</code>
                   </p>
                   <p>
                     <a href="https://ollama.com/" target="_blank" rel="noopener noreferrer">

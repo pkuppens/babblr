@@ -36,26 +36,26 @@ const MAX_DURATION = 60; // 60 seconds max recording
 
 /**
  * Custom hook for audio recording using MediaRecorder API
- * 
+ *
  * Features:
  * - Records audio from user's microphone
  * - Tracks recording duration
  * - Auto-stops at maximum duration (60 seconds)
  * - Provides audio analyser for waveform visualization
  * - Handles errors and permissions
- * 
+ *
  * @returns {UseAudioRecorder} Audio recorder interface
- * 
+ *
  * @example
  * ```tsx
  * const { state, startRecording, stopRecording, clearRecording } = useAudioRecorder();
- * 
+ *
  * // Start recording
  * await startRecording();
- * 
+ *
  * // Stop recording
  * stopRecording();
- * 
+ *
  * // Access recorded audio
  * if (state.audioBlob) {
  *   // Send to server or play back
@@ -85,7 +85,7 @@ export function useAudioRecorder(): UseAudioRecorder {
   const cleanup = useCallback(() => {
     // Stop all tracks in the media stream
     if (streamRef.current) {
-      streamRef.current.getTracks().forEach((track) => track.stop());
+      streamRef.current.getTracks().forEach(track => track.stop());
       streamRef.current = null;
     }
 
@@ -109,10 +109,10 @@ export function useAudioRecorder(): UseAudioRecorder {
    */
   const startRecording = useCallback(async () => {
     console.log('[AudioRecorder] Starting audio recording');
-    
+
     try {
       // Reset state
-      setState((prev) => ({
+      setState(prev => ({
         ...prev,
         status: 'recording',
         duration: 0,
@@ -122,12 +122,12 @@ export function useAudioRecorder(): UseAudioRecorder {
       }));
 
       // Request microphone access
-      const stream = await navigator.mediaDevices.getUserMedia({ 
+      const stream = await navigator.mediaDevices.getUserMedia({
         audio: {
           echoCancellation: true,
           noiseSuppression: true,
           autoGainControl: true,
-        }
+        },
       });
       streamRef.current = stream;
 
@@ -136,15 +136,13 @@ export function useAudioRecorder(): UseAudioRecorder {
       analyserRef.current = audioContextRef.current.createAnalyser();
       analyserRef.current.fftSize = 2048;
       analyserRef.current.smoothingTimeConstant = 0.8;
-      
+
       const source = audioContextRef.current.createMediaStreamSource(stream);
       source.connect(analyserRef.current);
 
       // Initialize media recorder
-      const mimeType = MediaRecorder.isTypeSupported('audio/webm')
-        ? 'audio/webm'
-        : 'audio/mp4';
-      
+      const mimeType = MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : 'audio/mp4';
+
       const mediaRecorder = new MediaRecorder(stream, {
         mimeType,
       });
@@ -152,7 +150,7 @@ export function useAudioRecorder(): UseAudioRecorder {
       chunksRef.current = [];
 
       // Handle data available event
-      mediaRecorder.ondataavailable = (event) => {
+      mediaRecorder.ondataavailable = event => {
         if (event.data.size > 0) {
           chunksRef.current.push(event.data);
         }
@@ -162,10 +160,10 @@ export function useAudioRecorder(): UseAudioRecorder {
       mediaRecorder.onstop = () => {
         const audioBlob = new Blob(chunksRef.current, { type: mimeType });
         const audioUrl = URL.createObjectURL(audioBlob);
-        
+
         console.log('[AudioRecorder] Recording stopped, blob size:', audioBlob.size, 'bytes');
-        
-        setState((prev) => ({
+
+        setState(prev => ({
           ...prev,
           status: 'stopped',
           audioBlob,
@@ -182,8 +180,8 @@ export function useAudioRecorder(): UseAudioRecorder {
       // Start duration timer
       timerRef.current = window.setInterval(() => {
         const elapsed = (Date.now() - startTimeRef.current) / 1000;
-        
-        setState((prev) => ({
+
+        setState(prev => ({
           ...prev,
           duration: elapsed,
         }));
@@ -198,12 +196,13 @@ export function useAudioRecorder(): UseAudioRecorder {
       console.log('[AudioRecorder] Recording started successfully');
     } catch (error) {
       console.error('[AudioRecorder] Failed to start recording:', error);
-      
+
       let errorMessage = 'Failed to access microphone';
-      
+
       if (error instanceof Error) {
         if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
-          errorMessage = 'Microphone permission denied. Please allow access in your browser settings.';
+          errorMessage =
+            'Microphone permission denied. Please allow access in your browser settings.';
         } else if (error.name === 'NotFoundError' || error.name === 'DevicesNotFoundError') {
           errorMessage = 'No microphone found. Please connect a microphone and try again.';
         } else if (error.name === 'NotReadableError' || error.name === 'TrackStartError') {
@@ -213,7 +212,7 @@ export function useAudioRecorder(): UseAudioRecorder {
         }
       }
 
-      setState((prev) => ({
+      setState(prev => ({
         ...prev,
         status: 'error',
         error: errorMessage,
@@ -228,7 +227,7 @@ export function useAudioRecorder(): UseAudioRecorder {
    */
   const stopRecording = useCallback(() => {
     console.log('[AudioRecorder] Stopping audio recording');
-    
+
     if (mediaRecorderRef.current && state.status === 'recording') {
       mediaRecorderRef.current.stop();
     }
@@ -239,7 +238,7 @@ export function useAudioRecorder(): UseAudioRecorder {
    */
   const clearRecording = useCallback(() => {
     console.log('[AudioRecorder] Clearing recording');
-    
+
     // Revoke the object URL to free memory
     if (state.audioUrl) {
       URL.revokeObjectURL(state.audioUrl);

@@ -24,13 +24,14 @@ class SettingsService {
   async saveApiKey(provider: 'anthropic' | 'google', apiKey: string): Promise<void> {
     try {
       const encrypted = await encrypt(apiKey);
-      const key = provider === 'anthropic' 
-        ? SETTINGS_KEYS.ANTHROPIC_API_KEY 
-        : SETTINGS_KEYS.GOOGLE_API_KEY;
+      const key =
+        provider === 'anthropic' ? SETTINGS_KEYS.ANTHROPIC_API_KEY : SETTINGS_KEYS.GOOGLE_API_KEY;
       localStorage.setItem(key, encrypted);
     } catch (error) {
       console.error(`Failed to save ${provider} API key:`, error);
-      throw new Error(`Failed to save API key: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Failed to save API key: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 
@@ -39,11 +40,10 @@ class SettingsService {
    */
   async loadApiKey(provider: 'anthropic' | 'google'): Promise<string | null> {
     try {
-      const key = provider === 'anthropic' 
-        ? SETTINGS_KEYS.ANTHROPIC_API_KEY 
-        : SETTINGS_KEYS.GOOGLE_API_KEY;
+      const key =
+        provider === 'anthropic' ? SETTINGS_KEYS.ANTHROPIC_API_KEY : SETTINGS_KEYS.GOOGLE_API_KEY;
       const encrypted = localStorage.getItem(key);
-      
+
       if (!encrypted) {
         return null;
       }
@@ -61,9 +61,8 @@ class SettingsService {
    * Remove API key from storage
    */
   removeApiKey(provider: 'anthropic' | 'google'): void {
-    const key = provider === 'anthropic' 
-      ? SETTINGS_KEYS.ANTHROPIC_API_KEY 
-      : SETTINGS_KEYS.GOOGLE_API_KEY;
+    const key =
+      provider === 'anthropic' ? SETTINGS_KEYS.ANTHROPIC_API_KEY : SETTINGS_KEYS.GOOGLE_API_KEY;
     localStorage.removeItem(key);
   }
 

@@ -24,7 +24,7 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
       mediaRecorderRef.current = mediaRecorder;
       chunksRef.current = [];
 
-      mediaRecorder.ondataavailable = (event) => {
+      mediaRecorder.ondataavailable = event => {
         if (event.data.size > 0) {
           chunksRef.current.push(event.data);
         }
@@ -33,7 +33,7 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
       mediaRecorder.onstop = () => {
         const audioBlob = new Blob(chunksRef.current, { type: 'audio/webm' });
         onRecordingComplete(audioBlob);
-        stream.getTracks().forEach((track) => track.stop());
+        stream.getTracks().forEach(track => track.stop());
       };
 
       mediaRecorder.start();

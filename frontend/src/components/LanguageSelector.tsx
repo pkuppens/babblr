@@ -18,7 +18,11 @@ const DIFFICULTIES: { value: DifficultyLevel; label: string; description: string
   { value: 'A1', label: 'A1', description: 'Beginner: simple phrases and basic needs' },
   { value: 'A2', label: 'A2', description: 'Elementary: everyday topics and routines' },
   { value: 'B1', label: 'B1', description: 'Intermediate: handle common situations and plans' },
-  { value: 'B2', label: 'B2', description: 'Upper-intermediate: discuss abstract topics with detail' },
+  {
+    value: 'B2',
+    label: 'B2',
+    description: 'Upper-intermediate: discuss abstract topics with detail',
+  },
   { value: 'C1', label: 'C1', description: 'Advanced: fluent, flexible, and nuanced language' },
   { value: 'C2', label: 'C2', description: 'Proficient: near-native comprehension and expression' },
 ];
@@ -34,11 +38,11 @@ const LanguageSelector: React.FC<LanguageSelectorProps> = ({ onStart }) => {
   return (
     <div className="language-selector">
       <h2>Start a New Conversation</h2>
-      
+
       <div className="selector-section">
         <h3>Choose Your Language</h3>
         <div className="language-grid">
-          {LANGUAGES.map((lang) => (
+          {LANGUAGES.map(lang => (
             <button
               key={lang.value}
               className={`language-card ${selectedLanguage === lang.value ? 'selected' : ''}`}
@@ -54,7 +58,7 @@ const LanguageSelector: React.FC<LanguageSelectorProps> = ({ onStart }) => {
       <div className="selector-section">
         <h3>Choose Your Level</h3>
         <div className="difficulty-grid">
-          {DIFFICULTIES.map((diff) => (
+          {DIFFICULTIES.map(diff => (
             <button
               key={diff.value}
               className={`difficulty-card ${selectedDifficulty === diff.value ? 'selected' : ''}`}

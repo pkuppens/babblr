@@ -19,6 +19,12 @@ export default tseslint.config(
     },
     rules: {
       ...reactHooks.configs.recommended.rules,
+      // Keep files tidy (similar to "ruff format" expectations).
+      'eol-last': ['error', 'always'],
+      'no-multiple-empty-lines': ['error', { max: 1, maxBOF: 0, maxEOF: 0 }],
+      // This rule is too strict for common data-fetching patterns in useEffect.
+      // We rely on exhaustive-deps for correctness, and keep this off to avoid false positives.
+      'react-hooks/set-state-in-effect': 'off',
       'react-refresh/only-export-components': [
         'warn',
         { allowConstantExport: true },

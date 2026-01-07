@@ -44,5 +44,3 @@ export function getDefaultTtsRateForLevel(level: string): number {
   if (!normalized) return 1.0;
   return DEFAULT_TTS_RATE_BY_LEVEL[normalized] ?? 1.0;
 }
-
-

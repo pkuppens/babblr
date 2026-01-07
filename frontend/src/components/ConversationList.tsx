@@ -20,7 +20,11 @@ const ConversationList: React.FC<ConversationListProps> = ({
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    return (
+      date.toLocaleDateString() +
+      ' ' +
+      date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    );
   };
 
   const getLanguageFlag = (language: string) => {
@@ -38,7 +42,7 @@ const ConversationList: React.FC<ConversationListProps> = ({
     <div className="conversation-list">
       <h2>Recent Conversations</h2>
       <div className="conversation-cards">
-        {conversations.map((conv) => (
+        {conversations.map(conv => (
           <div key={conv.id} className="conversation-card">
             <div className="conversation-info" onClick={() => onSelect(conv)}>
               <div className="conversation-header">
@@ -46,13 +50,11 @@ const ConversationList: React.FC<ConversationListProps> = ({
                 <span className="language">{conv.language}</span>
                 <span className="difficulty">{formatLevelLabel(conv.difficulty_level)}</span>
               </div>
-              <div className="conversation-date">
-                {formatDate(conv.updated_at)}
-              </div>
+              <div className="conversation-date">{formatDate(conv.updated_at)}</div>
             </div>
             <button
               className="delete-button"
-              onClick={(e) => {
+              onClick={e => {
                 e.stopPropagation();
                 if (window.confirm('Delete this conversation?')) {
                   onDelete(conv.id);

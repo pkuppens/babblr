@@ -22,10 +22,10 @@ function formatTime(seconds: number): string {
 
 /**
  * AudioRecorder Component
- * 
+ *
  * A full-featured audio recording component with visual feedback, waveform visualization,
  * and playback controls. Inspired by iOS Voice Memos.
- * 
+ *
  * Features:
  * - Large circular record button that changes to stop when recording
  * - Pulsing animation while recording
@@ -36,10 +36,10 @@ function formatTime(seconds: number): string {
  * - Re-record and Submit buttons
  * - Error handling for microphone issues
  * - Fully accessible with keyboard navigation and ARIA labels
- * 
+ *
  * @param {AudioRecorderProps} props - Component props
  * @returns {JSX.Element} Audio recorder component
- * 
+ *
  * @example
  * ```tsx
  * <AudioRecorder
@@ -63,7 +63,7 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({ onSubmit, disabled = fals
   const drawWaveform = useCallback(() => {
     const canvas = canvasRef.current;
     const analyser = getAnalyser();
-    
+
     if (!canvas || !analyser) {
       return;
     }
@@ -72,7 +72,7 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({ onSubmit, disabled = fals
     if (!canvasCtxRef.current) {
       canvasCtxRef.current = canvas.getContext('2d');
     }
-    
+
     const ctx = canvasCtxRef.current;
     if (!ctx) return;
 
@@ -157,12 +157,12 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({ onSubmit, disabled = fals
 
     if (!audioRef.current) {
       audioRef.current = new Audio(state.audioUrl);
-      
+
       // Create and store event handler
       const endedHandler = () => {
         setIsPlaying(false);
       };
-      
+
       audioEndedHandlerRef.current = endedHandler;
       audioRef.current.addEventListener('ended', endedHandler);
     }
@@ -197,8 +197,12 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({ onSubmit, disabled = fals
    * Handle submit button click
    */
   const handleSubmit = () => {
-    console.log('[AudioRecorder] Submitting audio recording, blob size:', state.audioBlob?.size, 'bytes');
-    
+    console.log(
+      '[AudioRecorder] Submitting audio recording, blob size:',
+      state.audioBlob?.size,
+      'bytes'
+    );
+
     if (state.audioBlob) {
       if (audioRef.current) {
         // Clean up event listener
@@ -240,7 +244,7 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({ onSubmit, disabled = fals
     <div className="audio-recorder w-full max-w-md mx-auto">
       {/* Error Display */}
       {state.error && (
-        <div 
+        <div
           className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-800 text-sm"
           role="alert"
           aria-live="assertive"
@@ -253,7 +257,7 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({ onSubmit, disabled = fals
       <div className="recording-area bg-white rounded-2xl shadow-lg p-6 mb-4">
         {/* Timer */}
         <div className="text-center mb-4">
-          <div 
+          <div
             className="text-3xl font-mono font-semibold text-gray-800"
             aria-live="polite"
             aria-label={`Recording duration: ${formatTime(state.duration)}`}
@@ -261,9 +265,7 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({ onSubmit, disabled = fals
             {formatTime(state.duration)}
           </div>
           {isRecording && (
-            <div className="text-sm text-gray-500 mt-1">
-              Recording... (max 60 seconds)
-            </div>
+            <div className="text-sm text-gray-500 mt-1">Recording... (max 60 seconds)</div>
           )}
         </div>
 

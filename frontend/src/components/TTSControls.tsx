@@ -63,7 +63,7 @@ export const TTSControls: React.FC<TTSControlsProps> = ({
   const languageVoices = useMemo(() => {
     const base = languageToBaseTag(language);
     if (!base) return [];
-    return voices.filter((v) => getBaseLanguageTag(v.lang) === base);
+    return voices.filter(v => getBaseLanguageTag(v.lang) === base);
   }, [language, voices]);
 
   const showVoiceSelector = supported && languageVoices.length > 0;
@@ -106,7 +106,7 @@ export const TTSControls: React.FC<TTSControlsProps> = ({
           <input
             type="checkbox"
             checked={autoPlay}
-            onChange={(e) => onAutoPlayChange(e.target.checked)}
+            onChange={e => onAutoPlayChange(e.target.checked)}
             disabled={!supported}
           />
           <span>Auto-play</span>
@@ -122,7 +122,7 @@ export const TTSControls: React.FC<TTSControlsProps> = ({
             max={1.5}
             step={0.05}
             value={rate}
-            onChange={(e) => onRateChange(Number(e.target.value))}
+            onChange={e => onRateChange(Number(e.target.value))}
             disabled={!supported}
           />
           <span className="tts-rate-value">{rate.toFixed(2)}×</span>
@@ -133,11 +133,11 @@ export const TTSControls: React.FC<TTSControlsProps> = ({
             <span className="tts-label">Voice</span>
             <select
               value={selectedVoiceURI ?? ''}
-              onChange={(e) => onSelectVoiceURI(e.target.value || null)}
+              onChange={e => onSelectVoiceURI(e.target.value || null)}
               disabled={!supported}
             >
               <option value="">Default</option>
-              {languageVoices.map((v) => (
+              {languageVoices.map(v => (
                 <option key={v.voiceURI} value={v.voiceURI}>
                   {v.name} ({v.lang})
                 </option>
@@ -147,12 +147,8 @@ export const TTSControls: React.FC<TTSControlsProps> = ({
         )}
       </div>
 
-      {!supported && (
-        <div className="tts-warning">TTS is not available in this environment.</div>
-      )}
+      {!supported && <div className="tts-warning">TTS is not available in this environment.</div>}
       {supported && lastError && <div className="tts-warning">{lastError}</div>}
     </div>
   );
 };
-
-
