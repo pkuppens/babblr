@@ -13,6 +13,8 @@ import logging
 from pathlib import Path
 from typing import Any
 
+from app.config import settings
+
 logger = logging.getLogger(__name__)
 
 
@@ -126,7 +128,7 @@ class PromptBuilder:
         language: str,
         level: str,
         topic: str = "general conversation",
-        native_language: str = "English",
+        native_language: str | None = None,
         recent_vocab: list[str] | None = None,
         common_mistakes: list[str] | None = None,
     ) -> str:
@@ -137,7 +139,7 @@ class PromptBuilder:
             language: Target language for learning (e.g., "Spanish", "French")
             level: User's CEFR proficiency level (A1-C2) or legacy (beginner/intermediate/advanced)
             topic: Current conversation topic
-            native_language: User's native language for explanations
+            native_language: User's native language for explanations (defaults to settings value)
             recent_vocab: List of recently learned vocabulary words
             common_mistakes: List of common mistakes to address
 
@@ -158,6 +160,10 @@ class PromptBuilder:
         if not template_str:
             logger.error(f"Template for level {cefr_level} has no 'template' field")
             raise ValueError(f"Invalid template for level {cefr_level}")
+
+        # Use native language from settings if not provided
+        if native_language is None:
+            native_language = settings.user_native_language
 
         # Prepare vocabulary list string
         vocab_str = ""
@@ -225,7 +231,7 @@ class PromptBuilder:
         List all available CEFR levels with descriptions.
 
         Returns:
-            List of dictionaries with level info (level, level_name, description)
+            List of dictionaries with level info (level, level_name, description, playback_speed)
         """
         levels_info = []
         for level in self.CEFR_LEVELS:
@@ -236,9 +242,25 @@ class PromptBuilder:
                         "level": level,
                         "level_name": template.get("level_name", ""),
                         "description": template.get("description", ""),
+                        "playback_speed": template.get("playback_speed", 1.0),
                     }
                 )
         return levels_info
+
+    def get_playback_speed(self, level: str) -> float:
+        """
+        Get the recommended playback speed for a specific CEFR level.
+
+        Args:
+            level: CEFR level (A1-C2)
+
+        Returns:
+            Playback speed as float (0.75 for A1, incrementing to 1.0 for C2)
+        """
+        cefr_level = self.normalize_level(level)
+        if cefr_level in self.templates:
+            return self.templates[cefr_level].get("playback_speed", 1.0)
+        return 1.0
 
 
 # Singleton instance for easy access

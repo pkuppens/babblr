@@ -4,9 +4,6 @@ Unit tests for the PromptBuilder service.
 Tests template loading, variable substitution, and level normalization.
 """
 
-import json
-from pathlib import Path
-
 import pytest
 
 from app.services.prompt_builder import PromptBuilder, get_prompt_builder
@@ -35,9 +32,7 @@ class TestPromptBuilder:
 
         for level, template_data in builder.templates.items():
             for field in required_fields:
-                assert (
-                    field in template_data
-                ), f"Level {level} missing required field: {field}"
+                assert field in template_data, f"Level {level} missing required field: {field}"
 
     def test_normalize_level_cefr(self):
         """Test normalization of CEFR levels."""
@@ -228,20 +223,16 @@ class TestPromptBuilder:
         # Lower levels (A1, A2, B1) should ignore diacritics
         for level in ["A1", "A2", "B1"]:
             strategy = builder.get_correction_strategy(level)
-            assert (
-                strategy["ignore_diacritics"] is True
-            ), f"Level {level} should ignore diacritics"
+            assert strategy["ignore_diacritics"] is True, f"Level {level} should ignore diacritics"
 
-        # B2 might transition
-        b2_strategy = builder.get_correction_strategy("B2")
-        # B2 starts noticing diacritics according to our template
+        # B2 might transition (starts noticing diacritics according to our template)
 
         # Higher levels (C1, C2) should NOT ignore diacritics
         for level in ["C1", "C2"]:
             strategy = builder.get_correction_strategy(level)
-            assert (
-                strategy["ignore_diacritics"] is False
-            ), f"Level {level} should not ignore diacritics"
+            assert strategy["ignore_diacritics"] is False, (
+                f"Level {level} should not ignore diacritics"
+            )
 
     def test_recent_vocab_truncation(self):
         """Test that recent vocabulary is truncated to reasonable length."""
@@ -250,9 +241,7 @@ class TestPromptBuilder:
         # Provide more than 10 words
         long_vocab = [f"word{i}" for i in range(20)]
 
-        prompt = builder.build_prompt(
-            language="German", level="B1", recent_vocab=long_vocab
-        )
+        prompt = builder.build_prompt(language="German", level="B1", recent_vocab=long_vocab)
 
         # Count how many vocab words appear
         vocab_count = sum(1 for word in long_vocab if word in prompt)
@@ -267,9 +256,7 @@ class TestPromptBuilder:
         # Provide more than 5 mistakes
         many_mistakes = [f"mistake pattern {i}" for i in range(10)]
 
-        prompt = builder.build_prompt(
-            language="Spanish", level="A2", common_mistakes=many_mistakes
-        )
+        prompt = builder.build_prompt(language="Spanish", level="A2", common_mistakes=many_mistakes)
 
         # Count how many mistakes appear
         mistakes_count = sum(1 for mistake in many_mistakes if mistake in prompt)

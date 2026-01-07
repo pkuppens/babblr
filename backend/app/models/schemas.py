@@ -9,7 +9,7 @@ class ConversationCreate(BaseModel):
 
     language: str = Field(..., description="Target language for learning")
     difficulty_level: str = Field(
-        default="beginner",
+        default="A1",
         description="Proficiency level: CEFR (A1, A2, B1, B2, C1, C2) or legacy (beginner, intermediate, advanced)",
     )
 
@@ -74,7 +74,7 @@ class ChatRequest(BaseModel):
     user_message: str
     language: str
     difficulty_level: str = Field(
-        default="beginner",
+        default="A1",
         description="Proficiency level: CEFR (A1, A2, B1, B2, C1, C2) or legacy (beginner, intermediate, advanced)",
     )
 

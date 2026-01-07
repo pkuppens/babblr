@@ -258,7 +258,7 @@ class ConversationService:
             language=language,
             level=difficulty_level,
             topic=topic,
-            native_language="English",  # TODO: Make this configurable per user
+            native_language=None,  # Will use settings.user_native_language by default
             recent_vocab=recent_vocab,
             common_mistakes=common_mistakes,
         )

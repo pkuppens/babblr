@@ -40,6 +40,19 @@ class Settings(BaseSettings):
     whisper_model: str = "base"
     whisper_device: str = "auto"  # "auto", "cuda", or "cpu"
 
+    # TTS settings
+    tts_voice_spanish: str = "es-ES-AlvaroNeural"
+    tts_voice_italian: str = "it-IT-DiegoNeural"
+    tts_voice_german: str = "de-DE-ConradNeural"
+    tts_voice_french: str = "fr-FR-HenriNeural"
+    tts_voice_dutch: str = "nl-NL-MaartenNeural"
+
+    # User language settings
+    user_native_language: str = Field(
+        default="English",
+        validation_alias=AliasChoices("user_native_language", "native_language"),
+    )
+
     # Application settings (BABBLR_ prefixed for consistency)
     babblr_dev_mode: bool = Field(
         default=False,
