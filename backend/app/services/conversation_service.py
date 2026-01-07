@@ -16,6 +16,7 @@ from typing import Any
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 
 from app.config import settings
+from app.services.prompt_builder import get_prompt_builder
 
 logger = logging.getLogger(__name__)
 
@@ -227,24 +228,37 @@ class ConversationService:
         self.provider_name = provider_name or settings.llm_provider
         self._provider = ProviderFactory.get_provider(self.provider_name)
         self._memory = ConversationMemory(max_token_limit=settings.conversation_max_token_limit)
+        self._prompt_builder = get_prompt_builder()
 
         logger.info(f"ConversationService initialized with provider: {self.provider_name}")
 
-    def _build_system_prompt(self, language: str, difficulty_level: str) -> str:
-        """Build system prompt for the tutor.
+    def _build_system_prompt(
+        self,
+        language: str,
+        difficulty_level: str,
+        topic: str = "general conversation",
+        recent_vocab: list[str] | None = None,
+        common_mistakes: list[str] | None = None,
+    ) -> str:
+        """Build system prompt for the tutor using PromptBuilder.
 
         Args:
             language: Target language.
-            difficulty_level: Student's proficiency level.
+            difficulty_level: Student's proficiency level (CEFR or legacy).
+            topic: Current conversation topic.
+            recent_vocab: Recently learned vocabulary.
+            common_mistakes: Common mistakes to address.
 
         Returns:
             Formatted system prompt.
         """
-        guidance = DIFFICULTY_GUIDANCE.get(difficulty_level, DIFFICULTY_GUIDANCE["beginner"])
-        return TUTOR_SYSTEM_PROMPT.format(
+        return self._prompt_builder.build_prompt(
             language=language,
-            difficulty_level=difficulty_level,
-            difficulty_guidance=guidance,
+            level=difficulty_level,
+            topic=topic,
+            native_language="English",  # TODO: Make this configurable per user
+            recent_vocab=recent_vocab,
+            common_mistakes=common_mistakes,
         )
 
     async def correct_text(

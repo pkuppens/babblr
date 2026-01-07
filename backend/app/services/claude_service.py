@@ -5,6 +5,7 @@ from typing import Dict, List, Tuple
 from anthropic import Anthropic, APIError, AuthenticationError
 
 from app.config import settings
+from app.services.prompt_builder import get_prompt_builder
 
 logger = logging.getLogger(__name__)
 
@@ -15,6 +16,7 @@ class ClaudeService:
     def __init__(self):
         self.client = Anthropic(api_key=settings.anthropic_api_key)
         self.model = settings.anthropic_model
+        self._prompt_builder = get_prompt_builder()
 
     async def correct_text(
         self, text: str, language: str, difficulty_level: str
@@ -120,26 +122,34 @@ Response format:
             logger.error(f"Unexpected error in generate_response: {e}")
             raise
 
-    def _build_system_prompt(self, language: str, difficulty_level: str) -> str:
-        """Build system prompt based on language and difficulty."""
-        difficulty_guidance = {
-            "beginner": "Use simple sentences, basic vocabulary, and present tense mostly. Be very patient and encouraging.",
-            "intermediate": "Use varied sentence structures and introduce more complex grammar. Encourage natural expression.",
-            "advanced": "Use sophisticated vocabulary and complex structures. Challenge the student with nuanced language.",
-        }
+    def _build_system_prompt(
+        self,
+        language: str,
+        difficulty_level: str,
+        topic: str = "general conversation",
+        recent_vocab: list[str] | None = None,
+        common_mistakes: list[str] | None = None,
+    ) -> str:
+        """Build system prompt using PromptBuilder.
 
-        return f"""You are a friendly and encouraging {language} language tutor. You're having a natural conversation with a {difficulty_level} student.
+        Args:
+            language: Target language.
+            difficulty_level: Student's proficiency level (CEFR or legacy).
+            topic: Current conversation topic.
+            recent_vocab: Recently learned vocabulary.
+            common_mistakes: Common mistakes to address.
 
-Guidelines:
-- Respond ONLY in {language} (except for brief clarifications if absolutely needed)
-- {difficulty_guidance.get(difficulty_level, difficulty_guidance["beginner"])}
-- Keep responses conversational and natural, not like a textbook
-- Adapt to the student's interests and previous messages
-- If they make mistakes, gently incorporate corrections in your response naturally
-- Ask engaging questions to keep the conversation flowing
-- Focus on practical, everyday language use
-
-Remember: Your goal is immersive, natural conversation - not explicit grammar lessons."""
+        Returns:
+            Formatted system prompt.
+        """
+        return self._prompt_builder.build_prompt(
+            language=language,
+            level=difficulty_level,
+            topic=topic,
+            native_language="English",  # TODO: Make this configurable per user
+            recent_vocab=recent_vocab,
+            common_mistakes=common_mistakes,
+        )
 
     def _extract_vocabulary(self, text: str, language: str) -> List[Dict]:
         """
