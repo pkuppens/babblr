@@ -12,12 +12,15 @@ function createWindow() {
       contextIsolation: false,
     },
     autoHideMenuBar: true,
-    icon: path.join(__dirname, '../public/icon.png')
+    icon: path.join(__dirname, '../public/icon.png'),
   });
 
   // In development, load from Vite dev server
   if (process.env.NODE_ENV === 'development' || !app.isPackaged) {
-    win.loadURL('http://localhost:5173');
+    // Keep the dev server URL configurable so we can evolve the dev setup
+    // without having to touch this file again.
+    const devServerUrl = process.env.VITE_DEV_SERVER_URL || 'http://localhost:5173';
+    win.loadURL(devServerUrl);
     win.webContents.openDevTools();
   } else {
     // In production, load the built files
@@ -40,3 +43,5 @@ app.on('window-all-closed', () => {
     app.quit();
   }
 });
+
+

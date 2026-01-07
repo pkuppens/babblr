@@ -3,9 +3,9 @@
   "version": "1.0.0",
   "type": "module",
   "description": "Babblr language learning app - Electron + React + TypeScript frontend",
-  "main": "electron/main.js",
+  "main": "electron/main.cjs",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --port 5173 --strictPort",
     "build": "tsc && vite build",
     "preview": "vite preview",
     "electron": "electron .",
