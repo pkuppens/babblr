@@ -1,5 +1,6 @@
 #!/bin/bash
 
-# Start frontend in development mode
+# Start frontend in browser
+# This runs the Vite dev server and lets you open your preferred browser manually.
 cd frontend
-npm run electron:dev
+npm run dev

@@ -1,5 +1,6 @@
 @echo off
-REM Start frontend in development mode (Windows)
+REM Start frontend in browser (Windows)
+REM This runs the Vite dev server and lets you open your preferred browser manually.
 
 cd /d "%~dp0frontend"
 if %errorlevel% neq 0 (
@@ -8,7 +9,7 @@ if %errorlevel% neq 0 (
     exit /b 1
 )
 
-call npm run electron:dev
+call npm run dev
 
 pause
 
