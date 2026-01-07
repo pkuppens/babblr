@@ -196,7 +196,10 @@ export function useTTS(): UseTTS {
         setIsSpeaking(false);
         setIsPaused(false);
         activeUtteranceRef.current = null;
-        setLastError(event.error ? `TTS error: ${event.error}` : 'TTS error');
+        // "interrupted" and "canceled" are not real errors - they fire when cancel() is called
+        if (event.error && event.error !== 'interrupted' && event.error !== 'canceled') {
+          setLastError(`TTS error: ${event.error}`);
+        }
       };
       utterance.onpause = () => setIsPaused(true);
       utterance.onresume = () => setIsPaused(false);
