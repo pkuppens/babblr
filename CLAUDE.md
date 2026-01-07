@@ -21,6 +21,31 @@ However, **the user remains in control**. After voicing concerns:
 
 This applies to code, architecture, documentation, and process decisions.
 
+## Startup: Branch Check
+
+**At the start of every conversation**, check which git branch you're on:
+
+```bash
+git branch --show-current
+```
+
+**If on `main` branch:**
+1. **Stop and alert the user** - Direct commits to main are not allowed
+2. Ask the user to switch to an existing feature branch or create a new one:
+   ```bash
+   # List existing branches
+   git branch -a
+
+   # Switch to existing branch
+   git checkout feature/existing-branch
+
+   # Or create new branch
+   git checkout -b feature/new-feature-name
+   ```
+3. **Do not make any code changes until on a feature branch**
+
+This ensures all changes go through pull requests for proper review and CI checks.
+
 ## Project Overview
 
 Babblr is a desktop language learning app for conversational practice with an AI tutor. It supports Spanish, Italian, German, French, and Dutch with adaptive CEFR difficulty levels (A1-C2).
