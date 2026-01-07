@@ -256,7 +256,7 @@ npm install
 
 **Test backend API:**
 ```bash
-python examples/test_api.py
+python backend/tests/manual_api_check.py
 ```
 
 **Run validation tests:**

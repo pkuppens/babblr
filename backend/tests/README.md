@@ -53,11 +53,26 @@ pytest tests/ -m integration -v
 pytest tests/ -m "not integration" -v
 ```
 
+### Manual Live API Check (Not a Pytest Test)
+
+This repository also includes a small manual script that calls the live HTTP API.
+It requires the backend to be running, and it is **not** collected by pytest.
+
+```bash
+# From the repository root:
+python backend/tests/manual_api_check.py
+
+# Or from within backend/:
+cd backend
+python tests/manual_api_check.py
+```
+
 ## Test Structure
 
 - `conftest.py` - Shared fixtures and configuration
 - `test_unit.py` - Unit tests (schemas, models, config)
 - `test_integration.py` - Integration tests (API endpoints)
+ - `manual_api_check.py` - Manual live API check (requires backend running)
 
 ## Requirements
 
