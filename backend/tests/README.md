@@ -79,6 +79,7 @@ python tests/manual_api_check.py
 Tests require the following packages (included in pyproject.toml):
 - pytest>=8.3.4
 - pytest-asyncio>=0.24.0
+- pytest-xdist>=3.6.1 (optional, for parallel runs)
 - httpx>=0.28.1
 
 Install with:
@@ -88,5 +89,22 @@ uv pip install -e ".[dev]"
 
 Or with pip:
 ```bash
-pip install pytest pytest-asyncio httpx
+pip install pytest pytest-asyncio pytest-xdist httpx
+```
+
+## Asyncio tests (marker)
+
+Some tests use `@pytest.mark.asyncio`. If you see warnings like `PytestUnknownMarkWarning: Unknown pytest.mark.asyncio`,
+ensure you installed the dev dependencies (so `pytest-asyncio` is available) and keep the marker registered in the pytest config.
+
+## Running tests in parallel
+
+You can run tests in parallel using `pytest-xdist`:
+
+```bash
+# Use one worker per CPU core (recommended)
+pytest -n auto
+
+# Use a fixed number of workers
+pytest -n 4
 ```

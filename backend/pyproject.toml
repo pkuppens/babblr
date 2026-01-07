@@ -40,6 +40,7 @@ dependencies = [
 dev = [
     "pytest>=8.3.4",
     "pytest-asyncio>=0.24.0",
+    "pytest-xdist>=3.6.1",
     "httpx>=0.28.1",
     "pre-commit>=3.7.1",
     "ruff>=0.8.4",
@@ -71,6 +72,7 @@ packages = ["app"]
 dev = [
     "pytest>=8.3.4",
     "pytest-asyncio>=0.24.0",
+    "pytest-xdist>=3.6.1",
     "httpx>=0.28.1",
     "pre-commit>=3.7.1",
     "ruff>=0.8.4",
@@ -81,6 +83,9 @@ dev = [
 testpaths = ["tests"]
 asyncio_mode = "auto"
 pythonpath = ["."]
+markers = [
+    "asyncio: mark a test as using asyncio (provided by pytest-asyncio)",
+]
 
 [tool.ruff]
 line-length = 100

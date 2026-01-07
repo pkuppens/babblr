@@ -1,5 +1,5 @@
 export type Language = 'spanish' | 'italian' | 'german' | 'french' | 'dutch';
-export type DifficultyLevel = 'beginner' | 'intermediate' | 'advanced';
+export type DifficultyLevel = 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2';
 export type MessageRole = 'user' | 'assistant';
 
 export interface Conversation {

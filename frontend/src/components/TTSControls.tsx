@@ -120,12 +120,12 @@ export const TTSControls: React.FC<TTSControlsProps> = ({
             type="range"
             min={0.5}
             max={1.5}
-            step={0.1}
+            step={0.05}
             value={rate}
             onChange={(e) => onRateChange(Number(e.target.value))}
             disabled={!supported}
           />
-          <span className="tts-rate-value">{rate.toFixed(1)}×</span>
+          <span className="tts-rate-value">{rate.toFixed(2)}×</span>
         </label>
 
         {showVoiceSelector && (

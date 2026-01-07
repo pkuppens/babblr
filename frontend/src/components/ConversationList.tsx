@@ -1,5 +1,6 @@
 import React from 'react';
 import type { Conversation } from '../types';
+import { formatLevelLabel } from '../utils/cefr';
 import './ConversationList.css';
 
 interface ConversationListProps {
@@ -43,7 +44,7 @@ const ConversationList: React.FC<ConversationListProps> = ({
               <div className="conversation-header">
                 <span className="flag">{getLanguageFlag(conv.language)}</span>
                 <span className="language">{conv.language}</span>
-                <span className="difficulty">{conv.difficulty_level}</span>
+                <span className="difficulty">{formatLevelLabel(conv.difficulty_level)}</span>
               </div>
               <div className="conversation-date">
                 {formatDate(conv.updated_at)}

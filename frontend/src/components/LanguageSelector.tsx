@@ -15,14 +15,17 @@ const LANGUAGES: { value: Language; label: string; flag: string }[] = [
 ];
 
 const DIFFICULTIES: { value: DifficultyLevel; label: string; description: string }[] = [
-  { value: 'beginner', label: 'Beginner', description: 'Just starting out' },
-  { value: 'intermediate', label: 'Intermediate', description: 'Building fluency' },
-  { value: 'advanced', label: 'Advanced', description: 'Refining skills' },
+  { value: 'A1', label: 'A1', description: 'Beginner: simple phrases and basic needs' },
+  { value: 'A2', label: 'A2', description: 'Elementary: everyday topics and routines' },
+  { value: 'B1', label: 'B1', description: 'Intermediate: handle common situations and plans' },
+  { value: 'B2', label: 'B2', description: 'Upper-intermediate: discuss abstract topics with detail' },
+  { value: 'C1', label: 'C1', description: 'Advanced: fluent, flexible, and nuanced language' },
+  { value: 'C2', label: 'C2', description: 'Proficient: near-native comprehension and expression' },
 ];
 
 const LanguageSelector: React.FC<LanguageSelectorProps> = ({ onStart }) => {
   const [selectedLanguage, setSelectedLanguage] = useState<Language>('spanish');
-  const [selectedDifficulty, setSelectedDifficulty] = useState<DifficultyLevel>('beginner');
+  const [selectedDifficulty, setSelectedDifficulty] = useState<DifficultyLevel>('A1');
 
   const handleStart = () => {
     onStart(selectedLanguage, selectedDifficulty);

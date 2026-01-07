@@ -5,6 +5,8 @@ import AudioRecorder from './AudioRecorder';
 import MessageBubble from './MessageBubble';
 import { TTSControls } from './TTSControls';
 import { useTTS } from '../hooks/useTTS';
+import { formatLevelLabel, getDefaultTtsRateForLevel, normalizeToCefrLevel } from '../utils/cefr';
+import { getStarterMessage } from '../utils/starterMessages';
 import './ConversationInterface.css';
 
 interface ConversationInterfaceProps {
@@ -28,19 +30,27 @@ const ConversationInterface: React.FC<ConversationInterfaceProps> = ({
   const [activeMessageId, setActiveMessageId] = useState<number | null>(null);
   const [lastAutoPlayedAssistantId, setLastAutoPlayedAssistantId] = useState<number | null>(null);
 
-  const rateStorageKey = 'babblr.tts.rate';
+  const legacyRateStorageKey = 'babblr.tts.rate';
+  const legacyRateCustomizedStorageKey = 'babblr.tts.rate.customized';
+
+  const cefrLevel = useMemo(() => {
+    return normalizeToCefrLevel(conversation.difficulty_level) ?? 'A1';
+  }, [conversation.difficulty_level]);
+
+  const rateStorageKey = useMemo(() => {
+    return `babblr.tts.rate.${cefrLevel}`;
+  }, [cefrLevel]);
+  const rateCustomizedStorageKey = useMemo(() => {
+    return `babblr.tts.rate.customized.${cefrLevel}`;
+  }, [cefrLevel]);
   const autoPlayStorageKey = 'babblr.tts.autoPlay';
   const voiceStorageKey = useMemo(
     () => `babblr.tts.voice.${conversation.language.toLowerCase()}`,
     [conversation.language]
   );
 
-  const [ttsRate, setTtsRate] = useState<number>(() => {
-    if (typeof window === 'undefined') return 1.0;
-    const stored = window.localStorage.getItem(rateStorageKey);
-    const value = stored ? Number(stored) : 1.0;
-    return Number.isFinite(value) ? value : 1.0;
-  });
+  const [ttsRate, setTtsRate] = useState<number>(() => getDefaultTtsRateForLevel(conversation.difficulty_level));
+  const [ttsRateCustomized, setTtsRateCustomized] = useState<boolean>(false);
   const [ttsAutoPlay, setTtsAutoPlay] = useState<boolean>(() => {
     if (typeof window === 'undefined') return false;
     return window.localStorage.getItem(autoPlayStorageKey) === 'true';
@@ -53,6 +63,54 @@ const ConversationInterface: React.FC<ConversationInterfaceProps> = ({
   useEffect(() => {
     loadMessages();
   }, [conversation.id]);
+
+  useEffect(() => {
+    // Load TTS rate per CEFR level.
+    // This makes the "default rate by level" reliable when starting a new conversation.
+    if (typeof window === 'undefined') return;
+
+    const fallback = getDefaultTtsRateForLevel(conversation.difficulty_level);
+
+    const stored = window.localStorage.getItem(rateStorageKey);
+    const legacyStored = stored === null ? window.localStorage.getItem(legacyRateStorageKey) : null;
+    const raw = stored ?? legacyStored;
+
+    const parsed = raw !== null ? Number(raw) : fallback;
+    const nextRate = Number.isFinite(parsed) ? parsed : fallback;
+
+    const customizedFlag = window.localStorage.getItem(rateCustomizedStorageKey);
+    const legacyCustomizedFlag =
+      customizedFlag === null ? window.localStorage.getItem(legacyRateCustomizedStorageKey) : null;
+    const rawCustomized = customizedFlag ?? legacyCustomizedFlag;
+
+    let nextCustomized = false;
+    if (rawCustomized !== null) {
+      nextCustomized = rawCustomized === 'true';
+    } else if (raw !== null) {
+      // Backwards compatibility:
+      // Old versions stored a global TTS rate without a "customized" flag.
+      // If it differs from the old default (1.0), treat it as customized.
+      nextCustomized = Number.isFinite(parsed) && Math.abs(parsed - 1.0) > 1e-6;
+    }
+
+    setTtsRate(nextRate);
+    setTtsRateCustomized(nextCustomized);
+
+    // Best-effort migration: if we used legacy keys, copy to per-level keys.
+    if (stored === null && legacyStored !== null) {
+      window.localStorage.setItem(rateStorageKey, String(nextRate));
+    }
+    if (customizedFlag === null && legacyCustomizedFlag !== null) {
+      window.localStorage.setItem(rateCustomizedStorageKey, String(nextCustomized));
+    }
+  }, [
+    conversation.id,
+    conversation.difficulty_level,
+    rateStorageKey,
+    rateCustomizedStorageKey,
+    legacyRateStorageKey,
+    legacyRateCustomizedStorageKey,
+  ]);
 
   useEffect(() => {
     scrollToBottom();
@@ -68,6 +126,22 @@ const ConversationInterface: React.FC<ConversationInterfaceProps> = ({
     if (typeof window === 'undefined') return;
     window.localStorage.setItem(rateStorageKey, String(ttsRate));
   }, [ttsRate]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    window.localStorage.setItem(rateCustomizedStorageKey, String(ttsRateCustomized));
+  }, [ttsRateCustomized]);
+
+  useEffect(() => {
+    // Apply level-based default rate unless the user customized it.
+    if (typeof window === 'undefined') return;
+    if (ttsRateCustomized) return;
+
+    const recommended = getDefaultTtsRateForLevel(conversation.difficulty_level);
+    if (Number.isFinite(recommended) && Math.abs(ttsRate - recommended) > 1e-6) {
+      setTtsRate(recommended);
+    }
+  }, [conversation.difficulty_level, ttsRateCustomized, ttsRate]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -120,6 +194,22 @@ const ConversationInterface: React.FC<ConversationInterfaceProps> = ({
       setActiveMessageId(null);
     }
   }, [isSpeaking]);
+
+  const handleUserRateChange = (rate: number) => {
+    setTtsRateCustomized(true);
+    setTtsRate(rate);
+  };
+
+  const starterMessage: Message = useMemo(
+    () => ({
+      id: -1,
+      conversation_id: conversation.id,
+      role: 'assistant',
+      content: getStarterMessage(conversation.language, conversation.difficulty_level),
+      created_at: conversation.created_at ?? new Date().toISOString(),
+    }),
+    [conversation.id, conversation.language, conversation.difficulty_level, conversation.created_at]
+  );
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -193,7 +283,7 @@ const ConversationInterface: React.FC<ConversationInterfaceProps> = ({
           </button>
           <div className="conversation-info">
             <h2>{conversation.language}</h2>
-            <span className="difficulty-badge">{conversation.difficulty_level}</span>
+            <span className="difficulty-badge">{formatLevelLabel(conversation.difficulty_level)}</span>
           </div>
         </div>
 
@@ -209,7 +299,7 @@ const ConversationInterface: React.FC<ConversationInterfaceProps> = ({
             isPaused={isPaused}
             lastError={lastError}
             onSelectVoiceURI={setTtsVoiceURI}
-            onRateChange={setTtsRate}
+            onRateChange={handleUserRateChange}
             onAutoPlayChange={setTtsAutoPlay}
             onPause={pause}
             onResume={resume}
@@ -220,10 +310,21 @@ const ConversationInterface: React.FC<ConversationInterfaceProps> = ({
 
       <div className="messages-container">
         {messages.length === 0 ? (
-          <div className="empty-state">
-            <p>👋 Start your conversation!</p>
-            <p>Try introducing yourself or asking a question.</p>
-          </div>
+          <MessageBubble
+            message={starterMessage}
+            ttsSupported={supported}
+            isSpeaking={isSpeaking}
+            isActive={activeMessageId === starterMessage.id}
+            onPlay={(textToSpeak) => {
+              setActiveMessageId(starterMessage.id);
+              speak(textToSpeak, {
+                language: conversation.language,
+                rate: ttsRate,
+                autoPlay: ttsAutoPlay,
+                voiceURI: ttsVoiceURI ?? undefined,
+              });
+            }}
+          />
         ) : (
           messages.map((message) => (
             <MessageBubble
