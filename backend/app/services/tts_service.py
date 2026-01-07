@@ -9,12 +9,70 @@ from __future__ import annotations
 
 import importlib.util
 import logging
+import re
 from pathlib import Path
 from typing import Optional
 
 from app.services.language_catalog import list_locales
 
 logger = logging.getLogger(__name__)
+
+
+def sanitize_tts_text(text: str) -> str:
+    """Sanitize text for text-to-speech output.
+
+    This function removes Markdown formatting tokens (like `**bold**` and list
+    bullets) that some TTS engines read aloud (for example, "asterisk").
+    It keeps readable words and normal punctuation so the spoken output sounds natural.
+
+    Args:
+        text (str): Input text that may contain Markdown or lightweight formatting.
+
+    Returns:
+        str: A cleaned string suitable for speech synthesis.
+
+    Raises:
+        TypeError: If `text` is not a string.
+    """
+    if not isinstance(text, str):
+        raise TypeError("text must be a string")
+
+    value = text.replace("\r\n", "\n")
+
+    # Remove fenced code blocks entirely (they are usually not useful for TTS).
+    value = re.sub(r"```[\s\S]*?```", " ", value)
+
+    # Inline code: keep the content, drop the backticks.
+    value = re.sub(r"`([^`]+)`", r"\1", value)
+
+    # Images: keep alt text.
+    value = re.sub(r"!\[([^\]]*)\]\([^)]+\)", r"\1", value)
+
+    # Links: keep link text.
+    value = re.sub(r"\[([^\]]+)\]\([^)]+\)", r"\1", value)
+
+    # Headings and blockquotes.
+    value = re.sub(r"(?m)^\s{0,3}#{1,6}\s+", "", value)
+    value = re.sub(r"(?m)^\s{0,3}>\s?", "", value)
+
+    # Bullet markers at the start of a line.
+    value = re.sub(r"(?m)^\s*([*+\-]|•)\s+", "", value)
+
+    # Common Markdown emphasis / strike tokens.
+    value = value.replace("**", "")
+    value = value.replace("__", "")
+    value = value.replace("~~", "")
+
+    # Remove leftover Markdown punctuation that is commonly read aloud.
+    value = re.sub(r"[*_`]", "", value)
+
+    # Tables (best-effort): remove pipes used as separators.
+    value = value.replace("|", " ")
+
+    # Normalize whitespace.
+    value = re.sub(r"\s+", " ", value).strip()
+
+    return value
 
 
 class TTSService:
@@ -121,11 +179,15 @@ class TTSService:
             Path to generated audio file, or None if failed
         """
         try:
+            sanitized_text = sanitize_tts_text(text)
+            if not sanitized_text:
+                return None
+
             # For MVP, we'll create a placeholder response
             # In production, integrate with a TTS API
 
             # Create a unique filename using hash
-            text_hash = str(hash(text))[-8:]
+            text_hash = str(hash(sanitized_text))[-8:]
             output_path = self.output_dir / f"tts_{text_hash}.mp3"
 
             try:
@@ -136,7 +198,7 @@ class TTSService:
                 voice = self.resolve_voice(language)
 
                 # Use edge-tts
-                communicate = edge_tts.Communicate(text, voice)
+                communicate = edge_tts.Communicate(sanitized_text, voice)
 
                 await communicate.save(str(output_path))
 
