@@ -13,7 +13,9 @@ class Conversation(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     language = Column(String(50), nullable=False)
-    difficulty_level = Column(String(20), default="beginner")
+    difficulty_level = Column(
+        String(20), default="beginner"
+    )  # Supports CEFR (A1-C2) or legacy (beginner/intermediate/advanced)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
@@ -51,7 +53,9 @@ class VocabularyItem(Base):
     word = Column(String(100), nullable=False)
     translation = Column(String(100), nullable=False)
     context = Column(Text, nullable=True)  # Sentence where it was used
-    difficulty = Column(String(20), default="beginner")
+    difficulty = Column(
+        String(20), default="beginner"
+    )  # Supports CEFR (A1-C2) or legacy (beginner/intermediate/advanced)
     times_encountered = Column(Integer, default=1)
     created_at = Column(DateTime, default=datetime.utcnow)
     last_seen = Column(DateTime, default=datetime.utcnow)

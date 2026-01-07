@@ -12,6 +12,7 @@ from app.models.schemas import (
     MessageResponse,
     VocabularyItemResponse,
 )
+from app.services.prompt_builder import get_prompt_builder
 
 router = APIRouter(prefix="/conversations", tags=["conversations"])
 
@@ -81,3 +82,10 @@ async def delete_conversation(conversation_id: int, db: AsyncSession = Depends(g
     await db.delete(conversation)
     await db.commit()
     return {"message": "Conversation deleted successfully"}
+
+
+@router.get("/levels/available", response_model=List[dict])
+async def list_available_levels():
+    """List all available CEFR proficiency levels with descriptions."""
+    prompt_builder = get_prompt_builder()
+    return prompt_builder.list_available_levels()
