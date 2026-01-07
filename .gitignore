@@ -233,6 +233,7 @@ audio_files/
 .vscode/
 .idea/
 .claude/
+.serena/
 
 # FFmpeg shims (generated for imageio-ffmpeg fallback)
 .ffmpeg-shims/
