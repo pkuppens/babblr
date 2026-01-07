@@ -173,6 +173,15 @@ uvicorn app.main:app --reload
 
 The API will be available at http://localhost:8000
 
+## Manual development scripts
+
+- **Prompt system demo**: prints sample prompts and correction strategies across CEFR levels.
+
+```bash
+cd backend
+uv run babblr-test-prompt-system
+```
+
 ## API Documentation
 
 Once running, visit:
