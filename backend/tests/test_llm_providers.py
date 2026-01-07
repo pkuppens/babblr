@@ -493,13 +493,11 @@ class TestClaudeProvider:
         from app.services.llm.exceptions import LLMAuthenticationError
         from app.services.llm.providers.claude import ClaudeProvider
 
-        # The provider only checks if a key exists, not its format.
-        # If settings has any non-empty key, provider will be created.
-        # If no key in settings, it should raise an exception.
+        # The provider accepts any non-empty key, but rejects the common placeholder.
         settings_key = getattr(settings, "anthropic_api_key", "")
-        has_key = bool(settings_key)
+        has_real_key = bool(settings_key) and settings_key != "your_anthropic_api_key_here"
 
-        if has_key:
+        if has_real_key:
             # Should successfully create provider using settings key
             # Note: Provider will be created but will fail on actual API calls if key is invalid
             provider = ClaudeProvider(api_key="")

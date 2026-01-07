@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { sanitizeTtsText } from '../utils/ttsSanitizer';
 
 export interface TTSConfig {
   language: string;
@@ -142,7 +143,7 @@ export function useTTS(): UseTTS {
         return;
       }
 
-      const cleaned = text.trim();
+      const cleaned = sanitizeTtsText(text);
       if (!cleaned) return;
 
       setLastError(null);
