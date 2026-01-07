@@ -47,12 +47,12 @@ jobs:
       - name: Ruff format (check)
         working-directory: backend
         run: |
-          uv run ruff format --check . ../examples
+          uv run ruff format --check .
 
       - name: Ruff lint (check)
         working-directory: backend
         run: |
-          uv run ruff check . ../examples
+          uv run ruff check .
 
       - name: Pyright type check
         working-directory: backend
