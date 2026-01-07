@@ -1,30 +1,31 @@
 import React from 'react';
 import type { Conversation } from '../types';
 import { formatLevelLabel } from '../utils/cefr';
+import { formatDateAndTime } from '../utils/dateTime';
+import type { TimeFormat } from '../services/settings';
 import './ConversationList.css';
 
 interface ConversationListProps {
   conversations: Conversation[];
   onSelect: (conversation: Conversation) => void;
   onDelete: (id: number) => void;
+  timezone?: string;
+  timeFormat?: TimeFormat;
 }
 
 const ConversationList: React.FC<ConversationListProps> = ({
   conversations,
   onSelect,
   onDelete,
+  timezone = 'UTC',
+  timeFormat = '24h',
 }) => {
   if (conversations.length === 0) {
     return null;
   }
 
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return (
-      date.toLocaleDateString() +
-      ' ' +
-      date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-    );
+    return formatDateAndTime(dateString, timezone, timeFormat);
   };
 
   const getLanguageFlag = (language: string) => {

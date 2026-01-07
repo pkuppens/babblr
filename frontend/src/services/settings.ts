@@ -1,4 +1,5 @@
 import { encrypt, decrypt } from '../utils/encryption';
+import { detectUserTimezone, detectTimeFormat, type TimeFormat } from '../utils/dateTime';
 
 const SETTINGS_KEYS = {
   ANTHROPIC_API_KEY: 'babblr_anthropic_api_key',
@@ -7,6 +8,8 @@ const SETTINGS_KEYS = {
   OLLAMA_MODEL: 'babblr_ollama_model',
   CLAUDE_MODEL: 'babblr_claude_model',
   GEMINI_MODEL: 'babblr_gemini_model',
+  TIMEZONE: 'babblr_timezone',
+  TIME_FORMAT: 'babblr_time_format',
 };
 
 // Available models per provider
@@ -49,7 +52,11 @@ export interface AppSettings {
   ollamaModel: string;
   claudeModel: string;
   geminiModel: string;
+  timezone: string;
+  timeFormat: TimeFormat;
 }
+
+export type { TimeFormat };
 
 /**
  * Settings service for managing encrypted API keys and app configuration
@@ -148,6 +155,40 @@ class SettingsService {
   }
 
   /**
+   * Save timezone preference
+   */
+  saveTimezone(timezone: string): void {
+    localStorage.setItem(SETTINGS_KEYS.TIMEZONE, timezone);
+  }
+
+  /**
+   * Load timezone preference (defaults to detected or Europe/Amsterdam)
+   */
+  loadTimezone(): string {
+    const stored = localStorage.getItem(SETTINGS_KEYS.TIMEZONE);
+    if (stored) return stored;
+    // Auto-detect from browser
+    return detectUserTimezone();
+  }
+
+  /**
+   * Save time format preference
+   */
+  saveTimeFormat(format: TimeFormat): void {
+    localStorage.setItem(SETTINGS_KEYS.TIME_FORMAT, format);
+  }
+
+  /**
+   * Load time format preference (defaults to detected or 24h)
+   */
+  loadTimeFormat(): TimeFormat {
+    const stored = localStorage.getItem(SETTINGS_KEYS.TIME_FORMAT);
+    if (stored === '24h' || stored === '12h') return stored;
+    // Auto-detect from browser locale
+    return detectTimeFormat();
+  }
+
+  /**
    * Load all settings
    */
   async loadSettings(): Promise<AppSettings> {
@@ -163,6 +204,8 @@ class SettingsService {
       ollamaModel: this.loadModel('ollama'),
       claudeModel: this.loadModel('claude'),
       geminiModel: this.loadModel('gemini'),
+      timezone: this.loadTimezone(),
+      timeFormat: this.loadTimeFormat(),
     };
   }
 
@@ -176,6 +219,8 @@ class SettingsService {
     localStorage.removeItem(SETTINGS_KEYS.OLLAMA_MODEL);
     localStorage.removeItem(SETTINGS_KEYS.CLAUDE_MODEL);
     localStorage.removeItem(SETTINGS_KEYS.GEMINI_MODEL);
+    localStorage.removeItem(SETTINGS_KEYS.TIMEZONE);
+    localStorage.removeItem(SETTINGS_KEYS.TIME_FORMAT);
   }
 }
 

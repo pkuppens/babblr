@@ -294,3 +294,130 @@
 .settings-input-model {
   margin-top: 8px;
 }
+
+/* Timezone selector styles */
+.timezone-selector {
+  position: relative;
+}
+
+.timezone-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.timezone-search-icon {
+  position: absolute;
+  left: 12px;
+  color: #6b7280;
+  pointer-events: none;
+}
+
+.timezone-input {
+  padding-left: 36px !important;
+  cursor: pointer;
+}
+
+.timezone-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  max-height: 300px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 100;
+  margin-top: 4px;
+}
+
+.timezone-group {
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.timezone-group:last-child {
+  border-bottom: none;
+}
+
+.timezone-group-header {
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #6b7280;
+  background: #f9fafb;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  position: sticky;
+  top: 0;
+}
+
+.timezone-option {
+  padding: 10px 12px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.15s;
+}
+
+.timezone-option:hover {
+  background-color: #f3f4f6;
+}
+
+.timezone-option.selected {
+  background-color: #eff6ff;
+  color: #1d4ed8;
+  font-weight: 500;
+}
+
+.timezone-no-results {
+  padding: 16px;
+  text-align: center;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+/* Time format options */
+.time-format-options {
+  display: flex;
+  gap: 16px;
+}
+
+.time-format-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #374151;
+}
+
+.time-format-option input[type='radio'] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: #3b82f6;
+}
+
+/* Time preview */
+.time-preview {
+  margin-top: 12px;
+  padding: 12px;
+  background: #f9fafb;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.time-preview-label {
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.time-preview-value {
+  font-size: 16px;
+  font-weight: 600;
+  color: #111827;
+  font-family: monospace;
+}

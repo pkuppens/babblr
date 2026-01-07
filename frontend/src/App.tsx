@@ -4,6 +4,7 @@ import ConversationInterface from './components/ConversationInterface';
 import ConversationList from './components/ConversationList';
 import Settings from './components/Settings';
 import { conversationService } from './services/api';
+import { settingsService, type TimeFormat } from './services/settings';
 import type { Conversation, Language, DifficultyLevel } from './types';
 import { Settings as SettingsIcon } from 'lucide-react';
 import './App.css';
@@ -14,6 +15,10 @@ function App() {
   const [showLanguageSelector, setShowLanguageSelector] = useState(true);
   const [showSettings, setShowSettings] = useState(false);
 
+  // Display settings
+  const [timezone, setTimezone] = useState<string>('UTC');
+  const [timeFormat, setTimeFormat] = useState<TimeFormat>('24h');
+
   const loadConversations = async () => {
     try {
       const convs = await conversationService.list();
@@ -23,8 +28,14 @@ function App() {
     }
   };
 
+  const loadDisplaySettings = () => {
+    setTimezone(settingsService.loadTimezone());
+    setTimeFormat(settingsService.loadTimeFormat());
+  };
+
   useEffect(() => {
     loadConversations();
+    loadDisplaySettings();
   }, []);
 
   const handleStartNewConversation = async (language: Language, difficulty: DifficultyLevel) => {
@@ -79,14 +90,27 @@ function App() {
                 await conversationService.delete(id);
                 await loadConversations();
               }}
+              timezone={timezone}
+              timeFormat={timeFormat}
             />
           </div>
         ) : currentConversation ? (
-          <ConversationInterface conversation={currentConversation} onBack={handleBackToHome} />
+          <ConversationInterface
+            conversation={currentConversation}
+            onBack={handleBackToHome}
+            timezone={timezone}
+            timeFormat={timeFormat}
+          />
         ) : null}
       </main>
 
-      <Settings isOpen={showSettings} onClose={() => setShowSettings(false)} />
+      <Settings
+        isOpen={showSettings}
+        onClose={() => {
+          setShowSettings(false);
+          loadDisplaySettings(); // Reload settings when modal closes
+        }}
+      />
     </div>
   );
 }

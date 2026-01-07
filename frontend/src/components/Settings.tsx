@@ -1,11 +1,20 @@
-import { useState, useEffect } from 'react';
-import { X, Eye, EyeOff, CheckCircle, AlertCircle } from 'lucide-react';
+import { useState, useEffect, useMemo } from 'react';
+import { X, Eye, EyeOff, CheckCircle, AlertCircle, Search } from 'lucide-react';
 import {
   settingsService,
   type LLMProvider,
+  type TimeFormat,
   AVAILABLE_MODELS,
   DEFAULT_MODELS,
 } from '../services/settings';
+import {
+  TIMEZONE_OPTIONS,
+  TIME_FORMAT_OPTIONS,
+  filterTimezones,
+  detectUserTimezone,
+  detectTimeFormat,
+  getCurrentTime,
+} from '../utils/dateTime';
 import { maskApiKey } from '../utils/encryption';
 import toast from 'react-hot-toast';
 import './Settings.css';
@@ -39,6 +48,21 @@ function Settings({ isOpen, onClose }: SettingsProps) {
   const [geminiModel, setGeminiModel] = useState(DEFAULT_MODELS.gemini);
   const [customOllamaModel, setCustomOllamaModel] = useState('');
 
+  // Display settings state
+  const [timezone, setTimezone] = useState(detectUserTimezone());
+  const [timeFormat, setTimeFormat] = useState<TimeFormat>(detectTimeFormat());
+  const [timezoneSearch, setTimezoneSearch] = useState('');
+  const [isTimezoneDropdownOpen, setIsTimezoneDropdownOpen] = useState(false);
+
+  // Filtered timezone options based on search
+  const filteredTimezones = useMemo(() => filterTimezones(timezoneSearch), [timezoneSearch]);
+
+  // Current time preview
+  const currentTimePreview = useMemo(
+    () => getCurrentTime(timezone, timeFormat),
+    [timezone, timeFormat]
+  );
+
   useEffect(() => {
     if (isOpen) {
       loadSettings();
@@ -61,6 +85,10 @@ function Settings({ isOpen, onClose }: SettingsProps) {
         setCustomOllamaModel(settings.ollamaModel);
         setOllamaModel('custom');
       }
+
+      // Load display settings
+      setTimezone(settings.timezone);
+      setTimeFormat(settings.timeFormat);
 
       // Check if keys exist but don't show them for security
       setHasAnthropicKey(!!settings.anthropicApiKey);
@@ -138,6 +166,10 @@ function Settings({ isOpen, onClose }: SettingsProps) {
       }
       settingsService.saveModel('claude', claudeModel);
       settingsService.saveModel('gemini', geminiModel);
+
+      // Save display settings
+      settingsService.saveTimezone(timezone);
+      settingsService.saveTimeFormat(timeFormat);
 
       // Save API keys only if they were changed (not masked)
       if (anthropicApiKey && !isAnthropicKeyMasked) {
@@ -426,6 +458,99 @@ function Settings({ isOpen, onClose }: SettingsProps) {
               )}
             </div>
           )}
+
+          {/* Display Settings */}
+          <div className="settings-section">
+            <h3>Display Settings</h3>
+            <p className="settings-description">
+              Configure how dates and times are displayed in the app.
+            </p>
+
+            {/* Timezone Selection */}
+            <h4 className="settings-subsection-title">Timezone</h4>
+            <div className="timezone-selector">
+              <div
+                className="timezone-input-wrapper"
+                onClick={() => setIsTimezoneDropdownOpen(!isTimezoneDropdownOpen)}
+              >
+                <Search size={16} className="timezone-search-icon" />
+                <input
+                  type="text"
+                  value={
+                    isTimezoneDropdownOpen
+                      ? timezoneSearch
+                      : TIMEZONE_OPTIONS.find(tz => tz.value === timezone)?.label || timezone
+                  }
+                  onChange={e => {
+                    setTimezoneSearch(e.target.value);
+                    setIsTimezoneDropdownOpen(true);
+                  }}
+                  onFocus={() => {
+                    setIsTimezoneDropdownOpen(true);
+                    setTimezoneSearch('');
+                  }}
+                  placeholder="Search timezones..."
+                  className="settings-input timezone-input"
+                />
+              </div>
+              {isTimezoneDropdownOpen && (
+                <div className="timezone-dropdown">
+                  {filteredTimezones.length > 0 ? (
+                    <>
+                      {/* Group timezones by region */}
+                      {['UTC', 'Europe', 'Americas', 'Asia', 'Oceania', 'Africa'].map(group => {
+                        const groupTimezones = filteredTimezones.filter(tz => tz.group === group);
+                        if (groupTimezones.length === 0) return null;
+                        return (
+                          <div key={group} className="timezone-group">
+                            <div className="timezone-group-header">{group}</div>
+                            {groupTimezones.map(tz => (
+                              <div
+                                key={tz.value}
+                                className={`timezone-option ${timezone === tz.value ? 'selected' : ''}`}
+                                onClick={() => {
+                                  setTimezone(tz.value);
+                                  setIsTimezoneDropdownOpen(false);
+                                  setTimezoneSearch('');
+                                }}
+                              >
+                                {tz.label}
+                              </div>
+                            ))}
+                          </div>
+                        );
+                      })}
+                    </>
+                  ) : (
+                    <div className="timezone-no-results">No timezones found</div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Time Format Selection */}
+            <h4 className="settings-subsection-title">Time Format</h4>
+            <div className="time-format-options">
+              {TIME_FORMAT_OPTIONS.map(option => (
+                <label key={option.value} className="time-format-option">
+                  <input
+                    type="radio"
+                    name="timeFormat"
+                    value={option.value}
+                    checked={timeFormat === option.value}
+                    onChange={() => setTimeFormat(option.value)}
+                  />
+                  <span>{option.label}</span>
+                </label>
+              ))}
+            </div>
+
+            {/* Preview */}
+            <div className="time-preview">
+              <span className="time-preview-label">Preview:</span>
+              <span className="time-preview-value">{currentTimePreview}</span>
+            </div>
+          </div>
         </div>
 
         <div className="settings-footer">

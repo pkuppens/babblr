@@ -1,5 +1,7 @@
 import React from 'react';
 import type { Message } from '../types';
+import { formatTime } from '../utils/dateTime';
+import type { TimeFormat } from '../services/settings';
 import './MessageBubble.css';
 
 interface MessageBubbleProps {
@@ -8,6 +10,8 @@ interface MessageBubbleProps {
   isSpeaking?: boolean;
   isActive?: boolean;
   onPlay?: (text: string) => void;
+  timezone?: string;
+  timeFormat?: TimeFormat;
 }
 
 const MessageBubble: React.FC<MessageBubbleProps> = ({
@@ -16,6 +20,8 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
   isSpeaking = false,
   isActive = false,
   onPlay,
+  timezone = 'UTC',
+  timeFormat = '24h',
 }) => {
   return (
     <div className={`message ${message.role}`}>
@@ -38,12 +44,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
           )}
         </div>
       </div>
-      <div className="message-time">
-        {new Date(message.created_at).toLocaleTimeString([], {
-          hour: '2-digit',
-          minute: '2-digit',
-        })}
-      </div>
+      <div className="message-time">{formatTime(message.created_at, timezone, timeFormat)}</div>
     </div>
   );
 };

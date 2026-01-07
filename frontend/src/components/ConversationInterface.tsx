@@ -9,11 +9,14 @@ import { formatLevelLabel, getDefaultTtsRateForLevel, normalizeToCefrLevel } fro
 import { getStarterMessage } from '../utils/starterMessages';
 import { getUIStrings } from '../utils/uiTranslations';
 import { useInlineRecorder } from '../hooks/useInlineRecorder';
+import type { TimeFormat } from '../services/settings';
 import './ConversationInterface.css';
 
 interface ConversationInterfaceProps {
   conversation: Conversation;
   onBack: () => void;
+  timezone?: string;
+  timeFormat?: TimeFormat;
 }
 
 /**
@@ -23,7 +26,12 @@ function formatDuration(seconds: number): string {
   return `${seconds.toFixed(1)}s`;
 }
 
-const ConversationInterface: React.FC<ConversationInterfaceProps> = ({ conversation, onBack }) => {
+const ConversationInterface: React.FC<ConversationInterfaceProps> = ({
+  conversation,
+  onBack,
+  timezone = 'UTC',
+  timeFormat = '24h',
+}) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -580,6 +588,8 @@ const ConversationInterface: React.FC<ConversationInterfaceProps> = ({ conversat
                 voiceURI: ttsVoiceURI ?? undefined,
               });
             }}
+            timezone={timezone}
+            timeFormat={timeFormat}
           />
         ) : (
           messages.map(message => (
@@ -598,6 +608,8 @@ const ConversationInterface: React.FC<ConversationInterfaceProps> = ({ conversat
                   voiceURI: ttsVoiceURI ?? undefined,
                 });
               }}
+              timezone={timezone}
+              timeFormat={timeFormat}
             />
           ))
         )}
