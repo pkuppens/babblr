@@ -14,7 +14,17 @@ class Settings(BaseSettings):
 
     # Claude/Anthropic settings
     anthropic_api_key: str = ""
-    claude_model: str = "claude-sonnet-4-20250514"
+    anthropic_model: str = Field(
+        default="claude-sonnet-4-20250514",
+        validation_alias=AliasChoices("anthropic_model", "claude_model"),
+    )
+
+    # Google Gemini settings
+    google_api_key: str = ""
+    gemini_model: str = "gemini-2.0-flash"  # or gemini-1.5-flash-latest, gemini-1.5-pro
+
+    # Conversation memory settings (Summary Buffer)
+    conversation_max_token_limit: int = 2000  # Max tokens before summarizing old messages
 
     # Common LLM settings
     llm_max_tokens: int = 1000
@@ -30,28 +40,35 @@ class Settings(BaseSettings):
     whisper_model: str = "base"
     whisper_device: str = "auto"  # "auto", "cuda", or "cpu"
 
-    # Application settings
-    development_mode: bool = False
-    audio_storage_path: str = "./audio_files"
-    host: str = Field(
+    # Application settings (BABBLR_ prefixed for consistency)
+    babblr_dev_mode: bool = Field(
+        default=False,
+        validation_alias=AliasChoices("babblr_dev_mode", "development_mode"),
+    )
+    stt_dump_uploads: bool = False
+    babblr_audio_storage_path: str = Field(
+        default="./audio_files",
+        validation_alias=AliasChoices("babblr_audio_storage_path", "audio_storage_path"),
+    )
+    babblr_api_host: str = Field(
         default="127.0.0.1",
-        validation_alias=AliasChoices("host", "babblr_api_host"),
+        validation_alias=AliasChoices("babblr_api_host", "host"),
     )
-    port: int = Field(
+    babblr_api_port: int = Field(
         default=8000,
-        validation_alias=AliasChoices("port", "babblr_api_port"),
+        validation_alias=AliasChoices("babblr_api_port", "port"),
     )
-    database_url: str = Field(
+    babblr_conversation_database_url: str = Field(
         default="sqlite+aiosqlite:///./babblr.db",
-        validation_alias=AliasChoices("database_url", "babblr_conversation_database_url"),
+        validation_alias=AliasChoices("babblr_conversation_database_url", "database_url"),
     )
-    frontend_url: str = Field(
+    babblr_frontend_url: str = Field(
         default="http://localhost:3000",
-        validation_alias=AliasChoices("frontend_url", "babblr_frontend_url"),
+        validation_alias=AliasChoices("babblr_frontend_url", "frontend_url"),
     )
-    timezone: str = Field(
+    babblr_timezone: str = Field(
         default="Europe/Amsterdam",
-        validation_alias=AliasChoices("timezone", "babblr_timezone"),
+        validation_alias=AliasChoices("babblr_timezone", "timezone"),
     )
 
     # Note: `pydantic-settings` loads all `.env` keys and then validates them.

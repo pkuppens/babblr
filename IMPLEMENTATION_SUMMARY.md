@@ -168,10 +168,12 @@ babblr/
 ### Chat
 - `POST /chat` - Send message, get AI response with corrections
 
-### Speech
-- `POST /speech/transcribe` - Transcribe audio to text
+### Speech-to-Text
+- `POST /stt/transcribe` - Transcribe audio to text
+- `GET /stt/languages` - Get supported STT locales and metadata
+- `GET /stt/models` - Get available Whisper models
 
-### TTS
+### Text-to-Speech
 - `POST /tts/synthesize` - Convert text to speech audio
 
 ### Health

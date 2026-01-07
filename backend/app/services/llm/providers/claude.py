@@ -53,7 +53,8 @@ class ClaudeProvider:
 
             api_key = getattr(settings, "anthropic_api_key", "")
 
-        if not api_key:
+        # Check if API key is missing or is the placeholder value
+        if not api_key or api_key == "your_anthropic_api_key_here":
             raise LLMAuthenticationError(
                 "Anthropic API key is required. Set ANTHROPIC_API_KEY in environment."
             )

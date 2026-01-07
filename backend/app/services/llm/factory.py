@@ -59,6 +59,13 @@ class ProviderFactory:
         except ImportError:
             pass
 
+        try:
+            from app.services.llm.providers.gemini import GeminiProvider
+
+            cls._providers["gemini"] = GeminiProvider
+        except ImportError:
+            pass
+
     @classmethod
     def register_provider(cls, name: str, provider_class: type) -> None:
         """Register a provider class.
@@ -120,12 +127,16 @@ class ProviderFactory:
         # Handle provider-specific initialization
         if name == "claude":
             api_key = getattr(settings, "anthropic_api_key", "")
-            model = getattr(settings, "claude_model", "claude-sonnet-4-20250514")
+            model = getattr(settings, "anthropic_model", "claude-sonnet-4-20250514")
             return provider_class(api_key=api_key, model=model)
         elif name == "ollama":
             base_url = getattr(settings, "ollama_base_url", "http://localhost:11434")
             model = getattr(settings, "ollama_model", "llama3.2:latest")
             return provider_class(base_url=base_url, model=model)
+        elif name == "gemini":
+            api_key = getattr(settings, "google_api_key", "")
+            model = getattr(settings, "gemini_model", "gemini-2.0-flash")
+            return provider_class(api_key=api_key, model=model)
         else:
             return provider_class()
 

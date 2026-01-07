@@ -250,7 +250,8 @@ Whisper is optional but required for voice input:
 pip install openai-whisper
 ```
 
-Note: Whisper requires `ffmpeg` to be installed on your system.
+Note: Whisper requires `ffmpeg` to decode audio. On Windows you can either install FFmpeg system-wide
+or reinstall backend dependencies to use the bundled `imageio-ffmpeg` fallback.
 
 ### API key errors
 

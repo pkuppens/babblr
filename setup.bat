@@ -7,21 +7,32 @@ echo.
 REM Check prerequisites
 echo Checking prerequisites...
 
-where python >nul 2>&1
+REM Check for Python 3.12 specifically using py launcher
+py -3.12 -V >nul 2>&1
 if %errorlevel% neq 0 (
-    echo [ERROR] Python 3 is not installed. Please install Python 3.12 or higher.
+    echo [ERROR] Python 3.12 is not installed.
+    echo.
+    echo Install Python 3.12 using one of these methods:
+    echo   winget install -e --id Python.Python.3.12
+    echo   Or download from: https://www.python.org/downloads/
+    echo.
+    echo After installation, restart your terminal and run setup.bat again.
     exit /b 1
 )
 
 where node >nul 2>&1
 if %errorlevel% neq 0 (
-    echo [ERROR] Node.js is not installed. Please install Node.js 22 or higher.
+    echo [ERROR] Node.js is not installed.
+    echo.
+    echo Install Node.js 22+ using one of these methods:
+    echo   winget install -e --id OpenJS.NodeJS.LTS
+    echo   Or download from: https://nodejs.org/
     exit /b 1
 )
 
-for /f "tokens=*" %%i in ('python --version') do set PYTHON_VERSION=%%i
+for /f "tokens=*" %%i in ('py -3.12 -V') do set PYTHON_VERSION=%%i
 for /f "tokens=*" %%i in ('node --version') do set NODE_VERSION=%%i
-echo [OK] Python %PYTHON_VERSION% found
+echo [OK] %PYTHON_VERSION% found
 echo [OK] Node.js %NODE_VERSION% found
 echo.
 
@@ -67,10 +78,10 @@ if %errorlevel% neq 0 (
     exit /b 1
 )
 
-REM Create virtual environment with uv
+REM Create virtual environment with uv using Python 3.12
 if not exist ".venv" (
-    echo Creating Python virtual environment with uv...
-    uv venv
+    echo Creating Python 3.12 virtual environment with uv...
+    uv venv --python 3.12
     if %errorlevel% neq 0 (
         echo [ERROR] Failed to create virtual environment
         exit /b 1
@@ -81,7 +92,7 @@ if not exist ".env" (
     echo Creating .env file from .env.example...
     if exist ".env.example" (
         copy /Y .env.example .env >nul
-        echo [WARNING] Please add your ANTHROPIC_API_KEY to backend\.env before running the app
+        echo [OK] Created .env with default settings (LLM_PROVIDER=ollama)
     )
 )
 
@@ -134,15 +145,17 @@ REM Done
 echo Setup complete!
 echo.
 echo Next steps:
-echo 1. Add your Anthropic API key to backend\.env
+echo 1. Review backend\.env for LLM provider settings:
+echo    - Default: LLM_PROVIDER=ollama (requires Ollama running locally)
+echo    - Optional: Set ANTHROPIC_API_KEY for Claude
+echo    - Optional: Set GOOGLE_API_KEY for Gemini
 echo 2. Start the backend: run-backend.bat
 echo 3. Start the frontend: run-frontend.bat
 echo.
 echo Documentation:
-echo    - See UV_SETUP.md for detailed uv usage
+echo    - See ENVIRONMENT.md for LLM provider configuration
 echo    - See QUICKSTART.md for quick start guide
 echo.
-echo Note: Backend uses uv for fast package management (.venv)
 echo Happy learning!
 
 cd ..

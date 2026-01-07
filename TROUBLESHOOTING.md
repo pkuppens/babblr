@@ -115,7 +115,7 @@ Or use the provided script:
 2. Install ffmpeg (required by Whisper):
    - Ubuntu/Debian: `sudo apt-get install ffmpeg`
    - macOS: `brew install ffmpeg`
-   - Windows: Download from https://ffmpeg.org/
+   - Windows: Install FFmpeg (or reinstall backend dependencies to use the bundled `imageio-ffmpeg` fallback)
 
 3. Check microphone permissions in browser/OS
 

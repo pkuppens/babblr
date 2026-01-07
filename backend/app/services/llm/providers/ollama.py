@@ -253,6 +253,43 @@ class OllamaProvider:
         except Exception:
             return False
 
+    async def list_models(self) -> list[str]:
+        """List available models from the local Ollama instance.
+
+        Args:
+            None
+
+        Returns:
+            list[str]: Model identifiers as returned by Ollama (e.g., "llama3.2:latest").
+
+        Raises:
+            ProviderUnavailableError: If Ollama is not reachable.
+            LLMError: If Ollama returns an unexpected response.
+        """
+        client = await self._get_client()
+        try:
+            response = await client.get("/api/tags")
+            response.raise_for_status()
+            data = response.json()
+        except httpx.ConnectError as e:
+            raise ProviderUnavailableError(
+                "ollama", f"Cannot connect to Ollama at {self.base_url}: {e}"
+            )
+        except httpx.TimeoutException as e:
+            raise LLMError(f"Ollama request timed out: {e}")
+        except httpx.HTTPStatusError as e:
+            raise LLMError(f"Ollama API error: {e.response.status_code} - {e.response.text}")
+        except Exception as e:
+            raise LLMError(f"Unexpected error calling Ollama: {e}")
+
+        models = data.get("models", [])
+        names: list[str] = []
+        for item in models:
+            name = item.get("name")
+            if isinstance(name, str) and name:
+                names.append(name)
+        return sorted(set(names))
+
     async def health_check(self) -> bool:
         """Check if Ollama is available and healthy.
 

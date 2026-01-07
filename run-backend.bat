@@ -7,14 +7,7 @@ set "SCRIPT_DIR=%~dp0"
 set "PROJECT_ROOT=%SCRIPT_DIR%"
 set "BACKEND_DIR=%PROJECT_ROOT%backend"
 
-REM Add project root to PATH (idempotent)
-set "PATH_CHECK=;!PATH!;"
-set "ROOT_TOKEN=;!PROJECT_ROOT!;"
-if "!PATH_CHECK:%ROOT_TOKEN%=!"=="!PATH_CHECK!" (
-    set "PATH=!PROJECT_ROOT!;!PATH!"
-)
-
-REM Change to backend directory (idempotent) and remember where we came from
+REM Change to backend directory
 pushd "%BACKEND_DIR%"
 if %errorlevel% neq 0 (
     echo [ERROR] Cannot access backend directory: %BACKEND_DIR%

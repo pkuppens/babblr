@@ -7,12 +7,13 @@ future replacement with other STT implementations (e.g., cloud-based services).
 """
 
 import asyncio
-import importlib.util
 import logging
-import os
+import subprocess
 import time
 from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Optional
+
+import numpy as np
 
 logger = logging.getLogger(__name__)
 
@@ -27,15 +28,85 @@ except ImportError:
     whisper = None
     torch = None
 
+# Whisper expects audio at this sample rate
+WHISPER_SAMPLE_RATE = 16000
 
-def _is_pydub_available() -> bool:
-    """Check whether pydub is available without importing it.
 
-    Importing pydub at module import time can emit third-party warnings
-    (e.g., ffmpeg discovery warnings) during unit tests. We keep it lazy
-    and only import it when audio conversion is actually needed.
+def _get_ffmpeg_exe() -> str:
+    """Get the path to ffmpeg executable.
+
+    Uses imageio-ffmpeg's bundled binary, which works cross-platform without
+    requiring ffmpeg to be installed system-wide or on PATH.
+
+    Returns:
+        Path to the ffmpeg executable.
+
+    Raises:
+        RuntimeError: If imageio-ffmpeg is not installed or ffmpeg not found.
     """
-    return importlib.util.find_spec("pydub") is not None
+    try:
+        import imageio_ffmpeg
+
+        return imageio_ffmpeg.get_ffmpeg_exe()
+    except ImportError:
+        raise RuntimeError("imageio-ffmpeg not installed. Install with: pip install imageio-ffmpeg")
+    except Exception as e:
+        raise RuntimeError(f"Failed to get ffmpeg from imageio-ffmpeg: {e}")
+
+
+def _load_audio(audio_path: str, sr: int = WHISPER_SAMPLE_RATE) -> np.ndarray:
+    """Load audio file and convert to numpy array at the specified sample rate.
+
+    Uses imageio-ffmpeg's bundled ffmpeg binary directly, avoiding the need for
+    ffmpeg to be on PATH. This replicates what whisper.load_audio() does internally.
+
+    Args:
+        audio_path: Path to the audio file (supports any format ffmpeg can decode).
+        sr: Target sample rate (default: 16000 Hz for Whisper).
+
+    Returns:
+        Audio as float32 numpy array normalized to [-1, 1].
+
+    Raises:
+        RuntimeError: If audio loading fails.
+    """
+    ffmpeg_exe = _get_ffmpeg_exe()
+
+    # Run ffmpeg to convert audio to 16-bit PCM at target sample rate
+    # This is exactly what whisper.load_audio() does, but using our bundled ffmpeg
+    cmd = [
+        ffmpeg_exe,
+        "-nostdin",
+        "-threads",
+        "0",
+        "-i",
+        audio_path,
+        "-f",
+        "s16le",  # 16-bit signed little-endian PCM
+        "-ac",
+        "1",  # mono
+        "-acodec",
+        "pcm_s16le",
+        "-ar",
+        str(sr),
+        "-",  # output to stdout
+    ]
+
+    try:
+        result = subprocess.run(
+            cmd,
+            capture_output=True,
+            check=True,
+        )
+    except subprocess.CalledProcessError as e:
+        raise RuntimeError(
+            f"Failed to load audio '{audio_path}': ffmpeg returned {e.returncode}. "
+            f"stderr: {e.stderr.decode(errors='replace')}"
+        )
+
+    # Convert to numpy float32 array normalized to [-1, 1]
+    audio = np.frombuffer(result.stdout, np.int16).astype(np.float32) / 32768.0
+    return audio
 
 
 class TranscriptionResult:
@@ -183,15 +254,12 @@ class WhisperService(STTService):
                 "Install with: pip install openai-whisper"
             )
 
-        # Convert audio format if needed
-        converted_path = await self._convert_audio_format(audio_path)
-
         try:
             start_time = time.time()
 
             # Run transcription with timeout
             result = await asyncio.wait_for(
-                self._transcribe_sync(converted_path, language), timeout=timeout
+                self._transcribe_async(audio_path, language), timeout=timeout
             )
 
             processing_time = time.time() - start_time
@@ -211,12 +279,7 @@ class WhisperService(STTService):
             logger.error("Transcription timed out after %d seconds", timeout)
             raise Exception(f"Transcription timed out after {timeout} seconds")
 
-        finally:
-            # Clean up converted file if it's different from original
-            if converted_path != audio_path and os.path.exists(converted_path):
-                os.unlink(converted_path)
-
-    async def _transcribe_sync(
+    async def _transcribe_async(
         self, audio_path: str, language: Optional[str] = None
     ) -> TranscriptionResult:
         """
@@ -254,12 +317,19 @@ class WhisperService(STTService):
         if self.model is None:
             raise RuntimeError("Whisper model is not loaded")
 
-        options = {}
+        # Load audio using our bundled ffmpeg (avoids PATH dependency)
+        audio = _load_audio(audio_path)
+
+        options: Dict[str, Any] = {}
         if language_code:
             options["language"] = language_code
 
-        # Transcribe
-        result = self.model.transcribe(audio_path, **options)
+        # On CPU, fp16 is not supported - use fp32 to avoid warnings
+        if self.device == "cpu":
+            options["fp16"] = False
+
+        # Transcribe (passing numpy array directly, not file path)
+        result = self.model.transcribe(audio, **options)
 
         # Extract information
         text = result["text"].strip()
@@ -287,73 +357,6 @@ class WhisperService(STTService):
             duration=duration,
             metadata=result,
         )
-
-    async def _convert_audio_format(self, audio_path: str) -> str:
-        """
-        Convert audio to a format Whisper can handle if needed.
-
-        Whisper handles most formats, but this provides a fallback
-        for problematic formats using pydub.
-
-        Args:
-            audio_path: Path to the audio file
-
-        Returns:
-            Path to the converted file (or original if no conversion needed)
-        """
-        # Check file extension
-        ext = os.path.splitext(audio_path)[1].lower()
-
-        # Whisper can handle these formats directly
-        supported_formats = [".wav", ".mp3", ".m4a", ".ogg", ".flac"]
-        if ext in supported_formats:
-            return audio_path
-
-        # For other formats, try to convert using pydub
-        if not _is_pydub_available():
-            logger.warning(
-                "pydub not available, cannot convert %s format. Install with: pip install pydub",
-                ext,
-            )
-            return audio_path
-
-        try:
-            logger.info("Converting audio format from %s to wav", ext)
-
-            # Run conversion in thread pool to avoid blocking
-            loop = asyncio.get_event_loop()
-            output_path = await loop.run_in_executor(None, self._do_audio_conversion, audio_path)
-
-            logger.info("Audio converted successfully to %s", output_path)
-            return output_path
-
-        except Exception as e:
-            logger.warning("Failed to convert audio format: %s. Using original file.", str(e))
-            return audio_path
-
-    def _do_audio_conversion(self, audio_path: str) -> str:
-        """
-        Perform audio conversion (runs in thread pool).
-
-        Args:
-            audio_path: Path to the audio file
-
-        Returns:
-            Path to converted file
-        """
-        try:
-            from pydub import AudioSegment
-        except ImportError as e:
-            raise RuntimeError("pydub is not installed") from e
-
-        # Load audio
-        audio = AudioSegment.from_file(audio_path)
-
-        # Export as WAV
-        output_path = f"{audio_path}.converted.wav"
-        audio.export(output_path, format="wav")
-
-        return output_path
 
     def _map_language_code(self, language: Optional[str]) -> Optional[str]:
         """

@@ -14,7 +14,7 @@ class ClaudeService:
 
     def __init__(self):
         self.client = Anthropic(api_key=settings.anthropic_api_key)
-        self.model = settings.claude_model
+        self.model = settings.anthropic_model
 
     async def correct_text(
         self, text: str, language: str, difficulty_level: str

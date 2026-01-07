@@ -14,7 +14,12 @@ dependencies = [
     "uvicorn[standard]>=0.32.1",
     "python-multipart>=0.0.18",
     "anthropic>=0.39.0",
+    # PyTorch with CUDA support - uv will use the pytorch-cu121 index (see [tool.uv.sources])
+    "torch>=2.0.0",
     "openai-whisper>=20231117",
+    # Provides a bundled FFmpeg binary for many platforms. We use it as a fallback
+    # on Windows so Whisper can decode audio without a system-wide FFmpeg install.
+    "imageio-ffmpeg>=0.6.0",
     "python-dotenv>=1.0.1",
     "sqlalchemy>=2.0.36",
     "aiosqlite>=0.20.0",
@@ -22,11 +27,13 @@ dependencies = [
     "pydantic-settings>=2.6.1",
     "edge-tts>=6.1.18",
     "pydub>=0.25.1",
-    # NOTE: PyTorch is NOT listed here - must be installed separately for CUDA support
-    # After installing base dependencies, run:
-    #   uv pip install --upgrade torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
-    # Or for CPU only:
-    #   uv pip install torch torchvision torchaudio
+    # Windows-friendly IANA timezone database for zoneinfo (fixes ZoneInfoNotFoundError)
+    "tzdata>=2025.1",
+    # LangChain framework for prompts, memory, and guardrails
+    "langchain>=0.3.0",
+    "langchain-core>=0.3.0",
+    "langchain-google-genai>=2.0.0",
+    "langchain-anthropic>=0.3.0",
 ]
 
 [project.optional-dependencies]
@@ -44,6 +51,17 @@ babblr-backend = "app.main:main"
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+# Use PyTorch CUDA index for torch packages
+[[tool.uv.index]]
+name = "pytorch-cu121"
+url = "https://download.pytorch.org/whl/cu121"
+explicit = true
+
+[tool.uv.sources]
+torch = { index = "pytorch-cu121" }
+torchvision = { index = "pytorch-cu121" }
+torchaudio = { index = "pytorch-cu121" }
 
 [tool.hatch.build.targets.wheel]
 packages = ["app"]
@@ -70,6 +88,10 @@ target-version = "py312"
 [tool.ruff.lint]
 select = ["E", "F", "I", "N", "W"]
 ignore = ["E501"]
+
+[tool.ruff.lint.isort]
+# Ensure 'app' is always recognized as first-party regardless of working directory
+known-first-party = ["app"]
 
 [tool.pyright]
 pythonVersion = "3.12"
