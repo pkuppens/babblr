@@ -1,4 +1,15 @@
 repos:
+  # Prevent direct commits to main branch
+  - repo: local
+    hooks:
+      - id: no-commit-to-main
+        name: no-commit-to-main
+        entry: bash scripts/no-commit-to-main.sh
+        language: system
+        always_run: true
+        pass_filenames: false
+        stages: [pre-commit]
+
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.14.10
     hooks:
