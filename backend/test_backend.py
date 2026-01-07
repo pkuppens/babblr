@@ -16,8 +16,8 @@ from app.models.schemas import ChatRequest, ConversationCreate
 def test_config_loads():
     """Test that configuration loads."""
     assert settings is not None
-    assert settings.host == "127.0.0.1"
-    assert settings.port == 8000
+    assert settings.babblr_api_host == "127.0.0.1"
+    assert settings.babblr_api_port == 8000
 
 
 def test_schemas_validate():

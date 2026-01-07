@@ -76,7 +76,7 @@ async def chat(request: ChatRequest, db: AsyncSession = Depends(get_db)):
         db.add(assistant_message)
 
         # Update conversation timestamp using configured timezone
-        tz = ZoneInfo(settings.timezone)
+        tz = ZoneInfo(settings.babblr_timezone)
         conversation.updated_at = datetime.now(tz).replace(tzinfo=None)
 
         await db.commit()

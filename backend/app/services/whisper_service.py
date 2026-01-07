@@ -14,6 +14,8 @@ import time
 from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Optional
 
+from app.services.language_catalog import list_locales, locale_to_iso_639_1
+
 logger = logging.getLogger(__name__)
 
 # Check if Whisper is available
@@ -368,11 +370,16 @@ class WhisperService(STTService):
         if not language:
             return None
 
-        language_lower = language.lower()
+        language_lower = language.lower().strip().replace("_", "-")
 
         # If it's already a code, return it
         if language_lower in self.SUPPORTED_LANGUAGES.values():
             return language_lower
+
+        # If it's a locale, convert to ISO-639-1
+        iso_code = locale_to_iso_639_1(language_lower)
+        if iso_code:
+            return iso_code
 
         # Map from name to code
         return self.SUPPORTED_LANGUAGES.get(language_lower, language_lower)
@@ -381,9 +388,55 @@ class WhisperService(STTService):
         """Return list of supported language codes."""
         return list(self.SUPPORTED_LANGUAGES.values())
 
+    def get_supported_locales(self) -> List[str]:
+        """Return list of supported locales for Babblr STT.
+
+        Babblr exposes locale variants (e.g., "en-GB") to the client, but Whisper
+        receives an ISO-639-1 language code (e.g., "en"). This method provides the
+        locale variants we explicitly support in our UX.
+        """
+        return list_locales(stt_only=True)
+
     def get_available_models(self) -> List[str]:
         """Return list of available Whisper models."""
         return self.AVAILABLE_MODELS
+
+    def get_cuda_info(self) -> Dict[str, Any]:
+        """Return CUDA/GPU availability information for Whisper runtime.
+
+        Args:
+            None
+
+        Returns:
+            dict[str, Any]: CUDA/runtime information for health/status endpoints.
+        """
+        if not WHISPER_AVAILABLE or torch is None:
+            return {
+                "torch_available": False,
+                "cuda_available": False,
+                "device": "cpu",
+                "gpu_count": 0,
+                "gpu_names": [],
+            }
+
+        cuda_available = bool(torch.cuda.is_available())
+        gpu_count = int(torch.cuda.device_count()) if cuda_available else 0
+        gpu_names: list[str] = []
+        if cuda_available:
+            for i in range(gpu_count):
+                try:
+                    gpu_names.append(str(torch.cuda.get_device_name(i)))
+                except Exception:
+                    gpu_names.append("unknown")
+
+        return {
+            "torch_available": True,
+            "torch_version": getattr(torch, "__version__", "unknown"),
+            "cuda_available": cuda_available,
+            "device": self.device,
+            "gpu_count": gpu_count,
+            "gpu_names": gpu_names,
+        }
 
 
 # Initialize the service with configuration

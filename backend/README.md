@@ -192,8 +192,10 @@ Once running, visit:
 ### Chat
 - `POST /chat` - Send message and get AI response
 
-### Speech
-- `POST /speech/transcribe` - Transcribe audio to text
+### Speech-to-Text
+- `POST /stt/transcribe` - Transcribe audio to text
+- `GET /stt/languages` - Get supported STT locales and metadata
+- `GET /stt/models` - Get available Whisper models
 
 ### Text-to-Speech
 - `POST /tts/synthesize` - Convert text to speech
@@ -221,7 +223,7 @@ app/
 ├── routes/
 │   ├── conversations.py # Conversation endpoints
 │   ├── chat.py         # Chat endpoints
-│   ├── speech.py       # STT endpoints
+│   ├── stt.py          # Speech-to-text endpoints
 │   └── tts.py          # TTS endpoints
 └── services/
     ├── whisper_service.py  # Whisper integration

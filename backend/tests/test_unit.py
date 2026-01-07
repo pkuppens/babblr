@@ -73,22 +73,22 @@ class TestConfig:
         from app.config import settings
 
         assert settings is not None
-        assert hasattr(settings, "host")
-        assert hasattr(settings, "port")
-        assert hasattr(settings, "claude_model")
+        assert hasattr(settings, "babblr_api_host")
+        assert hasattr(settings, "babblr_api_port")
+        assert hasattr(settings, "anthropic_model")
         assert hasattr(settings, "whisper_model")
 
     def test_config_defaults(self):
         """Test configuration defaults."""
         from app.config import settings
 
-        assert settings.host == "127.0.0.1"
-        assert settings.port == 8000
-        assert settings.claude_model == "claude-sonnet-4-20250514"
+        assert settings.babblr_api_host == "127.0.0.1"
+        assert settings.babblr_api_port == 8000
+        assert settings.anthropic_model == "claude-sonnet-4-20250514"
         assert settings.whisper_model == "base"
         assert settings.whisper_device == "auto"
-        assert settings.development_mode is False
-        assert settings.audio_storage_path == "./audio_files"
+        assert settings.babblr_dev_mode is False
+        assert settings.babblr_audio_storage_path == "./audio_files"
         # New LLM provider settings
         assert settings.llm_provider == "ollama"
         assert settings.ollama_base_url == "http://localhost:11434"

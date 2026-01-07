@@ -127,7 +127,7 @@ export const speechService = {
       formData.append('audio', audioBlob, 'recording.webm');
 
       const response = await api.post(
-        `/speech/transcribe?conversation_id=${conversation_id}&language=${language}`,
+        `/stt/transcribe?conversation_id=${conversation_id}&language=${language}`,
         formData,
         {
           headers: {

@@ -13,7 +13,16 @@ BASE_URL = "http://localhost:8000"
 @pytest.fixture
 def client():
     """Create HTTP client for testing."""
-    return httpx.Client(base_url=BASE_URL, timeout=10.0)
+    try:
+        client = httpx.Client(base_url=BASE_URL, timeout=2.0)
+        # Fail fast when the backend is not running, to avoid noisy timeouts.
+        response = client.get("/")
+        if response.status_code != 200:
+            client.close()
+            pytest.skip(f"Backend not reachable at {BASE_URL} (status={response.status_code})")
+        return client
+    except Exception:
+        pytest.skip(f"Backend not reachable at {BASE_URL}. Start it first (see VALIDATION.md).")
 
 
 @pytest.mark.integration
@@ -131,7 +140,7 @@ class TestSTTEndpoints:
 
     def test_stt_languages_endpoint(self, client):
         """Test getting supported languages."""
-        response = client.get("/api/stt/languages")
+        response = client.get("/stt/languages")
         assert response.status_code == 200
         data = response.json()
         assert "languages" in data
@@ -140,16 +149,16 @@ class TestSTTEndpoints:
         assert data["count"] >= 5  # At least 5 languages
 
         # Check for expected languages
-        language_codes = [lang["code"] for lang in data["languages"]]
-        assert "es" in language_codes
-        assert "it" in language_codes
-        assert "de" in language_codes
-        assert "fr" in language_codes
-        assert "nl" in language_codes
+        locales = [lang["locale"] for lang in data["languages"]]
+        assert "es-ES" in locales
+        assert "it-IT" in locales
+        assert "de-DE" in locales
+        assert "fr-FR" in locales
+        assert "nl-NL" in locales
 
     def test_stt_models_endpoint(self, client):
         """Test getting available models."""
-        response = client.get("/api/stt/models")
+        response = client.get("/stt/models")
         assert response.status_code == 200
         data = response.json()
         assert "models" in data
@@ -173,6 +182,6 @@ class TestSTTEndpoints:
         # Real transcription tests would require audio files
 
         # Test with missing file
-        response = client.post("/api/stt/transcribe")
+        response = client.post("/stt/transcribe")
         # Should return 422 (validation error) for missing required field
         assert response.status_code == 422

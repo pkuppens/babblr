@@ -18,37 +18,79 @@ This document provides a comprehensive smoke test and validation plan for Babblr
 
 ### Goal: Verify the development environment is correctly configured
 
-#### 1.1 Prerequisites Check
+#### 1.1 Clone the Repository
 
 ```bash
+git clone https://github.com/pkuppens/babblr.git
+cd babblr
+```
+
+#### 1.2 Prerequisites Check
+
+**Linux/macOS:**
+```bash
 # Check Python version (requires 3.12+)
-python --version
+python3 --version
 # Expected: Python 3.12.x
 
 # Check Node.js version (requires 22+)
 node --version
 # Expected: v22.x.x or v24.x.x
 
-# Check uv is installed
+# Check uv is installed (optional - setup script will install it)
 uv --version
-# Expected: uv x.x.x
+```
+
+**Windows (PowerShell or CMD):**
+```powershell
+# Check Python 3.12 specifically
+py -3.12 -V
+# Expected: Python 3.12.x
+
+# Check Node.js version (requires 22+)
+node --version
+# Expected: v22.x.x or v24.x.x
+
+# Check uv is installed (optional - setup script will install it)
+uv --version
 ```
 
 <details>
-<summary>Troubleshooting: Python version incorrect</summary>
+<summary>Installing Python 3.12</summary>
 
-If you have the wrong Python version:
+**Windows (recommended):**
+```powershell
+winget install -e --id Python.Python.3.12
+```
+
+**Linux/macOS with pyenv:**
 ```bash
-# Install Python 3.12 using pyenv (recommended)
 pyenv install 3.12.8
 pyenv local 3.12.8
-
-# Or on Windows, download from python.org
 ```
+
+**Or download from:** https://www.python.org/downloads/
 </details>
 
 <details>
-<summary>Troubleshooting: uv not installed</summary>
+<summary>Installing Node.js 22+</summary>
+
+**Windows:**
+```powershell
+winget install -e --id OpenJS.NodeJS.LTS
+```
+
+**Linux/macOS with nvm:**
+```bash
+nvm install 22
+nvm use 22
+```
+
+**Or download from:** https://nodejs.org/
+</details>
+
+<details>
+<summary>Installing uv (if not using setup script)</summary>
 
 ```bash
 # Linux/macOS
@@ -59,14 +101,9 @@ powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
 ```
 </details>
 
-#### 1.2 Clone and Setup (Fresh Install)
+#### 1.3 Run Setup Script
 
 ```bash
-# Clone repository
-git clone https://github.com/pkuppens/babblr.git
-cd babblr
-
-# Run setup script
 # Linux/macOS:
 ./setup.sh
 
@@ -84,7 +121,7 @@ setup.bat
 <summary>Troubleshooting: Setup script fails</summary>
 
 1. Ensure you're in the project root directory
-2. Check Python and Node.js are installed
+2. Check Python 3.12 and Node.js 22+ are installed (see 1.2)
 3. Try manual setup:
    ```bash
    cd backend
@@ -95,7 +132,7 @@ setup.bat
    ```
 </details>
 
-#### 1.3 Environment Configuration
+#### 1.4 Environment Configuration
 
 ```bash
 # Verify .env file exists

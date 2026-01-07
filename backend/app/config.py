@@ -1,4 +1,6 @@
-from pydantic import AliasChoices, Field
+import sys
+
+from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -7,14 +9,6 @@ class Settings(BaseSettings):
 
     # LLM Provider selection (runtime swappable)
     llm_provider: str = "ollama"  # "ollama", "claude", "gemini", "mock"
-
-    # Ollama settings (MVP primary)
-    ollama_base_url: str = "http://localhost:11434"
-    ollama_model: str = "llama3.2:latest"
-
-    # Claude/Anthropic settings
-    anthropic_api_key: str = ""
-    claude_model: str = "claude-sonnet-4-20250514"
 
     # Common LLM settings
     llm_max_tokens: int = 1000
@@ -26,38 +20,65 @@ class Settings(BaseSettings):
     llm_retry_base_delay: float = 1.0
     llm_retry_max_delay: float = 30.0
 
-    # Whisper settings
+    # Ollama settings (MVP primary)
+    ollama_base_url: str = "http://localhost:11434"
+    ollama_model: str = "llama3.2:latest"
+
+    # Anthropic settings (grouped with ANTHROPIC_ prefix)
+    anthropic_api_key: str = ""
+    anthropic_model: str = "claude-sonnet-4-20250514"
+
+    # Google Gemini settings
+    google_api_key: str = ""
+    gemini_model: str = "gemini-pro"
+
+    # Whisper settings (Speech-to-Text)
     whisper_model: str = "base"
     whisper_device: str = "auto"  # "auto", "cuda", or "cpu"
 
-    # Application settings
-    development_mode: bool = False
-    audio_storage_path: str = "./audio_files"
-    host: str = Field(
-        default="127.0.0.1",
-        validation_alias=AliasChoices("host", "babblr_api_host"),
-    )
-    port: int = Field(
-        default=8000,
-        validation_alias=AliasChoices("port", "babblr_api_port"),
-    )
-    database_url: str = Field(
-        default="sqlite+aiosqlite:///./babblr.db",
-        validation_alias=AliasChoices("database_url", "babblr_conversation_database_url"),
-    )
-    frontend_url: str = Field(
-        default="http://localhost:3000",
-        validation_alias=AliasChoices("frontend_url", "babblr_frontend_url"),
-    )
-    timezone: str = Field(
-        default="Europe/Amsterdam",
-        validation_alias=AliasChoices("timezone", "babblr_timezone"),
-    )
+    # Babblr API server settings
+    babblr_api_host: str = "127.0.0.1"
+    babblr_api_port: int = 8000
 
-    # Note: `pydantic-settings` loads all `.env` keys and then validates them.
-    # We intentionally ignore unknown keys to avoid breaking startup when `.env`
-    # contains variables for other components or older configuration names.
+    # Babblr database settings
+    babblr_conversation_database_url: str = "sqlite+aiosqlite:///./babblr.db"
+
+    # Babblr application settings
+    babblr_frontend_url: str = "http://localhost:3000"
+    babblr_timezone: str = "Europe/Amsterdam"
+    babblr_dev_mode: bool = False
+    babblr_audio_storage_path: str = "./audio_files"
+
     model_config = SettingsConfigDict(env_file=".env", case_sensitive=False, extra="ignore")
+
+    @model_validator(mode="after")
+    def validate_provider_requirements(self) -> "Settings":
+        """Validate that required settings are present for the selected provider."""
+        provider = self.llm_provider.lower()
+
+        if provider == "claude":
+            if (
+                not self.anthropic_api_key
+                or self.anthropic_api_key == "your_anthropic_api_key_here"
+            ):
+                print(
+                    "[ERROR] LLM_PROVIDER=claude requires ANTHROPIC_API_KEY to be set.\n"
+                    "       Get your API key at: https://console.anthropic.com/settings/keys\n"
+                    "       Then set it in backend/.env",
+                    file=sys.stderr,
+                )
+                # Don't exit - allow app to start, will fail on first API call with clear error
+
+        elif provider == "gemini":
+            if not self.google_api_key:
+                print(
+                    "[ERROR] LLM_PROVIDER=gemini requires GOOGLE_API_KEY to be set.\n"
+                    "       Get your API key at: https://makersuite.google.com/app/apikey\n"
+                    "       Then set it in backend/.env",
+                    file=sys.stderr,
+                )
+
+        return self
 
 
 settings = Settings()
