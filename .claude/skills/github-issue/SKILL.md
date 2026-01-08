@@ -6,129 +6,59 @@ allowed-tools: Bash(gh:*), Read, Write
 
 # GitHub Issue Management
 
-This skill provides capabilities for managing GitHub issues via the `gh` CLI.
+Manage GitHub issues via `gh` CLI.
 
-## Prerequisites
+## Core Commands
 
-Ensure `gh` CLI is installed and authenticated:
 ```bash
-gh auth status
-```
+# Fetch issue details
+gh issue view <number> --json number,title,body,state,labels,comments
 
-If not authenticated:
-```bash
-gh auth login
-```
-
-## Capabilities
-
-### Fetch Issue Details
-
-Get comprehensive issue information:
-```bash
-gh issue view <number> --json number,title,body,state,labels,comments,assignees,milestone
-```
-
-### Update Issue Description
-
-Update the issue body (use heredoc for multiline):
-```bash
+# Update description
 gh issue edit <number> --body "$(cat <<'EOF'
-Updated description content here...
+Updated description...
 EOF
 )"
-```
 
-### Update Issue Title
-
-```bash
-gh issue edit <number> --title "New title"
-```
-
-### Add Labels
-
-```bash
-gh issue edit <number> --add-label "label1,label2"
-```
-
-### Add Comment
-
-Document progress, decisions, or analysis:
-```bash
+# Add comment
 gh issue comment <number> --body "$(cat <<'EOF'
 ## Progress Update
 
 **Status:** [analyzing|in_progress|blocked|ready_for_review]
 
-**Summary:**
 - Point 1
 - Point 2
-
-**Next Steps:**
-- [ ] Task 1
-- [ ] Task 2
 EOF
 )"
-```
 
-### Close Issue
-
-```bash
+# Close issue
 gh issue close <number> --reason completed
-# or
-gh issue close <number> --reason "not planned"
 ```
-
-### Reopen Issue
-
-```bash
-gh issue reopen <number>
-```
-
-## Best Practices
-
-### Issue Updates
-- Add comments to track implementation progress
-- Use structured format (headers, lists) for readability
-- Include context for decisions made
-- Reference related PRs and issues
-
-### Issue Description
-- Keep description current with actual requirements
-- Mark completed items in checklists
-- Move deferred items to "Future Enhancements" section
-
-### Labels as Hints
-- `draft` - More freedom to suggest changes
-- `blocked` - Check and document blockers
-- `ai-ready` - Ready for AI implementation
-- `bug` vs `enhancement` - Affects implementation approach
 
 ## Comment Templates
 
-### Implementation Analysis
+**Implementation Analysis:**
 ```markdown
 ## Implementation Analysis
 
-**Already implemented:**
-- [List existing functionality]
-
-**Test coverage:**
-- [List covered scenarios]
-
-**Still needed:**
-- [List remaining work]
+**Already implemented:** [list]
+**Test coverage:** [list]
+**Still needed:** [list]
 ```
 
-### Completion Summary
+**Completion Summary:**
 ```markdown
 ## Implementation Complete
 
 PR: #<number>
 
-**Changes:**
-- [Summary of changes]
-
-**Testing:**
-- [How it was tested]
+**Changes:** [summary]
+**Testing:** [how tested]
 ```
+
+## Best Practices
+
+- Add comments to track progress
+- Use structured format (headers, lists)
+- Reference related PRs and issues
+- Keep description current with requirements
