@@ -1,7 +1,11 @@
-# Policies and Disclaimers
+# Policies and Guidelines
 
-This document provides basic guidance for using Babblr responsibly.
+This document provides policies for using and developing Babblr.
 It is not legal advice.
+
+---
+
+# Part 1: User Policies
 
 ## Acceptable use
 
@@ -26,4 +30,82 @@ Babblr may send your prompts to third-party AI providers depending on your confi
 Do not input secrets or sensitive personal data unless you understand the implications.
 
 See `ENVIRONMENT.md` for configuration details.
+
+---
+
+# Part 2: Developer Policies
+
+These policies guide development practices for contributors.
+
+## Git Workflow
+
+### Branching Strategy
+- **main**: Protected branch, always deployable
+- **feature/\***: Feature branches for new work
+- Never commit directly to `main`
+- All changes go through pull requests
+
+### Branch Naming
+Use the format: `feature/ISSUE_NUMBER-short-description`
+- Example: `feature/123-add-user-auth`
+- Keep descriptions short (max 5 words)
+- Use lowercase and hyphens
+
+### Commit Messages
+Format: `#ISSUE_NUMBER: type: description`
+
+Types:
+- `feat`: New feature
+- `fix`: Bug fix
+- `docs`: Documentation only
+- `test`: Adding/updating tests
+- `refactor`: Code refactoring
+- `chore`: Maintenance tasks
+
+Example: `#123: feat: add user authentication endpoint`
+
+## Pull Requests
+
+### Requirements
+- Link to the GitHub issue being addressed
+- Clear description of changes
+- Tests pass (automated CI)
+- Pre-commit hooks pass
+- Documentation updated if needed
+
+### Review Process
+- Request review from maintainer (pkuppens)
+- GitHub Copilot review for automated checks
+- Address all review comments before merge
+- Squash and merge preferred for clean history
+
+## Code Quality
+
+### Pre-commit Hooks
+Pre-commit hooks are configured and must pass:
+- Run automatically on commit
+- Can be run manually: `pre-commit run --all-files`
+- Never skip hooks (`--no-verify`) without explicit approval
+
+### Testing Requirements
+- Backend: pytest for unit and integration tests
+- Frontend: Appropriate testing based on change type
+- New features should include tests
+- Bug fixes should include regression tests
+
+### Documentation
+- Update relevant documentation with code changes
+- Architecture changes require `docs/ARCHITECTURE.md` updates
+- Keep `CLAUDE.md` current with development guidelines
+
+## Issue Management
+
+### Issue Updates
+- Add comments to track implementation progress
+- Update issue description if requirements change
+- Use labels appropriately (draft, blocked, etc.)
+
+### Closed Issues
+- Closed issues may be reopened if implementation doesn't match
+- Verify closed issues still work when making related changes
 

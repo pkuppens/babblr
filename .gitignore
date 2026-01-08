@@ -1,5 +1,6 @@
 # Ignore tmp directories
 tmp/
+.tmp/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -232,8 +233,10 @@ audio_files/
 # IDE
 .vscode/
 .idea/
-.claude/
 .serena/
+
+# Claude Code local settings (commands are tracked)
+.claude/settings.local.json
 
 # FFmpeg shims (generated for imageio-ffmpeg fallback)
 .ffmpeg-shims/
