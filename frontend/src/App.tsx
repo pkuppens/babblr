@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import LanguageSelector from './components/LanguageSelector';
+import TopicSelector from './components/TopicSelector';
 import ConversationInterface from './components/ConversationInterface';
 import ConversationList from './components/ConversationList';
 import Settings from './components/Settings';
-import { conversationService } from './services/api';
+import { conversationService, chatService } from './services/api';
 import { settingsService, type TimeFormat } from './services/settings';
 import type { Conversation, Language, DifficultyLevel } from './types';
 import { Settings as SettingsIcon } from 'lucide-react';
@@ -13,6 +14,9 @@ function App() {
   const [currentConversation, setCurrentConversation] = useState<Conversation | null>(null);
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [showLanguageSelector, setShowLanguageSelector] = useState(true);
+  const [showTopicSelector, setShowTopicSelector] = useState(false);
+  const [selectedLanguage, setSelectedLanguage] = useState<Language | null>(null);
+  const [selectedDifficulty, setSelectedDifficulty] = useState<DifficultyLevel | null>(null);
   const [showSettings, setShowSettings] = useState(false);
 
   // Display settings
@@ -39,25 +43,48 @@ function App() {
   }, []);
 
   const handleStartNewConversation = async (language: Language, difficulty: DifficultyLevel) => {
+    // Store the selection and show topic selector
+    setSelectedLanguage(language);
+    setSelectedDifficulty(difficulty);
+    setShowLanguageSelector(false);
+    setShowTopicSelector(true);
+  };
+
+  const handleTopicStarterSelected = async (starter: string) => {
+    // Create the conversation and send the starter message
+    if (!selectedLanguage || !selectedDifficulty) return;
+
     try {
-      const conversation = await conversationService.create(language, difficulty);
+      const conversation = await conversationService.create(selectedLanguage, selectedDifficulty);
       setCurrentConversation(conversation);
-      setShowLanguageSelector(false);
+      setShowTopicSelector(false);
+
+      // Send the starter message immediately
+      await chatService.sendMessage(
+        conversation.id,
+        starter,
+        selectedLanguage,
+        selectedDifficulty
+      );
+
       await loadConversations();
     } catch (error) {
-      // Error is already handled by errorHandler in api.ts
-      console.error('Failed to create conversation:', error);
+      console.error('Failed to create conversation with starter:', error);
     }
   };
 
   const handleSelectConversation = (conversation: Conversation) => {
     setCurrentConversation(conversation);
     setShowLanguageSelector(false);
+    setShowTopicSelector(false);
   };
 
   const handleBackToHome = () => {
     setCurrentConversation(null);
+    setSelectedLanguage(null);
+    setSelectedDifficulty(null);
     setShowLanguageSelector(true);
+    setShowTopicSelector(false);
     loadConversations();
   };
 
@@ -94,6 +121,11 @@ function App() {
               timeFormat={timeFormat}
             />
           </div>
+        ) : showTopicSelector && selectedLanguage ? (
+          <TopicSelector
+            language={selectedLanguage}
+            onSelectStarter={handleTopicStarterSelected}
+          />
         ) : currentConversation ? (
           <ConversationInterface
             conversation={currentConversation}
