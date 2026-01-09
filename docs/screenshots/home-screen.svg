@@ -1,0 +1,55 @@
+<svg width="800" height="600" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="800" height="600" fill="#f5f7fa"/>
+  
+  <!-- Title -->
+  <text x="400" y="60" font-family="Arial, sans-serif" font-size="32" font-weight="bold" fill="#2c3e50" text-anchor="middle">Babblr</text>
+  <text x="400" y="90" font-family="Arial, sans-serif" font-size="14" fill="#7f8c8d" text-anchor="middle">Learn languages through natural conversation</text>
+  
+  <!-- Language Selection Card -->
+  <rect x="50" y="120" width="700" height="200" fill="white" rx="10" stroke="#e0e0e0" stroke-width="1"/>
+  <text x="70" y="150" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#2c3e50">Select Language</text>
+  
+  <!-- Language Buttons -->
+  <rect x="70" y="170" width="120" height="60" fill="#4a90e2" rx="5"/>
+  <text x="130" y="205" font-family="Arial, sans-serif" font-size="32" text-anchor="middle">🇪🇸</text>
+  <text x="130" y="225" font-family="Arial, sans-serif" font-size="12" fill="white" text-anchor="middle">Spanish</text>
+  
+  <rect x="210" y="170" width="120" height="60" fill="#e8f4f8" rx="5" stroke="#4a90e2" stroke-width="1"/>
+  <text x="270" y="205" font-family="Arial, sans-serif" font-size="32" text-anchor="middle">🇮🇹</text>
+  <text x="270" y="225" font-family="Arial, sans-serif" font-size="12" fill="#2c3e50" text-anchor="middle">Italian</text>
+  
+  <rect x="350" y="170" width="120" height="60" fill="#e8f4f8" rx="5" stroke="#4a90e2" stroke-width="1"/>
+  <text x="410" y="205" font-family="Arial, sans-serif" font-size="32" text-anchor="middle">🇩🇪</text>
+  <text x="410" y="225" font-family="Arial, sans-serif" font-size="12" fill="#2c3e50" text-anchor="middle">German</text>
+  
+  <rect x="490" y="170" width="120" height="60" fill="#e8f4f8" rx="5" stroke="#4a90e2" stroke-width="1"/>
+  <text x="550" y="205" font-family="Arial, sans-serif" font-size="32" text-anchor="middle">🇫🇷</text>
+  <text x="550" y="225" font-family="Arial, sans-serif" font-size="12" fill="#2c3e50" text-anchor="middle">French</text>
+  
+  <rect x="630" y="170" width="120" height="60" fill="#e8f4f8" rx="5" stroke="#4a90e2" stroke-width="1"/>
+  <text x="690" y="205" font-family="Arial, sans-serif" font-size="32" text-anchor="middle">🇳🇱</text>
+  <text x="690" y="225" font-family="Arial, sans-serif" font-size="12" fill="#2c3e50" text-anchor="middle">Dutch</text>
+  
+  <!-- Difficulty Level -->
+  <text x="70" y="270" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#2c3e50">Difficulty Level</text>
+  <rect x="70" y="280" width="180" height="30" fill="#50c878" rx="5"/>
+  <text x="160" y="300" font-family="Arial, sans-serif" font-size="14" fill="white" text-anchor="middle">Beginner</text>
+  
+  <!-- Recent Conversations -->
+  <rect x="50" y="340" width="700" height="160" fill="white" rx="10" stroke="#e0e0e0" stroke-width="1"/>
+  <text x="70" y="370" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#2c3e50">Recent Conversations</text>
+  
+  <!-- Conversation Card -->
+  <rect x="70" y="385" width="310" height="100" fill="#f8f9fa" rx="5" stroke="#e0e0e0" stroke-width="1"/>
+  <text x="85" y="410" font-family="Arial, sans-serif" font-size="24">🇪🇸</text>
+  <text x="125" y="410" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#2c3e50">Spanish</text>
+  <rect x="125" y="415" width="70" height="18" fill="#4a90e2" rx="3"/>
+  <text x="160" y="427" font-family="Arial, sans-serif" font-size="11" fill="white" text-anchor="middle">Beginner</text>
+  <text x="85" y="450" font-family="Arial, sans-serif" font-size="12" fill="#7f8c8d">Last updated: 2 hours ago</text>
+  <text x="350" y="445" font-family="Arial, sans-serif" font-size="20" fill="#dc3545">🗑️</text>
+  
+  <!-- Start Learning Button -->
+  <rect x="250" y="520" width="300" height="50" fill="#4a90e2" rx="25"/>
+  <text x="400" y="550" font-family="Arial, sans-serif" font-size="18" fill="white" text-anchor="middle" font-weight="bold">Start Learning →</text>
+</svg>

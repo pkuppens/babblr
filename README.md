@@ -13,6 +13,27 @@ A desktop language learning app that lets you speak naturally with an AI tutor. 
 💼 **Topic-Based Learning**: Choose conversation topics (business, travel, shopping, restaurants, etc.)  
 💾 **Conversation History**: Save and continue your learning sessions
 
+## What It Looks Like
+
+### Home Screen
+Select your target language, difficulty level, and access recent conversations:
+
+![Home Screen](docs/screenshots/home-screen.svg)
+
+### Conversation Screen
+Interact with the AI tutor through voice or text, receive corrections, and track your progress:
+
+![Conversation Screen](docs/screenshots/conversation-screen.svg)
+
+**Key UI Features:**
+- **Language Selection**: Choose from Spanish 🇪🇸, Italian 🇮🇹, German 🇩🇪, French 🇫🇷, or Dutch 🇳🇱
+- **Voice Input**: Green microphone button for speech-to-text
+- **Real-time Corrections**: Yellow panel shows grammar and vocabulary corrections
+- **Natural Chat Interface**: Conversational bubbles with timestamps
+- **Audio Playback**: Automatic text-to-speech for AI responses
+
+For a detailed visual walkthrough and UI specifications, see the [Visual Guide](VISUAL_GUIDE.md).
+
 ## Tech Stack
 
 ### Frontend
