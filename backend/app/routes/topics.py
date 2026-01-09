@@ -11,6 +11,8 @@ router = APIRouter(prefix="/topics", tags=["topics"])
 _TOPICS_FILE = Path(__file__).resolve().parent.parent / "static" / "topics.json"
 
 # Cache topics data in memory since it's static content
+# Note: This is safe for concurrent requests since the data is read-only
+# and FastAPI's async workers handle concurrent reads efficiently
 _topics_cache = None
 
 
