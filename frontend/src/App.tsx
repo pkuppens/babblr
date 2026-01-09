@@ -70,6 +70,7 @@ function App() {
       await loadConversations();
     } catch (error) {
       console.error('Failed to create conversation with starter:', error);
+      // The error handler in api.ts will show a toast notification to the user
     }
   };
 

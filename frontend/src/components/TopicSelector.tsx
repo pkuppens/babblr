@@ -68,6 +68,11 @@ const TopicSelector: React.FC<TopicSelectorProps> = ({ language, onSelectStarter
     }
   };
 
+  const handleResetFilters = () => {
+    setSearchQuery('');
+    setLevelFilter('all');
+  };
+
   // Filter topics based on search and level
   const filteredTopics = useMemo(() => {
     return topics.filter(topic => {
@@ -172,7 +177,7 @@ const TopicSelector: React.FC<TopicSelectorProps> = ({ language, onSelectStarter
         {filteredTopics.length === 0 && (
           <div className="no-results">
             <p>No topics found matching your criteria.</p>
-            <button onClick={() => { setSearchQuery(''); setLevelFilter('all'); }} className="reset-filters-button">
+            <button onClick={handleResetFilters} className="reset-filters-button">
               Reset Filters
             </button>
           </div>

@@ -35,9 +35,9 @@ const ConversationStarters: React.FC<ConversationStartersProps> = ({
         <div className="starters-content">
           <p className="starters-instruction">Click a phrase to start your conversation:</p>
           <div className="starters-list">
-            {starters.map((starter, index) => (
+            {starters.map((starter) => (
               <button
-                key={index}
+                key={starter}
                 className="starter-button"
                 onClick={() => {
                   onSelectStarter(starter);
