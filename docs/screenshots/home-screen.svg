@@ -33,9 +33,36 @@
   
   <!-- Difficulty Level -->
   <text x="70" y="270" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#2c3e50">Difficulty Level</text>
-  <rect x="70" y="280" width="200" height="35" fill="#50c878" rx="5"/>
-  <text x="170" y="298" font-family="Arial, sans-serif" font-size="16" fill="white" text-anchor="middle" font-weight="bold">A1</text>
-  <text x="170" y="310" font-family="Arial, sans-serif" font-size="10" fill="rgba(255,255,255,0.9)" text-anchor="middle">Beginner: simple phrases</text>
+  
+  <!-- A1 - Selected -->
+  <rect x="70" y="280" width="105" height="50" fill="#50c878" rx="5"/>
+  <text x="122" y="298" font-family="Arial, sans-serif" font-size="14" fill="white" text-anchor="middle" font-weight="bold">A1</text>
+  <text x="122" y="318" font-family="Arial, sans-serif" font-size="9" fill="rgba(255,255,255,0.85)" text-anchor="middle">Beginner</text>
+  
+  <!-- A2 -->
+  <rect x="185" y="280" width="105" height="50" fill="#f8f9fa" rx="5" stroke="#e0e0e0" stroke-width="2"/>
+  <text x="237" y="298" font-family="Arial, sans-serif" font-size="14" fill="#2c3e50" text-anchor="middle" font-weight="bold">A2</text>
+  <text x="237" y="318" font-family="Arial, sans-serif" font-size="9" fill="#7f8c8d" text-anchor="middle">Elementary</text>
+  
+  <!-- B1 -->
+  <rect x="300" y="280" width="105" height="50" fill="#f8f9fa" rx="5" stroke="#e0e0e0" stroke-width="2"/>
+  <text x="352" y="298" font-family="Arial, sans-serif" font-size="14" fill="#2c3e50" text-anchor="middle" font-weight="bold">B1</text>
+  <text x="352" y="318" font-family="Arial, sans-serif" font-size="9" fill="#7f8c8d" text-anchor="middle">Intermediate</text>
+  
+  <!-- B2 -->
+  <rect x="415" y="280" width="105" height="50" fill="#f8f9fa" rx="5" stroke="#e0e0e0" stroke-width="2"/>
+  <text x="467" y="298" font-family="Arial, sans-serif" font-size="14" fill="#2c3e50" text-anchor="middle" font-weight="bold">B2</text>
+  <text x="467" y="318" font-family="Arial, sans-serif" font-size="9" fill="#7f8c8d" text-anchor="middle">Upper-inter.</text>
+  
+  <!-- C1 -->
+  <rect x="530" y="280" width="105" height="50" fill="#f8f9fa" rx="5" stroke="#e0e0e0" stroke-width="2"/>
+  <text x="582" y="298" font-family="Arial, sans-serif" font-size="14" fill="#2c3e50" text-anchor="middle" font-weight="bold">C1</text>
+  <text x="582" y="318" font-family="Arial, sans-serif" font-size="9" fill="#7f8c8d" text-anchor="middle">Advanced</text>
+  
+  <!-- C2 -->
+  <rect x="645" y="280" width="105" height="50" fill="#f8f9fa" rx="5" stroke="#e0e0e0" stroke-width="2"/>
+  <text x="697" y="298" font-family="Arial, sans-serif" font-size="14" fill="#2c3e50" text-anchor="middle" font-weight="bold">C2</text>
+  <text x="697" y="318" font-family="Arial, sans-serif" font-size="9" fill="#7f8c8d" text-anchor="middle">Proficient</text>
   
   <!-- Recent Conversations -->
   <rect x="50" y="340" width="700" height="160" fill="white" rx="10" stroke="#e0e0e0" stroke-width="1"/>
