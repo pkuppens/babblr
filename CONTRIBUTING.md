@@ -56,6 +56,12 @@ We welcome code contributions! Here's how to get started:
 6. **Update documentation** if you've changed functionality
 7. **Submit a pull request** following the [Pull Request Process](#pull-request-process)
 
+### How We Work on Issues (Project Flow)
+
+- **Issues are not assigned by default**: you do not need permission to start work, you can add a comment if you like.
+- **Anyone may work on an open issue**: if you want to tackle something, go for it.
+- **First high-quality PR may be merged**: if multiple PRs compete, we will likely merge the first one that meets the quality bar.
+
 ## Development Setup
 
 ### Prerequisites
@@ -117,7 +123,7 @@ See [backend/tests/README.md](backend/tests/README.md) for more testing details.
 1. **Create a feature branch** - Branch from `main` with a descriptive name (e.g., `feature/add-japanese-support`)
 2. **Make your changes** - Keep commits focused and atomic
 3. **Write clear commit messages** - Use present tense ("Add feature" not "Added feature")
-4. **Update documentation** - Update README.md, DEVELOPMENT.md, or other docs as needed
+4. **Update documentation** - Update [README.md](README.md), [DEVELOPMENT.md](DEVELOPMENT.md), or other docs as needed
 5. **Test your changes** - Ensure all tests pass and functionality works as expected
 6. **Submit your PR** with:
    - Clear title describing the change
@@ -129,12 +135,36 @@ See [backend/tests/README.md](backend/tests/README.md) for more testing details.
 7. **Respond to feedback** - Be open to constructive criticism and suggestions
 8. **Maintain your PR** - Keep it up to date with the main branch
 
+### Required Checks (GitHub Actions)
+
+- GitHub Actions must be green before merge (linting + testing + any other required checks for the PR).
+- If your PR changes the frontend, please also run the frontend checks locally (e.g., `npm run lint` and `npm run build`) and mention the results in the PR.
+  
+For the backend, CI currently runs (at minimum) Ruff formatting/linting, Pyright type checks, and unit tests. See the workflow: [Python CI](.github/workflows/python-ci.yml).
+
 ### PR Review Process
 
 - Pull requests will be reviewed by project maintainers
 - We aim to review PRs within a few days, but please be patient
 - Feedback will be constructive and aimed at maintaining code quality
-- Once approved, your PR will be merged by a maintainer
+- During the PR and before the merge, we require both:
+  - **PR submitter responsibility**: you are responsible for reviewing any AI-generated code before submitting, and for addressing review feedback.
+  - **Maintainer reviews**:
+    - **AI-assisted review**: maintainers may use AI tools during review. If you used an agent, please include prompts/notes so we can follow the reasoning.
+    - **Human maintainer review**: a maintainer approval on the PR
+- Once approved and all checks pass, your PR will be merged by a maintainer
+
+By contributing, you agree that maintainers may apply small edits during review or as part of the final merge (for example to fix formatting, tests, or clarity).
+
+### Pull Requests Are a Commitment Signal
+
+Opening a PR is the start of a contribution. To keep the project moving, maintainers may close PRs that:
+
+- are clearly incomplete without a plan,
+- stall without communication, or
+- stay inactive for a while.
+
+If you need more time, just leave a short comment with your timeline — that's usually enough.
 
 ## Code Style Guidelines
 
@@ -207,20 +237,28 @@ const Conversation: React.FC<ConversationProps> = ({
    - Example: "AI-assisted: Used GitHub Copilot for boilerplate code generation"
    - Example: "AI-assisted: Used Claude to help design the error handling logic"
 
-2. **Human Review Required**: All AI-generated code MUST be:
+2. **Agentic coding is encouraged**: if you used an agent (or multiple tool calls / iterations), please paste:
+   - the key prompt(s) you used, and
+   - a short summary of important decisions (what you accepted/rejected and why)
+   
+   Put this in the PR description or comments so reviewers can follow the reasoning.
+
+3. **Submitter Review Required**: All AI-generated code MUST be:
    - **Reviewed** - Carefully reviewed by a human before submission
    - **Understood** - Fully understood by the contributor
    - **Tested** - Thoroughly tested to ensure it works correctly
    - **Adapted** - Modified as needed to fit the project's style and requirements
 
-3. **Quality Standards**: AI-assisted code must meet the same quality standards as any other contribution:
+Maintainers will also review AI-assisted changes before merge (see [PR Review Process](#pr-review-process)).
+
+4. **Quality Standards**: AI-assisted code must meet the same quality standards as any other contribution:
    - Follows our code style guidelines
    - Includes appropriate tests
    - Has clear documentation
    - Handles errors properly
    - Is maintainable and readable
 
-4. **What to Avoid**:
+5. **What to Avoid**:
    - Don't blindly copy-paste AI-generated code without understanding it
    - Don't submit large AI-generated blocks without review and testing
    - Don't rely on AI for critical security-related code without extra scrutiny
@@ -248,7 +286,7 @@ Babblr uses a dual licensing model:
 
 2. **Commercial License** - For proprietary use
    - Required for proprietary / closed-source applications or services when you cannot comply with AGPL source-sharing requirements
-   - Contact the project maintainers for commercial licensing terms (see `COMMERCIAL_LICENSE.md`)
+   - Contact the project maintainers for commercial licensing terms (see [COMMERCIAL_LICENSE.md](COMMERCIAL_LICENSE.md))
 
 ### Contributing Your Code
 
@@ -263,9 +301,11 @@ By contributing to Babblr, you agree that:
 
 To keep dual licensing possible, Babblr requires a CLA for code contributions.
 
-- Read: `CLA.md`
+- Read: [CLA.md](CLA.md)
 - How to sign: include the sentence **"I agree to the Babblr CLA"** in your PR description (or first comment).
   This is treated as your electronic signature for the CLA.
+
+By submitting a PR, you agree to the terms in [CLA.md](CLA.md) and that your contribution is made under the project licenses.
 
 ### Contributor Rights
 

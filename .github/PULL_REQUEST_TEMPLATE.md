@@ -28,7 +28,11 @@ How was this tested?
 ## Checklist
 - [ ] Code follows project style guidelines
 - [ ] Self-review completed
+- [ ] I reviewed any AI-generated code, and I understand and take responsibility for it
 - [ ] Comments added for complex code
 - [ ] Documentation updated
 - [ ] No new warnings generated
 - [ ] Tests pass locally
+- [ ] GitHub Actions checks are green (required before merge)
+- [ ] CLA: I agree to the Babblr CLA (see [CLA.md](../CLA.md))
+- [ ] If AI/agents were used: prompts + key decisions are included in the PR description or comments

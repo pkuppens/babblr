@@ -251,7 +251,19 @@ This app focuses on:
 
 ## Contributing
 
-This is an MVP for portfolio purposes. Feel free to fork and customize for your own use!
+Babblr is a public project. Contributions are welcome — especially small, well-scoped PRs.
+
+- **Start with a PR**: issues are **not assigned by default**. You do not need permission to start work. You can add a comment to the issue.
+- **Fork-first workflow**: external contributors should **fork**, create a branch in their fork, and open a PR.
+- **CLA required**: submitting a PR means you agree to the [Contributor License Agreement](CLA.md). Include **"I agree to the Babblr CLA"** in the PR description (or first comment).
+- **Agentic coding is encouraged**: if you used an AI agent, please paste the key prompts, conversations, and short decisions/trade-offs in the PR description or comments.
+- **First high-quality PR may be merged**: if multiple people work on the same issue, we may merge the first PR that meets the bar.
+- **Required checks**: GitHub Actions (linting/testing) must be green before merge.
+- **Required reviews**:
+  - **PR submitter responsibility**: you are responsible for reviewing any AI-generated code before submitting, and for addressing review feedback.
+  - **Maintainer reviews before merge**: maintainers will do an AI-assisted review and a human review before merge. We may ask for changes, or (in some cases) merge with small maintainer edits.
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the full workflow.
 
 ## Licensing
 
@@ -262,11 +274,11 @@ Babblr is **dual-licensed**:
 - **Commercial license**: If you want to use Babblr in a **proprietary / closed-source** product or service (for example, you cannot comply with AGPL source-sharing requirements), you must obtain a commercial license.
 
 See:
-- `LICENSE` (AGPL-3.0)
-- `COMMERCIAL_LICENSE.md` (commercial terms overview + how to request)
-- `LICENSING.md` (plain-English guidance)
-- `POLICIES.md` (acceptable use + AI output disclaimer)
-- `TRADEMARKS.md` (branding guidance)
+- [LICENSE](LICENSE) (AGPL-3.0)
+- [COMMERCIAL_LICENSE.md](COMMERCIAL_LICENSE.md) (commercial terms overview + how to request)
+- [LICENSING.md](LICENSING.md) (plain-English guidance)
+- [POLICIES.md](POLICIES.md) (acceptable use + AI output disclaimer)
+- [TRADEMARKS.md](TRADEMARKS.md) (branding guidance)
 
 ## Acknowledgments
 
