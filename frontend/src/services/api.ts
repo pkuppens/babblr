@@ -6,6 +6,7 @@ import type {
   ChatResponse,
   TranscriptionResponse,
   VocabularyItem,
+  TopicsData,
 } from '../types';
 
 const API_BASE_URL = 'http://localhost:8000';
@@ -154,6 +155,18 @@ export const ttsService = {
         { text, language },
         { responseType: 'blob' }
       );
+      return response.data;
+    } catch (error) {
+      handleError(error);
+      throw error;
+    }
+  },
+};
+
+export const topicsService = {
+  async getTopics(): Promise<TopicsData> {
+    try {
+      const response = await api.get('/topics');
       return response.data;
     } catch (error) {
       handleError(error);

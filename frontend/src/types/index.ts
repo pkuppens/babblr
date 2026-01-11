@@ -2,6 +2,19 @@ export type Language = 'spanish' | 'italian' | 'german' | 'french' | 'dutch';
 export type DifficultyLevel = 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2';
 export type MessageRole = 'user' | 'assistant';
 
+export interface Topic {
+  id: string;
+  icon: string;
+  level: DifficultyLevel;
+  names: Record<Language, string>;
+  descriptions: Record<Language, string>;
+  starters: Record<Language, string[]>;
+}
+
+export interface TopicsData {
+  topics: Topic[];
+}
+
 export interface Conversation {
   id: number;
   language: string;

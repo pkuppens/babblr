@@ -63,6 +63,12 @@
   <rect x="645" y="280" width="105" height="50" fill="#f8f9fa" rx="5" stroke="#e0e0e0" stroke-width="2"/>
   <text x="697" y="298" font-family="Arial, sans-serif" font-size="14" fill="#2c3e50" text-anchor="middle" font-weight="bold">C2</text>
   <text x="697" y="318" font-family="Arial, sans-serif" font-size="9" fill="#7f8c8d" text-anchor="middle">Proficient</text>
+<<<<<<< HEAD
+  <rect x="70" y="280" width="200" height="35" fill="#50c878" rx="5"/>
+  <text x="170" y="298" font-family="Arial, sans-serif" font-size="16" fill="white" text-anchor="middle" font-weight="bold">A1</text>
+  <text x="170" y="310" font-family="Arial, sans-serif" font-size="10" fill="rgba(255,255,255,0.9)" text-anchor="middle">Beginner: simple phrases</text>
+=======
+>>>>>>> b965471 (Show all 6 CEFR difficulty levels side by side with A1 selected)
   
   <!-- Recent Conversations -->
   <rect x="50" y="340" width="700" height="160" fill="white" rx="10" stroke="#e0e0e0" stroke-width="1"/>
