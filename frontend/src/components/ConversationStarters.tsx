@@ -35,7 +35,7 @@ const ConversationStarters: React.FC<ConversationStartersProps> = ({
         <div className="starters-content">
           <p className="starters-instruction">Click a phrase to start your conversation:</p>
           <div className="starters-list">
-            {starters.map((starter) => (
+            {starters.map(starter => (
               <button
                 key={starter}
                 className="starter-button"

@@ -112,9 +112,7 @@ const TopicSelector: React.FC<TopicSelectorProps> = ({ language, onSelectStarter
     <div className="topic-selector">
       <div className="topic-selector-header">
         <h2>Choose a Conversation Topic</h2>
-        <p className="topic-selector-subtitle">
-          Select a scenario to start practicing {language}
-        </p>
+        <p className="topic-selector-subtitle">Select a scenario to start practicing {language}</p>
       </div>
 
       <div className="topic-controls">

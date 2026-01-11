@@ -60,12 +60,7 @@ function App() {
       setShowTopicSelector(false);
 
       // Send the starter message immediately
-      await chatService.sendMessage(
-        conversation.id,
-        starter,
-        selectedLanguage,
-        selectedDifficulty
-      );
+      await chatService.sendMessage(conversation.id, starter, selectedLanguage, selectedDifficulty);
 
       await loadConversations();
     } catch (error) {
@@ -123,10 +118,7 @@ function App() {
             />
           </div>
         ) : showTopicSelector && selectedLanguage ? (
-          <TopicSelector
-            language={selectedLanguage}
-            onSelectStarter={handleTopicStarterSelected}
-          />
+          <TopicSelector language={selectedLanguage} onSelectStarter={handleTopicStarterSelected} />
         ) : currentConversation ? (
           <ConversationInterface
             conversation={currentConversation}
