@@ -48,12 +48,6 @@ if command -v uv &> /dev/null; then
     # Set PYTHONPATH to backend directory
     export PYTHONPATH="$(pwd)"
 
-    if [ "$DEV_MODE" = "1" ]; then
-        export BABBLR_DEV=1
-    else
-        export BABBLR_DEV=0
-    fi
-    
     # Ensure .env is loaded from backend directory
     if [ -f ".env" ]; then
         echo "   Using .env from: $(pwd)/.env"
@@ -61,9 +55,17 @@ if command -v uv &> /dev/null; then
         echo "[WARNING] .env file not found in backend directory"
     fi
     
-    # Run using uv (preferred method)
-    # uv run automatically uses the .venv in the current directory
-    uv run babblr-backend
+    # Run the server
+    if [ "$DEV_MODE" = "1" ]; then
+        # Dev mode: use uvicorn CLI directly for reliable reload
+        # Read host/port from env or use defaults matching config.py
+        API_HOST="${BABBLR_API_HOST:-127.0.0.1}"
+        API_PORT="${BABBLR_API_PORT:-8000}"
+        uv run uvicorn app.main:app --reload --host "$API_HOST" --port "$API_PORT"
+    else
+        # Production mode: use the entry point (no reload)
+        uv run babblr-backend
+    fi
 else
     echo "[WARNING] uv not found, falling back to standard Python..."
     echo "   For better performance, install uv: curl -LsSf https://astral.sh/uv/install.sh | sh"
@@ -77,10 +79,13 @@ else
     
     export PYTHONPATH="$(pwd)"
     if [ "$DEV_MODE" = "1" ]; then
-        export BABBLR_DEV=1
+        # Dev mode: use uvicorn CLI directly for reliable reload
+        API_HOST="${BABBLR_API_HOST:-127.0.0.1}"
+        API_PORT="${BABBLR_API_PORT:-8000}"
+        python -m uvicorn app.main:app --reload --host "$API_HOST" --port "$API_PORT"
     else
-        export BABBLR_DEV=0
+        # Production mode
+        cd app
+        python main.py
     fi
-    cd app
-    python main.py
 fi

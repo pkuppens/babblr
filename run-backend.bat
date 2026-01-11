@@ -40,13 +40,6 @@ if defined VIRTUAL_ENV (
     )
 )
 
-REM Configure backend dev mode (controls Uvicorn reload in the Python entrypoint)
-if "%DEV_MODE%"=="1" (
-    set "BABBLR_DEV=1"
-) else (
-    set "BABBLR_DEV=0"
-)
-
 REM Check if uv is available
 where uv >nul 2>&1
 if %errorlevel% equ 0 (
@@ -80,9 +73,17 @@ if %errorlevel% equ 0 (
         echo [WARNING] .env file not found in backend directory
     )
 
-    REM Run using uv (preferred method)
-    REM uv run automatically uses the .venv in the current directory
-    uv run babblr-backend
+    REM Run the server
+    if "%DEV_MODE%"=="1" (
+        REM Dev mode: use uvicorn CLI directly for reliable reload
+        REM Read host/port from env or use defaults matching config.py
+        if not defined BABBLR_API_HOST set "BABBLR_API_HOST=127.0.0.1"
+        if not defined BABBLR_API_PORT set "BABBLR_API_PORT=8000"
+        uv run uvicorn app.main:app --reload --host %BABBLR_API_HOST% --port %BABBLR_API_PORT%
+    ) else (
+        REM Production mode: use the entry point (no reload)
+        uv run babblr-backend
+    )
 ) else (
     echo [WARNING] uv not found, falling back to standard Python...
     echo    For better performance, install uv: powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
@@ -95,8 +96,16 @@ if %errorlevel% equ 0 (
     )
 
     set "PYTHONPATH=%CD%"
-    cd app
-    python main.py
+    if "%DEV_MODE%"=="1" (
+        REM Dev mode: use uvicorn CLI directly for reliable reload
+        if not defined BABBLR_API_HOST set "BABBLR_API_HOST=127.0.0.1"
+        if not defined BABBLR_API_PORT set "BABBLR_API_PORT=8000"
+        python -m uvicorn app.main:app --reload --host %BABBLR_API_HOST% --port %BABBLR_API_PORT%
+    ) else (
+        REM Production mode
+        cd app
+        python main.py
+    )
 )
 
 :cleanup_ok
