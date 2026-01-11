@@ -10,14 +10,20 @@ repos:
         pass_filenames: false
         stages: [pre-commit]
 
+  # Basic safety checks (including unresolved merge conflict markers)
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: check-merge-conflict
+
   # Secret scanning - detect API keys, passwords, tokens before commit
   - repo: https://github.com/gitleaks/gitleaks
-    rev: v8.21.2
+    rev: v8.30.0
     hooks:
       - id: gitleaks
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.14.10
+    rev: v0.14.11
     hooks:
       - id: ruff
         args: ["--fix", "--config", "backend/pyproject.toml"]
@@ -53,3 +59,31 @@ repos:
         files: ^frontend/src/.*\.(ts|tsx|js|jsx)$
         pass_filenames: false
 
+  # Markdown checks (lint + broken internal links/anchors)
+  - repo: local
+    hooks:
+      - id: check-markdown-local-links
+        name: check markdown local links (files exist)
+        entry: python scripts/check_markdown_local_links.py
+        language: python
+        types: [markdown]
+
+      - id: markdownlint-cli2
+        name: markdownlint-cli2
+        entry: markdownlint-cli2
+        language: node
+        additional_dependencies:
+          - markdownlint-cli2@0.16.0
+        types: [markdown]
+        files: \.md$
+
+      - id: remark-validate-links
+        name: remark (validate links/references)
+        entry: remark
+        language: node
+        additional_dependencies:
+          - remark-cli@12.0.1
+          - remark-validate-links@13.0.1
+        args: ["--frail", "--use", "remark-validate-links"]
+        types: [markdown]
+        files: \.md$

@@ -70,7 +70,7 @@ cd backend
 uv venv --python 3.12
 ```
 
-###3. Install Dependencies
+### 3. Install Dependencies
 
 ```bash
 cd backend

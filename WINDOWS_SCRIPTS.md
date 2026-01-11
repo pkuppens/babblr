@@ -143,6 +143,6 @@ If a script closes before you can read the output:
 ## See Also
 
 - [QUICKSTART.md](QUICKSTART.md) - Quick start guide with platform-specific instructions
-- [UV_SETUP.md](UV_SETUP.md) - Detailed uv usage guide
-- [VIRTUAL_ENVIRONMENT_SETUP.md](VIRTUAL_ENVIRONMENT_SETUP.md) - Virtual environment setup guide
+- [backend/UV_SETUP.md](backend/UV_SETUP.md) - Detailed uv usage guide
+- [backend/SETUP.md](backend/SETUP.md) - Backend virtual environment setup guide
 

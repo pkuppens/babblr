@@ -124,7 +124,7 @@ npm run electron:dev
    // Force a React error
    throw new Error("Test error for ErrorBoundary");
    ```
-4. **Expected:** 
+4. **Expected:**
    - ErrorBoundary UI appears (full-screen error page)
    - Shows "Something went wrong" message
    - Has "Refresh Page" and "Copy Error Text" buttons

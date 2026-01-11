@@ -17,7 +17,7 @@ babblr is a Duolingo successor designed to help users learn foreign languages in
 - **Language**: Python 3.12+
 - **Package Manager**: uv (fast Python package manager)
 - **Database**: SQLite with SQLAlchemy ORM and aiosqlite
-- **AI Services**: 
+- **AI Services**:
   - Anthropic Claude (conversation and error correction)
   - OpenAI Whisper (speech-to-text, runs locally)
   - Edge TTS (text-to-speech synthesis)

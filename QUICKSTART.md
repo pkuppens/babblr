@@ -41,7 +41,7 @@ The setup script will:
 
 **Note:** The virtual environment is created in `backend/.venv` only. There should be no `.venv` in the project root directory.
 
-**What is uv?** uv is a blazingly fast Python package installer (10-100x faster than pip). The setup script installs it automatically. See [UV_SETUP.md](UV_SETUP.md) for details.
+**What is uv?** uv is a blazingly fast Python package installer (10-100x faster than pip). The setup script installs it automatically. See [backend/UV_SETUP.md](backend/UV_SETUP.md) for details.
 
 ## Step 2: Configure API Key (1 minute)
 
@@ -101,7 +101,7 @@ The Electron app window will open automatically.
 1. **Select a language** - Click on Spanish, Italian, German, French, or Dutch
 2. **Choose difficulty** - Beginner, Intermediate, or Advanced
 3. **Click "Start Learning"**
-4. **Start talking!** 
+4. **Start talking!**
    - Click the 🎤 microphone button and speak
    - Or type your message and press Enter
 

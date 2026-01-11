@@ -240,7 +240,7 @@ const Conversation: React.FC<ConversationProps> = ({
 2. **Agentic coding is encouraged**: if you used an agent (or multiple tool calls / iterations), please paste:
    - the key prompt(s) you used, and
    - a short summary of important decisions (what you accepted/rejected and why)
-   
+
    Put this in the PR description or comments so reviewers can follow the reasoning.
 
 3. **Submitter Review Required**: All AI-generated code MUST be:

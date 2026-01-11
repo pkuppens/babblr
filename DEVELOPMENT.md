@@ -81,8 +81,8 @@ uv pip install -e ".[dev]"
 ### Enable pre-commit hooks (recommended)
 
 ```bash
-cd backend
-uv run pre-commit install
+# From the repo root (recommended):
+uv run --directory backend pre-commit install
 ```
 
 ### Run manually

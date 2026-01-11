@@ -61,7 +61,7 @@ After clicking "Start Learning":
   - **Explanation**: Brief, encouraging explanation
 
 ### Input Area (bottom)
-- **🎤 Voice button** (left): 
+- **🎤 Voice button** (left):
   - Green circular button
   - Click to start recording
   - Turns red with pulsing animation while recording

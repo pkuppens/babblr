@@ -1,0 +1,29 @@
+config:
+  # Keep this intentionally pragmatic: catch common mistakes and "broken" Markdown,
+  # but avoid enforcing a heavy style guide across existing docs.
+  default: true
+
+  # Reduce style noise on an existing docs set.
+  MD013: false # line-length
+  MD022: false # blanks around headings
+  MD024: false # duplicate headings
+  MD026: false # trailing punctuation in headings
+  MD029: false # ordered list item prefix
+  MD031: false # blanks around fences
+  MD032: false # blanks around lists
+  MD034: false # no-bare-urls
+  MD036: false # emphasis used as heading
+  MD040: false # fenced-code-language (nice-to-have; too noisy right now)
+  MD041: false # first-line heading
+  MD005: false # list-indent
+  MD007: false # ul-indent
+  MD012: false # no-multiple-blanks
+  MD025: false # single-title / single-h1
+  MD033: false # no-inline-html
+
+  # Still useful signals.
+  MD009: true # trailing spaces
+
+ignores:
+  - "**/node_modules/**"
+  - "**/dist/**"
