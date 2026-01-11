@@ -1,3 +1,4 @@
+import os
 from contextlib import asynccontextmanager
 from pathlib import Path
 
@@ -126,15 +127,41 @@ async def health_check():
 if __name__ == "__main__":
     import uvicorn
 
+    dev_mode = os.getenv("BABBLR_DEV", "").strip().lower() in {"1", "true", "yes", "on"}
+    log_level = "debug" if dev_mode else "info"
     uvicorn.run(
-        "main:app", host=settings.babblr_api_host, port=settings.babblr_api_port, reload=True
+        "main:app",
+        host=settings.babblr_api_host,
+        port=settings.babblr_api_port,
+        reload=dev_mode,
+        log_level=log_level,
     )
 
 
 def main():
-    """Entry point for uv script."""
+    """Start the Babblr backend API server.
+
+    The server reload behavior is controlled by the `BABBLR_DEV` environment
+    variable. This allows helper scripts to explicitly enable development mode
+    (auto-reload on file changes) without changing the Python entrypoint.
+
+    Args:
+        None
+
+    Returns:
+        None
+
+    Raises:
+        None
+    """
     import uvicorn
 
+    dev_mode = os.getenv("BABBLR_DEV", "").strip().lower() in {"1", "true", "yes", "on"}
+    log_level = "debug" if dev_mode else "info"
     uvicorn.run(
-        "app.main:app", host=settings.babblr_api_host, port=settings.babblr_api_port, reload=True
+        "app.main:app",
+        host=settings.babblr_api_host,
+        port=settings.babblr_api_port,
+        reload=dev_mode,
+        log_level=log_level,
     )

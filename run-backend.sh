@@ -4,6 +4,15 @@
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 BACKEND_DIR="$SCRIPT_DIR/backend"
 
+# Allow running the script again from a different working directory by
+# adding the project root (where this script lives) to PATH.
+export PATH="$SCRIPT_DIR:$PATH"
+
+DEV_MODE=0
+if [ "$1" = "dev" ] || [ "$1" = "development" ] || [ "$1" = "--dev" ] || [ "$1" = "--development" ]; then
+    DEV_MODE=1
+fi
+
 # Change to backend directory
 cd "$BACKEND_DIR" || {
     echo "[ERROR] Cannot access backend directory: $BACKEND_DIR"
@@ -24,6 +33,11 @@ if command -v uv &> /dev/null; then
     echo "[START] Starting Babblr backend with uv..."
     echo "   Working directory: $(pwd)"
     echo "   Virtual environment: $(pwd)/.venv"
+    if [ "$DEV_MODE" = "1" ]; then
+        echo "   Mode: development (auto-reload on changes)"
+    else
+        echo "   Mode: production"
+    fi
     
     # Ensure .venv exists in backend directory
     if [ ! -d ".venv" ]; then
@@ -33,6 +47,12 @@ if command -v uv &> /dev/null; then
     
     # Set PYTHONPATH to backend directory
     export PYTHONPATH="$(pwd)"
+
+    if [ "$DEV_MODE" = "1" ]; then
+        export BABBLR_DEV=1
+    else
+        export BABBLR_DEV=0
+    fi
     
     # Ensure .env is loaded from backend directory
     if [ -f ".env" ]; then
@@ -56,6 +76,11 @@ else
     fi
     
     export PYTHONPATH="$(pwd)"
+    if [ "$DEV_MODE" = "1" ]; then
+        export BABBLR_DEV=1
+    else
+        export BABBLR_DEV=0
+    fi
     cd app
     python main.py
 fi
