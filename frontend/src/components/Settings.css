@@ -441,3 +441,26 @@
   color: #111827;
   font-family: monospace;
 }
+
+/* Ollama command display */
+.ollama-command {
+  margin-top: 0.75rem;
+  padding: 0.75rem;
+  background: #f9fafb;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.ollama-command code {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.875rem;
+  background: #e5e7eb;
+  padding: 0.375rem 0.75rem;
+  border-radius: 4px;
+  color: #111827;
+  flex: 1;
+  min-width: 200px;
+}

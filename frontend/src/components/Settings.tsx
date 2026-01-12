@@ -7,6 +7,7 @@ import {
   AVAILABLE_MODELS,
   DEFAULT_MODELS,
 } from '../services/settings';
+import type { Language } from '../types';
 import {
   TIMEZONE_OPTIONS,
   TIME_FORMAT_OPTIONS,
@@ -54,6 +55,7 @@ function Settings({ isOpen, onClose, inline = false }: SettingsProps) {
   const [timeFormat, setTimeFormat] = useState<TimeFormat>(detectTimeFormat());
   const [timezoneSearch, setTimezoneSearch] = useState('');
   const [isTimezoneDropdownOpen, setIsTimezoneDropdownOpen] = useState(false);
+  const [nativeLanguage, setNativeLanguage] = useState<Language>('spanish');
 
   // Filtered timezone options based on search
   const filteredTimezones = useMemo(() => filterTimezones(timezoneSearch), [timezoneSearch]);
@@ -90,6 +92,7 @@ function Settings({ isOpen, onClose, inline = false }: SettingsProps) {
       // Load display settings
       setTimezone(settings.timezone);
       setTimeFormat(settings.timeFormat);
+      setNativeLanguage(settings.nativeLanguage);
 
       // Check if keys exist but don't show them for security
       setHasAnthropicKey(!!settings.anthropicApiKey);
@@ -171,6 +174,7 @@ function Settings({ isOpen, onClose, inline = false }: SettingsProps) {
       // Save display settings
       settingsService.saveTimezone(timezone);
       settingsService.saveTimeFormat(timeFormat);
+      settingsService.saveNativeLanguage(nativeLanguage);
 
       // Save API keys only if they were changed (not masked)
       if (anthropicApiKey && !isAnthropicKeyMasked) {
@@ -239,6 +243,117 @@ function Settings({ isOpen, onClose, inline = false }: SettingsProps) {
       )}
 
       <div className="settings-content">
+        {/* Display Settings */}
+        <div className="settings-section">
+          <h3>Display Settings</h3>
+          <p className="settings-description">
+            Configure how dates, times, and languages are displayed in the app.
+          </p>
+
+          {/* Native/Reference Language Selection */}
+          <h4 className="settings-subsection-title">Native Language</h4>
+          <p className="settings-description">
+            Select your native or reference language. This is used for translations and
+            explanations.
+          </p>
+          <select
+            value={nativeLanguage}
+            onChange={e => setNativeLanguage(e.target.value as Language)}
+            className="settings-select"
+          >
+            <option value="spanish">Spanish</option>
+            <option value="italian">Italian</option>
+            <option value="german">German</option>
+            <option value="french">French</option>
+            <option value="dutch">Dutch</option>
+          </select>
+
+          {/* Timezone Selection */}
+          <h4 className="settings-subsection-title">Timezone</h4>
+          <div className="timezone-selector">
+            <div
+              className="timezone-input-wrapper"
+              onClick={() => setIsTimezoneDropdownOpen(!isTimezoneDropdownOpen)}
+            >
+              <Search size={16} className="timezone-search-icon" />
+              <input
+                type="text"
+                value={
+                  isTimezoneDropdownOpen
+                    ? timezoneSearch
+                    : TIMEZONE_OPTIONS.find(tz => tz.value === timezone)?.label || timezone
+                }
+                onChange={e => {
+                  setTimezoneSearch(e.target.value);
+                  setIsTimezoneDropdownOpen(true);
+                }}
+                onFocus={() => {
+                  setIsTimezoneDropdownOpen(true);
+                  setTimezoneSearch('');
+                }}
+                placeholder="Search timezones..."
+                className="settings-input timezone-input"
+              />
+            </div>
+            {isTimezoneDropdownOpen && (
+              <div className="timezone-dropdown">
+                {filteredTimezones.length > 0 ? (
+                  <>
+                    {/* Group timezones by region */}
+                    {['UTC', 'Europe', 'Americas', 'Asia', 'Oceania', 'Africa'].map(group => {
+                      const groupTimezones = filteredTimezones.filter(tz => tz.group === group);
+                      if (groupTimezones.length === 0) return null;
+                      return (
+                        <div key={group} className="timezone-group">
+                          <div className="timezone-group-header">{group}</div>
+                          {groupTimezones.map(tz => (
+                            <div
+                              key={tz.value}
+                              className={`timezone-option ${timezone === tz.value ? 'selected' : ''}`}
+                              onClick={() => {
+                                setTimezone(tz.value);
+                                setIsTimezoneDropdownOpen(false);
+                                setTimezoneSearch('');
+                              }}
+                            >
+                              {tz.label}
+                            </div>
+                          ))}
+                        </div>
+                      );
+                    })}
+                  </>
+                ) : (
+                  <div className="timezone-no-results">No timezones found</div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Time Format Selection */}
+          <h4 className="settings-subsection-title">Time Format</h4>
+          <div className="time-format-options">
+            {TIME_FORMAT_OPTIONS.map(option => (
+              <label key={option.value} className="time-format-option">
+                <input
+                  type="radio"
+                  name="timeFormat"
+                  value={option.value}
+                  checked={timeFormat === option.value}
+                  onChange={() => setTimeFormat(option.value)}
+                />
+                <span>{option.label}</span>
+              </label>
+            ))}
+          </div>
+
+          {/* Preview */}
+          <div className="time-preview">
+            <span className="time-preview-label">Preview:</span>
+            <span className="time-preview-value">{currentTimePreview}</span>
+          </div>
+        </div>
+
         {/* LLM Provider Selection */}
         <div className="settings-section">
           <h3>LLM Provider</h3>
@@ -458,101 +573,40 @@ function Settings({ isOpen, onClose, inline = false }: SettingsProps) {
                 className="settings-input settings-input-model"
               />
             )}
+
+            {/* Model Pull Indicator */}
+            <div className="settings-info" style={{ marginTop: '1rem' }}>
+              <AlertCircle size={20} />
+              <div>
+                <h4>Make sure the model is pulled locally</h4>
+                <p>
+                  Before using this model, ensure it's downloaded to your local Ollama installation.
+                </p>
+                <div className="ollama-command">
+                  <code>
+                    ollama pull{' '}
+                    {ollamaModel === 'custom' ? customOllamaModel || 'MODEL_NAME' : ollamaModel}
+                  </code>
+                  <button
+                    className="settings-button settings-button-secondary"
+                    style={{
+                      marginLeft: '0.5rem',
+                      padding: '0.25rem 0.5rem',
+                      fontSize: '0.875rem',
+                    }}
+                    onClick={() => {
+                      const command = `ollama pull ${ollamaModel === 'custom' ? customOllamaModel || 'MODEL_NAME' : ollamaModel}`;
+                      navigator.clipboard.writeText(command);
+                      toast.success('Command copied to clipboard');
+                    }}
+                  >
+                    Copy
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         )}
-
-        {/* Display Settings */}
-        <div className="settings-section">
-          <h3>Display Settings</h3>
-          <p className="settings-description">
-            Configure how dates and times are displayed in the app.
-          </p>
-
-          {/* Timezone Selection */}
-          <h4 className="settings-subsection-title">Timezone</h4>
-          <div className="timezone-selector">
-            <div
-              className="timezone-input-wrapper"
-              onClick={() => setIsTimezoneDropdownOpen(!isTimezoneDropdownOpen)}
-            >
-              <Search size={16} className="timezone-search-icon" />
-              <input
-                type="text"
-                value={
-                  isTimezoneDropdownOpen
-                    ? timezoneSearch
-                    : TIMEZONE_OPTIONS.find(tz => tz.value === timezone)?.label || timezone
-                }
-                onChange={e => {
-                  setTimezoneSearch(e.target.value);
-                  setIsTimezoneDropdownOpen(true);
-                }}
-                onFocus={() => {
-                  setIsTimezoneDropdownOpen(true);
-                  setTimezoneSearch('');
-                }}
-                placeholder="Search timezones..."
-                className="settings-input timezone-input"
-              />
-            </div>
-            {isTimezoneDropdownOpen && (
-              <div className="timezone-dropdown">
-                {filteredTimezones.length > 0 ? (
-                  <>
-                    {/* Group timezones by region */}
-                    {['UTC', 'Europe', 'Americas', 'Asia', 'Oceania', 'Africa'].map(group => {
-                      const groupTimezones = filteredTimezones.filter(tz => tz.group === group);
-                      if (groupTimezones.length === 0) return null;
-                      return (
-                        <div key={group} className="timezone-group">
-                          <div className="timezone-group-header">{group}</div>
-                          {groupTimezones.map(tz => (
-                            <div
-                              key={tz.value}
-                              className={`timezone-option ${timezone === tz.value ? 'selected' : ''}`}
-                              onClick={() => {
-                                setTimezone(tz.value);
-                                setIsTimezoneDropdownOpen(false);
-                                setTimezoneSearch('');
-                              }}
-                            >
-                              {tz.label}
-                            </div>
-                          ))}
-                        </div>
-                      );
-                    })}
-                  </>
-                ) : (
-                  <div className="timezone-no-results">No timezones found</div>
-                )}
-              </div>
-            )}
-          </div>
-
-          {/* Time Format Selection */}
-          <h4 className="settings-subsection-title">Time Format</h4>
-          <div className="time-format-options">
-            {TIME_FORMAT_OPTIONS.map(option => (
-              <label key={option.value} className="time-format-option">
-                <input
-                  type="radio"
-                  name="timeFormat"
-                  value={option.value}
-                  checked={timeFormat === option.value}
-                  onChange={() => setTimeFormat(option.value)}
-                />
-                <span>{option.label}</span>
-              </label>
-            ))}
-          </div>
-
-          {/* Preview */}
-          <div className="time-preview">
-            <span className="time-preview-label">Preview:</span>
-            <span className="time-preview-value">{currentTimePreview}</span>
-          </div>
-        </div>
 
         <div className="settings-footer">
           {!inline && (

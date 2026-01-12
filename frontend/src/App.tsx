@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import TabBar from './components/TabBar';
+import UserDisplay from './components/UserDisplay';
+import Settings from './components/Settings';
 import HomeScreen from './screens/HomeScreen';
 import VocabularyScreen from './screens/VocabularyScreen';
 import GrammarScreen from './screens/GrammarScreen';
@@ -26,6 +28,9 @@ function App() {
   const [showSettings, setShowSettings] = useState(false);
   const [timezone, setTimezone] = useState<string>('UTC');
   const [timeFormat, setTimeFormat] = useState<TimeFormat>('24h');
+
+  // User state (for now, just 'dev' user without password)
+  const [currentUser] = useState({ username: 'dev', isLoggedIn: true });
 
   const loadConversations = async () => {
     try {
@@ -155,6 +160,7 @@ function App() {
           </h1>
         </div>
         <p className="app-subtitle">Learn languages naturally through conversation</p>
+        <UserDisplay username={currentUser.username} isLoggedIn={currentUser.isLoggedIn} />
       </header>
 
       <TabBar activeTab={activeTab} onTabChange={handleTabChange} />

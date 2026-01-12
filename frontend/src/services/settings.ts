@@ -1,5 +1,6 @@
 import { encrypt, decrypt } from '../utils/encryption';
 import { detectUserTimezone, detectTimeFormat, type TimeFormat } from '../utils/dateTime';
+import type { Language } from '../types';
 
 const SETTINGS_KEYS = {
   ANTHROPIC_API_KEY: 'babblr_anthropic_api_key',
@@ -10,6 +11,7 @@ const SETTINGS_KEYS = {
   GEMINI_MODEL: 'babblr_gemini_model',
   TIMEZONE: 'babblr_timezone',
   TIME_FORMAT: 'babblr_time_format',
+  NATIVE_LANGUAGE: 'babblr_native_language',
 };
 
 // Available models per provider
@@ -54,6 +56,7 @@ export interface AppSettings {
   geminiModel: string;
   timezone: string;
   timeFormat: TimeFormat;
+  nativeLanguage: Language;
 }
 
 export type { TimeFormat };
@@ -189,6 +192,28 @@ class SettingsService {
   }
 
   /**
+   * Save native/reference language preference
+   */
+  saveNativeLanguage(language: Language): void {
+    localStorage.setItem(SETTINGS_KEYS.NATIVE_LANGUAGE, language);
+  }
+
+  /**
+   * Load native/reference language preference (defaults to 'spanish' if not set)
+   *
+   * Note: Currently uses the learning languages. In future, this may be extended
+   * to include English and other reference languages.
+   */
+  loadNativeLanguage(): Language {
+    const stored = localStorage.getItem(SETTINGS_KEYS.NATIVE_LANGUAGE);
+    if (stored && ['spanish', 'italian', 'german', 'french', 'dutch'].includes(stored)) {
+      return stored as Language;
+    }
+    // Default to Spanish as a common reference language
+    return 'spanish';
+  }
+
+  /**
    * Load all settings
    */
   async loadSettings(): Promise<AppSettings> {
@@ -206,6 +231,7 @@ class SettingsService {
       geminiModel: this.loadModel('gemini'),
       timezone: this.loadTimezone(),
       timeFormat: this.loadTimeFormat(),
+      nativeLanguage: this.loadNativeLanguage(),
     };
   }
 
@@ -221,6 +247,7 @@ class SettingsService {
     localStorage.removeItem(SETTINGS_KEYS.GEMINI_MODEL);
     localStorage.removeItem(SETTINGS_KEYS.TIMEZONE);
     localStorage.removeItem(SETTINGS_KEYS.TIME_FORMAT);
+    localStorage.removeItem(SETTINGS_KEYS.NATIVE_LANGUAGE);
   }
 }
 
