@@ -74,10 +74,18 @@ Object.defineProperty(window, 'location', {
 });
 
 // Mock navigator.clipboard
-Object.defineProperty(navigator, 'clipboard', {
-  value: {
-    writeText: vi.fn().mockResolvedValue(undefined),
-    readText: vi.fn().mockResolvedValue(''),
-  },
-  writable: true,
-});
+// Use configurable: true to allow userEvent to override if needed
+interface MockedClipboard extends Clipboard {
+  __mocked?: boolean;
+}
+if (!navigator.clipboard || !(navigator.clipboard as MockedClipboard).__mocked) {
+  Object.defineProperty(navigator, 'clipboard', {
+    value: {
+      writeText: vi.fn().mockResolvedValue(undefined),
+      readText: vi.fn().mockResolvedValue(''),
+      __mocked: true,
+    },
+    writable: true,
+    configurable: true,
+  });
+}

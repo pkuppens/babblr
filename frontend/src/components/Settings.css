@@ -12,6 +12,26 @@
   padding: 20px;
 }
 
+.settings-inline {
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.settings-inline .settings-content {
+  padding: 0;
+  max-height: none;
+  overflow: visible;
+}
+
+.settings-inline .settings-modal {
+  background: transparent;
+  box-shadow: none;
+  border-radius: 0;
+  max-width: 100%;
+  max-height: none;
+}
+
 .settings-modal {
   background: white;
   border-radius: 12px;

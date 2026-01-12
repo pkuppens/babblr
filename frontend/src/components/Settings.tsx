@@ -22,13 +22,14 @@ import './Settings.css';
 interface SettingsProps {
   isOpen: boolean;
   onClose: () => void;
+  inline?: boolean;
 }
 
 // API key validation constants
 const ANTHROPIC_KEY_PREFIX = 'sk-ant-api03-';
 const GOOGLE_KEY_PREFIX = 'AI';
 
-function Settings({ isOpen, onClose }: SettingsProps) {
+function Settings({ isOpen, onClose, inline = false }: SettingsProps) {
   const [llmProvider, setLlmProvider] = useState<LLMProvider>('ollama');
   const [anthropicApiKey, setAnthropicApiKey] = useState('');
   const [googleApiKey, setGoogleApiKey] = useState('');
@@ -226,337 +227,339 @@ function Settings({ isOpen, onClose }: SettingsProps) {
 
   if (!isOpen) return null;
 
-  return (
-    <div className="settings-overlay">
-      <div className="settings-modal">
+  const settingsContent = (
+    <>
+      {!inline && (
         <div className="settings-header">
           <h2>Settings</h2>
           <button className="settings-close" onClick={onClose} aria-label="Close settings">
             <X size={24} />
           </button>
         </div>
+      )}
 
-        <div className="settings-content">
-          {/* LLM Provider Selection */}
+      <div className="settings-content">
+        {/* LLM Provider Selection */}
+        <div className="settings-section">
+          <h3>LLM Provider</h3>
+          <p className="settings-description">
+            Choose which AI provider to use for conversations. Ollama runs locally and requires no
+            API key.
+          </p>
+          <select
+            value={llmProvider}
+            onChange={e => setLlmProvider(e.target.value as LLMProvider)}
+            className="settings-select"
+          >
+            <option value="ollama">Ollama (Local - No API Key Required)</option>
+            <option value="claude">Anthropic Claude (API Key Required)</option>
+            <option value="gemini">Google Gemini (API Key Required)</option>
+            <option value="mock">Mock (Testing Only)</option>
+          </select>
+        </div>
+
+        {/* Anthropic API Key */}
+        {llmProvider === 'claude' && (
           <div className="settings-section">
-            <h3>LLM Provider</h3>
+            <h3>Anthropic API Key</h3>
             <p className="settings-description">
-              Choose which AI provider to use for conversations. Ollama runs locally and requires no
-              API key.
+              Get your API key from{' '}
+              <a
+                href="https://console.anthropic.com/settings/keys"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Anthropic Console
+              </a>
             </p>
+            <div className="settings-input-group">
+              <div className="settings-input-wrapper">
+                <input
+                  type={showAnthropicKey ? 'text' : 'password'}
+                  value={anthropicApiKey}
+                  onChange={e => {
+                    setAnthropicApiKey(e.target.value);
+                    setIsAnthropicKeyMasked(false);
+                  }}
+                  placeholder="sk-ant-api03-..."
+                  className="settings-input"
+                />
+                <button
+                  className="settings-input-button"
+                  onClick={() => setShowAnthropicKey(!showAnthropicKey)}
+                  aria-label={showAnthropicKey ? 'Hide API key' : 'Show API key'}
+                >
+                  {showAnthropicKey ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
+              </div>
+              <div className="settings-button-group">
+                <button
+                  onClick={handleTestAnthropicKey}
+                  disabled={isValidatingAnthropic || !anthropicApiKey}
+                  className="settings-button settings-button-secondary"
+                >
+                  {isValidatingAnthropic ? 'Testing...' : 'Test Key'}
+                </button>
+                {hasAnthropicKey && (
+                  <button
+                    onClick={handleClearAnthropicKey}
+                    className="settings-button settings-button-danger"
+                  >
+                    Clear Key
+                  </button>
+                )}
+              </div>
+            </div>
+            {hasAnthropicKey && isAnthropicKeyMasked && (
+              <div className="settings-status settings-status-success">
+                <CheckCircle size={16} />
+                <span>API key configured (enter new key to replace)</span>
+              </div>
+            )}
+
+            <h4 className="settings-subsection-title">Model Selection</h4>
+            <p className="settings-description">Select which Claude model to use.</p>
             <select
-              value={llmProvider}
-              onChange={e => setLlmProvider(e.target.value as LLMProvider)}
+              value={claudeModel}
+              onChange={e => setClaudeModel(e.target.value)}
               className="settings-select"
             >
-              <option value="ollama">Ollama (Local - No API Key Required)</option>
-              <option value="claude">Anthropic Claude (API Key Required)</option>
-              <option value="gemini">Google Gemini (API Key Required)</option>
-              <option value="mock">Mock (Testing Only)</option>
+              {AVAILABLE_MODELS.claude.map(model => (
+                <option key={model.value} value={model.value}>
+                  {model.label}
+                </option>
+              ))}
             </select>
           </div>
+        )}
 
-          {/* Anthropic API Key */}
-          {llmProvider === 'claude' && (
-            <div className="settings-section">
-              <h3>Anthropic API Key</h3>
-              <p className="settings-description">
-                Get your API key from{' '}
-                <a
-                  href="https://console.anthropic.com/settings/keys"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  Anthropic Console
-                </a>
-              </p>
-              <div className="settings-input-group">
-                <div className="settings-input-wrapper">
-                  <input
-                    type={showAnthropicKey ? 'text' : 'password'}
-                    value={anthropicApiKey}
-                    onChange={e => {
-                      setAnthropicApiKey(e.target.value);
-                      setIsAnthropicKeyMasked(false);
-                    }}
-                    placeholder="sk-ant-api03-..."
-                    className="settings-input"
-                  />
-                  <button
-                    className="settings-input-button"
-                    onClick={() => setShowAnthropicKey(!showAnthropicKey)}
-                    aria-label={showAnthropicKey ? 'Hide API key' : 'Show API key'}
-                  >
-                    {showAnthropicKey ? <EyeOff size={20} /> : <Eye size={20} />}
-                  </button>
-                </div>
-                <div className="settings-button-group">
-                  <button
-                    onClick={handleTestAnthropicKey}
-                    disabled={isValidatingAnthropic || !anthropicApiKey}
-                    className="settings-button settings-button-secondary"
-                  >
-                    {isValidatingAnthropic ? 'Testing...' : 'Test Key'}
-                  </button>
-                  {hasAnthropicKey && (
-                    <button
-                      onClick={handleClearAnthropicKey}
-                      className="settings-button settings-button-danger"
-                    >
-                      Clear Key
-                    </button>
-                  )}
-                </div>
-              </div>
-              {hasAnthropicKey && isAnthropicKeyMasked && (
-                <div className="settings-status settings-status-success">
-                  <CheckCircle size={16} />
-                  <span>API key configured (enter new key to replace)</span>
-                </div>
-              )}
-
-              <h4 className="settings-subsection-title">Model Selection</h4>
-              <p className="settings-description">Select which Claude model to use.</p>
-              <select
-                value={claudeModel}
-                onChange={e => setClaudeModel(e.target.value)}
-                className="settings-select"
-              >
-                {AVAILABLE_MODELS.claude.map(model => (
-                  <option key={model.value} value={model.value}>
-                    {model.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
-
-          {/* Google API Key */}
-          {llmProvider === 'gemini' && (
-            <div className="settings-section">
-              <h3>Google API Key</h3>
-              <p className="settings-description">
-                Get your API key from{' '}
-                <a
-                  href="https://aistudio.google.com/app/apikey"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  Google AI Studio
-                </a>
-              </p>
-              <div className="settings-input-group">
-                <div className="settings-input-wrapper">
-                  <input
-                    type={showGoogleKey ? 'text' : 'password'}
-                    value={googleApiKey}
-                    onChange={e => {
-                      setGoogleApiKey(e.target.value);
-                      setIsGoogleKeyMasked(false);
-                    }}
-                    placeholder="AIza..."
-                    className="settings-input"
-                  />
-                  <button
-                    className="settings-input-button"
-                    onClick={() => setShowGoogleKey(!showGoogleKey)}
-                    aria-label={showGoogleKey ? 'Hide API key' : 'Show API key'}
-                  >
-                    {showGoogleKey ? <EyeOff size={20} /> : <Eye size={20} />}
-                  </button>
-                </div>
-                <div className="settings-button-group">
-                  <button
-                    onClick={handleTestGoogleKey}
-                    disabled={isValidatingGoogle || !googleApiKey}
-                    className="settings-button settings-button-secondary"
-                  >
-                    {isValidatingGoogle ? 'Testing...' : 'Test Key'}
-                  </button>
-                  {hasGoogleKey && (
-                    <button
-                      onClick={handleClearGoogleKey}
-                      className="settings-button settings-button-danger"
-                    >
-                      Clear Key
-                    </button>
-                  )}
-                </div>
-              </div>
-              {hasGoogleKey && isGoogleKeyMasked && (
-                <div className="settings-status settings-status-success">
-                  <CheckCircle size={16} />
-                  <span>API key configured (enter new key to replace)</span>
-                </div>
-              )}
-
-              <h4 className="settings-subsection-title">Model Selection</h4>
-              <p className="settings-description">Select which Gemini model to use.</p>
-              <select
-                value={geminiModel}
-                onChange={e => setGeminiModel(e.target.value)}
-                className="settings-select"
-              >
-                {AVAILABLE_MODELS.gemini.map(model => (
-                  <option key={model.value} value={model.value}>
-                    {model.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
-
-          {/* Info about Ollama */}
-          {llmProvider === 'ollama' && (
-            <div className="settings-section">
-              <div className="settings-info">
-                <AlertCircle size={20} />
-                <div>
-                  <h4>Using Ollama (Local AI)</h4>
-                  <p>
-                    Ollama runs AI models locally on your computer. No API key needed! Make sure
-                    Ollama is installed and running on <code>http://localhost:11434</code>
-                  </p>
-                  <p>
-                    <a href="https://ollama.com/" target="_blank" rel="noopener noreferrer">
-                      Download Ollama
-                    </a>
-                  </p>
-                </div>
-              </div>
-
-              <h4 className="settings-subsection-title">Model Selection</h4>
-              <p className="settings-description">
-                Select an Ollama model to use. Make sure the model is pulled locally.
-              </p>
-              <select
-                value={ollamaModel}
-                onChange={e => {
-                  setOllamaModel(e.target.value);
-                  if (e.target.value !== 'custom') {
-                    setCustomOllamaModel('');
-                  }
-                }}
-                className="settings-select"
-              >
-                {AVAILABLE_MODELS.ollama.map(model => (
-                  <option key={model.value} value={model.value}>
-                    {model.label}
-                  </option>
-                ))}
-                <option value="custom">Custom Model...</option>
-              </select>
-
-              {ollamaModel === 'custom' && (
-                <input
-                  type="text"
-                  value={customOllamaModel}
-                  onChange={e => setCustomOllamaModel(e.target.value)}
-                  placeholder="e.g., llama3:8b, codellama:13b"
-                  className="settings-input settings-input-model"
-                />
-              )}
-            </div>
-          )}
-
-          {/* Display Settings */}
+        {/* Google API Key */}
+        {llmProvider === 'gemini' && (
           <div className="settings-section">
-            <h3>Display Settings</h3>
+            <h3>Google API Key</h3>
             <p className="settings-description">
-              Configure how dates and times are displayed in the app.
-            </p>
-
-            {/* Timezone Selection */}
-            <h4 className="settings-subsection-title">Timezone</h4>
-            <div className="timezone-selector">
-              <div
-                className="timezone-input-wrapper"
-                onClick={() => setIsTimezoneDropdownOpen(!isTimezoneDropdownOpen)}
+              Get your API key from{' '}
+              <a
+                href="https://aistudio.google.com/app/apikey"
+                target="_blank"
+                rel="noopener noreferrer"
               >
-                <Search size={16} className="timezone-search-icon" />
+                Google AI Studio
+              </a>
+            </p>
+            <div className="settings-input-group">
+              <div className="settings-input-wrapper">
                 <input
-                  type="text"
-                  value={
-                    isTimezoneDropdownOpen
-                      ? timezoneSearch
-                      : TIMEZONE_OPTIONS.find(tz => tz.value === timezone)?.label || timezone
-                  }
+                  type={showGoogleKey ? 'text' : 'password'}
+                  value={googleApiKey}
                   onChange={e => {
-                    setTimezoneSearch(e.target.value);
-                    setIsTimezoneDropdownOpen(true);
+                    setGoogleApiKey(e.target.value);
+                    setIsGoogleKeyMasked(false);
                   }}
-                  onFocus={() => {
-                    setIsTimezoneDropdownOpen(true);
-                    setTimezoneSearch('');
-                  }}
-                  placeholder="Search timezones..."
-                  className="settings-input timezone-input"
+                  placeholder="AIza..."
+                  className="settings-input"
                 />
+                <button
+                  className="settings-input-button"
+                  onClick={() => setShowGoogleKey(!showGoogleKey)}
+                  aria-label={showGoogleKey ? 'Hide API key' : 'Show API key'}
+                >
+                  {showGoogleKey ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
               </div>
-              {isTimezoneDropdownOpen && (
-                <div className="timezone-dropdown">
-                  {filteredTimezones.length > 0 ? (
-                    <>
-                      {/* Group timezones by region */}
-                      {['UTC', 'Europe', 'Americas', 'Asia', 'Oceania', 'Africa'].map(group => {
-                        const groupTimezones = filteredTimezones.filter(tz => tz.group === group);
-                        if (groupTimezones.length === 0) return null;
-                        return (
-                          <div key={group} className="timezone-group">
-                            <div className="timezone-group-header">{group}</div>
-                            {groupTimezones.map(tz => (
-                              <div
-                                key={tz.value}
-                                className={`timezone-option ${timezone === tz.value ? 'selected' : ''}`}
-                                onClick={() => {
-                                  setTimezone(tz.value);
-                                  setIsTimezoneDropdownOpen(false);
-                                  setTimezoneSearch('');
-                                }}
-                              >
-                                {tz.label}
-                              </div>
-                            ))}
-                          </div>
-                        );
-                      })}
-                    </>
-                  ) : (
-                    <div className="timezone-no-results">No timezones found</div>
-                  )}
-                </div>
-              )}
+              <div className="settings-button-group">
+                <button
+                  onClick={handleTestGoogleKey}
+                  disabled={isValidatingGoogle || !googleApiKey}
+                  className="settings-button settings-button-secondary"
+                >
+                  {isValidatingGoogle ? 'Testing...' : 'Test Key'}
+                </button>
+                {hasGoogleKey && (
+                  <button
+                    onClick={handleClearGoogleKey}
+                    className="settings-button settings-button-danger"
+                  >
+                    Clear Key
+                  </button>
+                )}
+              </div>
             </div>
+            {hasGoogleKey && isGoogleKeyMasked && (
+              <div className="settings-status settings-status-success">
+                <CheckCircle size={16} />
+                <span>API key configured (enter new key to replace)</span>
+              </div>
+            )}
 
-            {/* Time Format Selection */}
-            <h4 className="settings-subsection-title">Time Format</h4>
-            <div className="time-format-options">
-              {TIME_FORMAT_OPTIONS.map(option => (
-                <label key={option.value} className="time-format-option">
-                  <input
-                    type="radio"
-                    name="timeFormat"
-                    value={option.value}
-                    checked={timeFormat === option.value}
-                    onChange={() => setTimeFormat(option.value)}
-                  />
-                  <span>{option.label}</span>
-                </label>
+            <h4 className="settings-subsection-title">Model Selection</h4>
+            <p className="settings-description">Select which Gemini model to use.</p>
+            <select
+              value={geminiModel}
+              onChange={e => setGeminiModel(e.target.value)}
+              className="settings-select"
+            >
+              {AVAILABLE_MODELS.gemini.map(model => (
+                <option key={model.value} value={model.value}>
+                  {model.label}
+                </option>
               ))}
+            </select>
+          </div>
+        )}
+
+        {/* Info about Ollama */}
+        {llmProvider === 'ollama' && (
+          <div className="settings-section">
+            <div className="settings-info">
+              <AlertCircle size={20} />
+              <div>
+                <h4>Using Ollama (Local AI)</h4>
+                <p>
+                  Ollama runs AI models locally on your computer. No API key needed! Make sure
+                  Ollama is installed and running on <code>http://localhost:11434</code>
+                </p>
+                <p>
+                  <a href="https://ollama.com/" target="_blank" rel="noopener noreferrer">
+                    Download Ollama
+                  </a>
+                </p>
+              </div>
             </div>
 
-            {/* Preview */}
-            <div className="time-preview">
-              <span className="time-preview-label">Preview:</span>
-              <span className="time-preview-value">{currentTimePreview}</span>
+            <h4 className="settings-subsection-title">Model Selection</h4>
+            <p className="settings-description">
+              Select an Ollama model to use. Make sure the model is pulled locally.
+            </p>
+            <select
+              value={ollamaModel}
+              onChange={e => {
+                setOllamaModel(e.target.value);
+                if (e.target.value !== 'custom') {
+                  setCustomOllamaModel('');
+                }
+              }}
+              className="settings-select"
+            >
+              {AVAILABLE_MODELS.ollama.map(model => (
+                <option key={model.value} value={model.value}>
+                  {model.label}
+                </option>
+              ))}
+              <option value="custom">Custom Model...</option>
+            </select>
+
+            {ollamaModel === 'custom' && (
+              <input
+                type="text"
+                value={customOllamaModel}
+                onChange={e => setCustomOllamaModel(e.target.value)}
+                placeholder="e.g., llama3:8b, codellama:13b"
+                className="settings-input settings-input-model"
+              />
+            )}
+          </div>
+        )}
+
+        {/* Display Settings */}
+        <div className="settings-section">
+          <h3>Display Settings</h3>
+          <p className="settings-description">
+            Configure how dates and times are displayed in the app.
+          </p>
+
+          {/* Timezone Selection */}
+          <h4 className="settings-subsection-title">Timezone</h4>
+          <div className="timezone-selector">
+            <div
+              className="timezone-input-wrapper"
+              onClick={() => setIsTimezoneDropdownOpen(!isTimezoneDropdownOpen)}
+            >
+              <Search size={16} className="timezone-search-icon" />
+              <input
+                type="text"
+                value={
+                  isTimezoneDropdownOpen
+                    ? timezoneSearch
+                    : TIMEZONE_OPTIONS.find(tz => tz.value === timezone)?.label || timezone
+                }
+                onChange={e => {
+                  setTimezoneSearch(e.target.value);
+                  setIsTimezoneDropdownOpen(true);
+                }}
+                onFocus={() => {
+                  setIsTimezoneDropdownOpen(true);
+                  setTimezoneSearch('');
+                }}
+                placeholder="Search timezones..."
+                className="settings-input timezone-input"
+              />
             </div>
+            {isTimezoneDropdownOpen && (
+              <div className="timezone-dropdown">
+                {filteredTimezones.length > 0 ? (
+                  <>
+                    {/* Group timezones by region */}
+                    {['UTC', 'Europe', 'Americas', 'Asia', 'Oceania', 'Africa'].map(group => {
+                      const groupTimezones = filteredTimezones.filter(tz => tz.group === group);
+                      if (groupTimezones.length === 0) return null;
+                      return (
+                        <div key={group} className="timezone-group">
+                          <div className="timezone-group-header">{group}</div>
+                          {groupTimezones.map(tz => (
+                            <div
+                              key={tz.value}
+                              className={`timezone-option ${timezone === tz.value ? 'selected' : ''}`}
+                              onClick={() => {
+                                setTimezone(tz.value);
+                                setIsTimezoneDropdownOpen(false);
+                                setTimezoneSearch('');
+                              }}
+                            >
+                              {tz.label}
+                            </div>
+                          ))}
+                        </div>
+                      );
+                    })}
+                  </>
+                ) : (
+                  <div className="timezone-no-results">No timezones found</div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Time Format Selection */}
+          <h4 className="settings-subsection-title">Time Format</h4>
+          <div className="time-format-options">
+            {TIME_FORMAT_OPTIONS.map(option => (
+              <label key={option.value} className="time-format-option">
+                <input
+                  type="radio"
+                  name="timeFormat"
+                  value={option.value}
+                  checked={timeFormat === option.value}
+                  onChange={() => setTimeFormat(option.value)}
+                />
+                <span>{option.label}</span>
+              </label>
+            ))}
+          </div>
+
+          {/* Preview */}
+          <div className="time-preview">
+            <span className="time-preview-label">Preview:</span>
+            <span className="time-preview-value">{currentTimePreview}</span>
           </div>
         </div>
 
         <div className="settings-footer">
-          <button onClick={onClose} className="settings-button settings-button-secondary">
-            Cancel
-          </button>
+          {!inline && (
+            <button onClick={onClose} className="settings-button settings-button-secondary">
+              Cancel
+            </button>
+          )}
           <button
             onClick={handleSave}
             disabled={isSaving}
@@ -566,6 +569,16 @@ function Settings({ isOpen, onClose }: SettingsProps) {
           </button>
         </div>
       </div>
+    </>
+  );
+
+  if (inline) {
+    return <div className="settings-inline">{settingsContent}</div>;
+  }
+
+  return (
+    <div className="settings-overlay">
+      <div className="settings-modal">{settingsContent}</div>
     </div>
   );
 }
