@@ -1,6 +1,6 @@
 import { encrypt, decrypt } from '../utils/encryption';
 import { detectUserTimezone, detectTimeFormat, type TimeFormat } from '../utils/dateTime';
-import type { Language } from '../types';
+import type { NativeLanguage } from '../types';
 
 const SETTINGS_KEYS = {
   ANTHROPIC_API_KEY: 'babblr_anthropic_api_key',
@@ -56,7 +56,7 @@ export interface AppSettings {
   geminiModel: string;
   timezone: string;
   timeFormat: TimeFormat;
-  nativeLanguage: Language;
+  nativeLanguage: NativeLanguage;
 }
 
 export type { TimeFormat };
@@ -194,23 +194,20 @@ class SettingsService {
   /**
    * Save native/reference language preference
    */
-  saveNativeLanguage(language: Language): void {
+  saveNativeLanguage(language: NativeLanguage): void {
     localStorage.setItem(SETTINGS_KEYS.NATIVE_LANGUAGE, language);
   }
 
   /**
-   * Load native/reference language preference (defaults to 'spanish' if not set)
-   *
-   * Note: Currently uses the learning languages. In future, this may be extended
-   * to include English and other reference languages.
+   * Load native/reference language preference (defaults to 'english' if not set)
    */
-  loadNativeLanguage(): Language {
+  loadNativeLanguage(): NativeLanguage {
     const stored = localStorage.getItem(SETTINGS_KEYS.NATIVE_LANGUAGE);
-    if (stored && ['spanish', 'italian', 'german', 'french', 'dutch'].includes(stored)) {
-      return stored as Language;
+    if (stored && ['spanish', 'italian', 'german', 'french', 'dutch', 'english'].includes(stored)) {
+      return stored as NativeLanguage;
     }
-    // Default to Spanish as a common reference language
-    return 'spanish';
+    // Default to English as the most common reference language
+    return 'english';
   }
 
   /**

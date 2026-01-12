@@ -1,4 +1,5 @@
-export type Language = 'spanish' | 'italian' | 'german' | 'french' | 'dutch';
+export type Language = 'spanish' | 'italian' | 'german' | 'french' | 'dutch' | 'english';
+export type NativeLanguage = 'spanish' | 'italian' | 'german' | 'french' | 'dutch' | 'english';
 export type DifficultyLevel = 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2';
 export type MessageRole = 'user' | 'assistant';
 export type TabKey =

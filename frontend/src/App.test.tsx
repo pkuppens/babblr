@@ -33,6 +33,41 @@ vi.mock('./services/settings', async () => {
     settingsService: {
       loadTimezone: vi.fn(() => 'UTC'),
       loadTimeFormat: vi.fn(() => '24h'),
+      loadNativeLanguage: vi.fn(() => 'english'),
+      loadLLMProvider: vi.fn(() => 'ollama'),
+      loadModel: vi.fn((provider: string) => {
+        if (provider === 'ollama') return 'llama3.2:latest';
+        if (provider === 'claude') return 'claude-sonnet-4-20250514';
+        if (provider === 'gemini') return 'gemini-1.5-pro';
+        return '';
+      }),
+      loadApiKey: vi.fn(() => null),
+      loadSettings: vi.fn(async () => ({
+        llmProvider: 'ollama',
+        ollamaModel: 'llama3.2:latest',
+        claudeModel: 'claude-sonnet-4-20250514',
+        geminiModel: 'gemini-1.5-pro',
+        timezone: 'UTC',
+        timeFormat: '24h',
+        nativeLanguage: 'english',
+      })),
+      saveLLMProvider: vi.fn(),
+      saveModel: vi.fn(),
+      saveNativeLanguage: vi.fn(),
+      saveTimezone: vi.fn(),
+      saveTimeFormat: vi.fn(),
+      saveApiKey: vi.fn(),
+      removeApiKey: vi.fn(),
+    },
+    AVAILABLE_MODELS: {
+      ollama: [{ value: 'llama3.2:latest', label: 'Llama 3.2 (Default)' }],
+      claude: [{ value: 'claude-sonnet-4-20250514', label: 'Claude Sonnet 4 (Latest)' }],
+      gemini: [{ value: 'gemini-1.5-pro', label: 'Gemini 1.5 Pro (Default)' }],
+    },
+    DEFAULT_MODELS: {
+      ollama: 'llama3.2:latest',
+      claude: 'claude-sonnet-4-20250514',
+      gemini: 'gemini-1.5-pro',
     },
   };
 });

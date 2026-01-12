@@ -7,7 +7,7 @@ import {
   AVAILABLE_MODELS,
   DEFAULT_MODELS,
 } from '../services/settings';
-import type { Language } from '../types';
+import type { NativeLanguage } from '../types';
 import {
   TIMEZONE_OPTIONS,
   TIME_FORMAT_OPTIONS,
@@ -50,12 +50,14 @@ function Settings({ isOpen, onClose, inline = false }: SettingsProps) {
   const [geminiModel, setGeminiModel] = useState(DEFAULT_MODELS.gemini);
   const [customOllamaModel, setCustomOllamaModel] = useState('');
 
+  // Language settings state
+  const [nativeLanguage, setNativeLanguage] = useState<NativeLanguage>('english');
+
   // Display settings state
   const [timezone, setTimezone] = useState(detectUserTimezone());
   const [timeFormat, setTimeFormat] = useState<TimeFormat>(detectTimeFormat());
   const [timezoneSearch, setTimezoneSearch] = useState('');
   const [isTimezoneDropdownOpen, setIsTimezoneDropdownOpen] = useState(false);
-  const [nativeLanguage, setNativeLanguage] = useState<Language>('spanish');
 
   // Filtered timezone options based on search
   const filteredTimezones = useMemo(() => filterTimezones(timezoneSearch), [timezoneSearch]);
@@ -89,10 +91,12 @@ function Settings({ isOpen, onClose, inline = false }: SettingsProps) {
         setOllamaModel('custom');
       }
 
+      // Load language settings
+      setNativeLanguage(settings.nativeLanguage);
+
       // Load display settings
       setTimezone(settings.timezone);
       setTimeFormat(settings.timeFormat);
-      setNativeLanguage(settings.nativeLanguage);
 
       // Check if keys exist but don't show them for security
       setHasAnthropicKey(!!settings.anthropicApiKey);
@@ -171,10 +175,12 @@ function Settings({ isOpen, onClose, inline = false }: SettingsProps) {
       settingsService.saveModel('claude', claudeModel);
       settingsService.saveModel('gemini', geminiModel);
 
+      // Save language settings
+      settingsService.saveNativeLanguage(nativeLanguage);
+
       // Save display settings
       settingsService.saveTimezone(timezone);
       settingsService.saveTimeFormat(timeFormat);
-      settingsService.saveNativeLanguage(nativeLanguage);
 
       // Save API keys only if they were changed (not masked)
       if (anthropicApiKey && !isAnthropicKeyMasked) {
@@ -243,30 +249,40 @@ function Settings({ isOpen, onClose, inline = false }: SettingsProps) {
       )}
 
       <div className="settings-content">
-        {/* Display Settings */}
+        {/* Language Settings */}
         <div className="settings-section">
-          <h3>Display Settings</h3>
+          <h3>Language Settings</h3>
           <p className="settings-description">
-            Configure how dates, times, and languages are displayed in the app.
+            Configure your native or reference language. This is used for translations and
+            explanations throughout the app.
           </p>
 
           {/* Native/Reference Language Selection */}
           <h4 className="settings-subsection-title">Native Language</h4>
           <p className="settings-description">
-            Select your native or reference language. This is used for translations and
-            explanations.
+            Select your native or reference language. This helps the tutor provide better
+            explanations and translations.
           </p>
           <select
             value={nativeLanguage}
-            onChange={e => setNativeLanguage(e.target.value as Language)}
+            onChange={e => setNativeLanguage(e.target.value as NativeLanguage)}
             className="settings-select"
           >
+            <option value="english">English</option>
             <option value="spanish">Spanish</option>
             <option value="italian">Italian</option>
             <option value="german">German</option>
             <option value="french">French</option>
             <option value="dutch">Dutch</option>
           </select>
+        </div>
+
+        {/* Display Settings */}
+        <div className="settings-section">
+          <h3>Display Settings</h3>
+          <p className="settings-description">
+            Configure how dates and times are displayed in the app.
+          </p>
 
           {/* Timezone Selection */}
           <h4 className="settings-subsection-title">Timezone</h4>

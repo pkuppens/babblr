@@ -12,6 +12,7 @@ const LANGUAGES: { value: Language; label: string; flag: string }[] = [
   { value: 'german', label: 'German', flag: '🇩🇪' },
   { value: 'french', label: 'French', flag: '🇫🇷' },
   { value: 'dutch', label: 'Dutch', flag: '🇳🇱' },
+  { value: 'english', label: 'English', flag: '🇬🇧' },
 ];
 
 const DIFFICULTIES: { value: DifficultyLevel; label: string; description: string }[] = [
