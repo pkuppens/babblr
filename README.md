@@ -161,8 +161,8 @@ The built application will be in `frontend/release/`.
 
 ## Usage
 
-1. **Start a Conversation**: Select your target language and choose a conversation topic
-2. **Assessment**: Your CEFR level (A1-C2) is assessed from your first message
+1. **Start a Conversation**: Select your target language, difficulty level, and choose a conversation topic
+2. **Assessment (optional)**: Take a placement test instead of selecting the difficulty level to get a recommended CEFR level (A1-C2)
 3. **Talk or Type**: Use the microphone button to speak, or type your message
 4. **Get Feedback**: See corrections and explanations for your mistakes
 5. **Listen**: Hear the AI tutor's response with natural pronunciation
