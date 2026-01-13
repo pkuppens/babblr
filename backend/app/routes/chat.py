@@ -2,14 +2,14 @@ import logging
 from datetime import datetime
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Body, Depends, HTTPException
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import settings
 from app.database.db import get_db
 from app.models.models import Conversation, Message
-from app.models.schemas import ChatRequest, ChatResponse
+from app.models.schemas import ChatRequest, ChatResponse, InitialMessageRequest
 from app.services.conversation_service import get_conversation_service
 from app.services.llm.exceptions import LLMAuthenticationError, LLMError, RateLimitError
 
@@ -20,10 +20,7 @@ router = APIRouter(prefix="/chat", tags=["chat"])
 
 @router.post("/initial-message", response_model=ChatResponse)
 async def generate_initial_message(
-    conversation_id: int,
-    language: str,
-    difficulty_level: str,
-    topic_id: str,
+    request: InitialMessageRequest = Body(...),
     db: AsyncSession = Depends(get_db),
 ):
     """
@@ -32,11 +29,13 @@ async def generate_initial_message(
     """
     try:
         logger.info(
-            f"Generating initial message for conversation {conversation_id} with topic {topic_id}"
+            f"Generating initial message for conversation {request.conversation_id} with topic {request.topic_id}"
         )
 
         # Verify conversation exists
-        result = await db.execute(select(Conversation).where(Conversation.id == conversation_id))
+        result = await db.execute(
+            select(Conversation).where(Conversation.id == request.conversation_id)
+        )
         conversation = result.scalar_one_or_none()
         if not conversation:
             raise HTTPException(status_code=404, detail="Conversation not found")
@@ -51,31 +50,31 @@ async def generate_initial_message(
 
         topic = None
         for t in topics_data.get("topics", []):
-            if t.get("id") == topic_id:
+            if t.get("id") == request.topic_id:
                 topic = t
                 break
 
         if not topic:
-            raise HTTPException(status_code=404, detail=f"Topic '{topic_id}' not found")
+            raise HTTPException(status_code=404, detail=f"Topic '{request.topic_id}' not found")
 
         # Get topic name and description in the target language
-        topic_name = topic.get("names", {}).get(language.lower(), topic_id)
-        topic_description = topic.get("descriptions", {}).get(language.lower(), "")
+        topic_name = topic.get("names", {}).get(request.language.lower(), request.topic_id)
+        topic_description = topic.get("descriptions", {}).get(request.language.lower(), "")
 
         # Get conversation service
         conversation_service = get_conversation_service()
 
-        # Generate initial message
-        initial_message = await conversation_service.generate_initial_message(
-            language=language,
-            difficulty_level=difficulty_level,
+        # Generate initial message (returns message and translation)
+        initial_message, translation = await conversation_service.generate_initial_message(
+            language=request.language,
+            difficulty_level=request.difficulty_level,
             topic=topic_name,
             topic_description=topic_description,
         )
 
-        # Save assistant message
+        # Save assistant message (only the target language message, not translation)
         assistant_message = Message(
-            conversation_id=conversation_id, role="assistant", content=initial_message
+            conversation_id=request.conversation_id, role="assistant", content=initial_message
         )
         db.add(assistant_message)
 
@@ -96,13 +95,17 @@ async def generate_initial_message(
 
         # Log what was actually saved to verify consistency
         logger.info(
-            f"Saved initial assistant message (ID: {assistant_message.id}) for conversation {conversation_id}: "
+            f"Saved initial assistant message (ID: {assistant_message.id}) for conversation {request.conversation_id}: "
             f"'{initial_message[:100]}...' (truncated)"
         )
 
-        logger.info(f"Successfully generated initial message for conversation {conversation_id}")
+        logger.info(
+            f"Successfully generated initial message for conversation {request.conversation_id}"
+        )
 
-        return ChatResponse(assistant_message=initial_message, corrections=None)
+        return ChatResponse(
+            assistant_message=initial_message, corrections=None, translation=translation
+        )
 
     except HTTPException:
         raise
@@ -242,6 +245,7 @@ async def chat(request: ChatRequest, db: AsyncSession = Depends(get_db)):
         return ChatResponse(
             assistant_message=assistant_response,
             corrections=corrections,
+            translation=None,  # Regular chat responses don't include translation
         )
 
     except LLMAuthenticationError as e:

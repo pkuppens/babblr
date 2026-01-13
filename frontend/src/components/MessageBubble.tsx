@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import type { Message } from '../types';
 import { formatTime } from '../utils/dateTime';
 import type { TimeFormat } from '../services/settings';
@@ -12,6 +12,7 @@ interface MessageBubbleProps {
   onPlay?: (text: string) => void;
   timezone?: string;
   timeFormat?: TimeFormat;
+  nativeLanguage?: string;
 }
 
 const MessageBubble: React.FC<MessageBubbleProps> = ({
@@ -22,12 +23,26 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
   onPlay,
   timezone = 'UTC',
   timeFormat = '24h',
+  nativeLanguage,
 }) => {
+  const [showTranslation, setShowTranslation] = useState(false);
+
   return (
     <div className={`message ${message.role}`}>
       <div className="message-content">
         <div className="message-content-row">
-          <div className="message-text">{message.content}</div>
+          <div
+            className="message-text"
+            onMouseEnter={() => message.translation && setShowTranslation(true)}
+            onMouseLeave={() => setShowTranslation(false)}
+          >
+            {message.content}
+            {message.translation && showTranslation && (
+              <div className="message-translation" title="Translation">
+                {message.translation}
+              </div>
+            )}
+          </div>
 
           {ttsSupported && (
             <div className="message-actions">
@@ -40,6 +55,17 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
               >
                 {isActive && isSpeaking ? 'Speaking…' : 'Play'}
               </button>
+              {message.translation && nativeLanguage && (
+                <button
+                  type="button"
+                  className="tts-translation-button"
+                  onClick={() => onPlay?.(message.translation!)}
+                  aria-label={`Play translation in ${nativeLanguage}`}
+                  title={`Play translation (${nativeLanguage})`}
+                >
+                  Translate
+                </button>
+              )}
             </div>
           )}
         </div>

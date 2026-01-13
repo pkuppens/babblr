@@ -14,7 +14,11 @@ const TopicCard: React.FC<TopicCardProps> = ({ topic, language, onClick, isRecen
   const description = topic.descriptions[language];
 
   return (
-    <button className={`topic-card ${isRecent ? 'recent' : ''}`} onClick={onClick}>
+    <button
+      className={`topic-card ${isRecent ? 'recent' : ''}`}
+      onClick={onClick}
+      data-testid={`topic-card-${topic.id}`}
+    >
       <div className="topic-icon">{topic.icon}</div>
       <div className="topic-content">
         <h3 className="topic-name">{name}</h3>

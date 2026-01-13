@@ -81,7 +81,7 @@ function App() {
         topic.id
       );
 
-      // Reload conversation to get updated messages
+      // Reload conversation to get updated state
       const updatedConversation = await conversationService.get(conversation.id);
       setCurrentConversation(updatedConversation);
 

@@ -83,11 +83,23 @@ class ChatRequest(BaseModel):
     )
 
 
+class InitialMessageRequest(BaseModel):
+    """Schema for initial message request."""
+
+    conversation_id: int = Field(..., description="ID of the conversation")
+    language: str = Field(..., description="Target language (e.g., 'spanish', 'italian')")
+    difficulty_level: str = Field(..., description="CEFR difficulty level (A1, A2, B1, B2, C1, C2)")
+    topic_id: str = Field(..., description="Topic identifier from topics.json")
+
+
 class ChatResponse(BaseModel):
     """Schema for chat response."""
 
     assistant_message: str
     corrections: Optional[List[dict]] = None
+    translation: Optional[str] = Field(
+        None, description="Translation of the message in the user's native language"
+    )
 
 
 class TTSRequest(BaseModel):

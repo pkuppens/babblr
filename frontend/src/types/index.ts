@@ -39,6 +39,7 @@ export interface Message {
   content: string;
   audio_path?: string;
   corrections?: string;
+  translation?: string;
   created_at: string;
 }
 
@@ -58,6 +59,7 @@ export interface STTCorrection {
 export interface ChatResponse {
   assistant_message: string;
   corrections?: Correction[];
+  translation?: string;
 }
 
 export interface TranscriptionResponse {

@@ -269,7 +269,7 @@ class ConversationService:
         difficulty_level: str,
         topic: str,
         topic_description: str | None = None,
-    ) -> str:
+    ) -> tuple[str, str]:
         """Generate an initial tutor message to start a conversation based on topic.
 
         Args:
@@ -279,7 +279,7 @@ class ConversationService:
             topic_description: Optional description of the topic context.
 
         Returns:
-            Initial tutor message in the target language.
+            Tuple of (message_in_target_language, translation_in_native_language).
         """
         # Build system prompt with topic context
         system_prompt = self._build_system_prompt(
@@ -303,7 +303,11 @@ Generate a friendly, engaging opening message in {language} that:
 4. Asks a simple, engaging question to start the conversation
 5. Is natural and conversational, not like a textbook
 
-Keep it short (1-2 sentences maximum). Respond ONLY in {language}."""
+CRITICAL RULES:
+- Respond ONLY in {language} - NO English, NO translations, NO text in brackets
+- Do NOT include translations or explanations in your response
+- Keep it short (1-2 sentences maximum)
+- Write ONLY the message in {language}, nothing else"""
 
         try:
             response = await self._provider.generate(
@@ -313,7 +317,37 @@ Keep it short (1-2 sentences maximum). Respond ONLY in {language}."""
                 temperature=settings.llm_temperature,
             )
 
-            return response.content
+            message_content = response.content.strip()
+
+            # Remove any English translations in brackets that might have been added
+            # Pattern: (English text) or [English text]
+            import re
+
+            message_content = re.sub(r"\s*\([^)]*\)", "", message_content)  # Remove (English)
+            message_content = re.sub(r"\s*\[[^\]]*\]", "", message_content)  # Remove [English]
+            message_content = message_content.strip()
+
+            # Generate translation separately
+            native_lang = settings.user_native_language
+            translation_prompt = f"""Translate the following {language} message to {native_lang}.
+Provide ONLY the translation, no explanations, no brackets, just the translation:
+
+{message_content}"""
+
+            translation_response = await self._provider.generate(
+                messages=[{"role": "user", "content": translation_prompt}],
+                system_prompt="You are a professional translator. Provide accurate translations only.",
+                max_tokens=200,
+                temperature=0.3,  # Lower temperature for more consistent translations
+            )
+
+            translation = translation_response.content.strip()
+            # Clean translation of any brackets or extra text
+            translation = re.sub(r"\s*\([^)]*\)", "", translation)
+            translation = re.sub(r"\s*\[[^\]]*\]", "", translation)
+            translation = translation.strip()
+
+            return message_content, translation
 
         except Exception as e:
             logger.error(f"Error in generate_initial_message: {e}")
@@ -330,7 +364,7 @@ Keep it short (1-2 sentences maximum). Respond ONLY in {language}."""
             Roleplay context string
         """
         roleplay_contexts = {
-            "restaurant": "You are a friendly waiter/server at a restaurant. The student is a customer.",
+            "restaurant": "You are a friendly waiter or server at a restaurant. The student is a customer visiting your restaurant. You greet them, help them with the menu, and take their order. Start by welcoming them to the restaurant.",
             "travel": "You are a helpful travel guide or local person. The student is a tourist.",
             "shopping": "You are a shop assistant or store clerk. The student is a customer.",
             "work": "You are a colleague or business contact. The student is your coworker or business partner.",
