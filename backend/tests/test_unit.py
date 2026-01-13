@@ -121,14 +121,6 @@ class TestModels:
         assert hasattr(Message, "__tablename__")
         assert Message.__tablename__ == "messages"
 
-    def test_vocabulary_model_import(self):
-        """Test that VocabularyItem model can be imported."""
-        from app.models.models import VocabularyItem
-
-        assert VocabularyItem is not None
-        assert hasattr(VocabularyItem, "__tablename__")
-        assert VocabularyItem.__tablename__ == "vocabulary_items"
-
 
 class TestWhisperService:
     """Test Whisper service functionality."""

@@ -341,7 +341,7 @@ class ConversationService:
         language: str,
         difficulty_level: str,
         conversation_history: list[dict[str, str]] | None = None,
-    ) -> tuple[str, list[dict]]:
+    ) -> str:
         """Generate a conversational response from the AI tutor.
 
         Args:
@@ -351,7 +351,7 @@ class ConversationService:
             conversation_history: Previous messages in the conversation.
 
         Returns:
-            Tuple of (assistant_response, vocabulary_items).
+            Assistant response message.
         """
         # Validate input
         is_valid, result = InputGuardrails.validate(user_message)
@@ -383,28 +383,11 @@ class ConversationService:
             self._memory.add_message("user", user_message)
             self._memory.add_message("assistant", assistant_message)
 
-            # Extract vocabulary (placeholder - could be enhanced with NLP)
-            vocabulary_items = self._extract_vocabulary(assistant_message, language)
-
-            return assistant_message, vocabulary_items
+            return assistant_message
 
         except Exception as e:
             logger.error(f"Error in generate_response: {e}")
             raise
-
-    def _extract_vocabulary(self, text: str, language: str) -> list[dict]:
-        """Extract potentially new vocabulary from text.
-
-        Args:
-            text: Text to analyze.
-            language: Target language.
-
-        Returns:
-            List of vocabulary items (empty for now - can be enhanced).
-        """
-        # Placeholder for vocabulary extraction
-        # Could be enhanced with NLP, word frequency analysis, etc.
-        return []
 
     def clear_memory(self) -> None:
         """Clear conversation memory."""

@@ -5,12 +5,11 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database.db import get_db
-from app.models.models import Conversation, Message, VocabularyItem
+from app.models.models import Conversation, Message
 from app.models.schemas import (
     ConversationCreate,
     ConversationResponse,
     MessageResponse,
-    VocabularyItemResponse,
 )
 from app.services.prompt_builder import get_prompt_builder
 
@@ -59,16 +58,6 @@ async def get_conversation_messages(conversation_id: int, db: AsyncSession = Dep
     )
     messages = result.scalars().all()
     return messages
-
-
-@router.get("/{conversation_id}/vocabulary", response_model=List[VocabularyItemResponse])
-async def get_conversation_vocabulary(conversation_id: int, db: AsyncSession = Depends(get_db)):
-    """Get vocabulary items from a conversation."""
-    result = await db.execute(
-        select(VocabularyItem).where(VocabularyItem.conversation_id == conversation_id)
-    )
-    vocabulary = result.scalars().all()
-    return vocabulary
 
 
 @router.delete("/{conversation_id}")

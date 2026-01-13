@@ -48,7 +48,7 @@ This ensures all changes go through pull requests for proper review and CI check
 
 ## Project Overview
 
-Babblr is a desktop language learning app for conversational practice with an AI tutor. It supports Spanish, Italian, German, French, and Dutch with adaptive CEFR difficulty levels (A1-C2).
+Babblr is a desktop language learning app for conversational practice with an AI tutor. It supports Spanish, Italian, German, French, Dutch, and English with adaptive CEFR difficulty levels (A1-C2).
 
 ## Quick Commands
 
@@ -83,6 +83,11 @@ uv run pyright
 # Development
 npm run electron:dev          # Start Vite + Electron
 
+# Run tests
+npm run test                  # Run tests once
+npm run test:watch            # Run tests in watch mode
+npm run test:coverage         # Run tests with coverage
+
 # Linting and formatting
 npm run lint                  # ESLint check
 npm run lint:fix              # Auto-fix
@@ -108,27 +113,38 @@ app/
 ├── routes/                 # API endpoints
 │   ├── chat.py             # POST /chat - conversation with LLM
 │   ├── conversations.py    # Conversation CRUD
+│   ├── topics.py           # GET /topics - topic suggestions
 │   ├── stt.py              # Speech-to-text (Whisper)
 │   └── tts.py              # Text-to-speech (Edge TTS)
 └── services/
     ├── llm/                # Swappable LLM provider architecture
     │   ├── base.py         # Abstract BaseLLMProvider class
     │   ├── factory.py      # ProviderFactory.get_provider()
-    │   └── providers/      # Implementations: claude, ollama, mock
+    │   └── providers/      # Implementations: claude, gemini, ollama, mock
+    ├── prompt_builder.py   # LangChain-based prompt construction
+    ├── conversation_service.py  # Conversation business logic
+    ├── language_catalog.py # Supported languages configuration
     ├── whisper_service.py  # Local Whisper STT
+    ├── stt_correction_service.py  # STT output correction
     └── tts_service.py      # Edge TTS
 ```
 
-**LLM Provider Pattern**: All LLM providers inherit from `BaseLLMProvider` and implement `generate()` and `health_check()`. Use `ProviderFactory.get_provider("ollama"|"claude"|"mock")` to get instances. Default provider is set via `LLM_PROVIDER` env var.
+**LLM Provider Pattern**: All LLM providers inherit from `BaseLLMProvider` and implement `generate()` and `health_check()`. Use `ProviderFactory.get_provider("ollama"|"claude"|"gemini"|"mock")` to get instances. Default provider is set via `LLM_PROVIDER` env var.
 
 ### Frontend (`frontend/src/`)
 
 ```
 src/
-├── App.tsx                 # Main app, state management
-├── components/             # React components
-└── services/api.ts         # Axios API client
+├── App.tsx                 # Main app, tab navigation, global state
+├── screens/                # Tab-based screens (Home, Conversations, etc.)
+├── components/             # Reusable React components
+├── hooks/                  # Custom hooks (useAudioRecorder, useTTS, useRetry)
+├── services/               # API client and settings persistence
+├── types/                  # TypeScript type definitions
+└── utils/                  # Helpers (CEFR, translations, TTS sanitizer)
 ```
+
+**Tab Navigation**: The app uses a tab-based architecture with screens for Home, Vocabulary, Grammar, Conversations, Assessments, and Configuration. State for active conversation is preserved across tab switches.
 
 ## Key Patterns
 
@@ -155,9 +171,22 @@ Use `@pytest.mark.integration` marker for integration tests.
 ## Environment
 
 Backend requires `.env` file (copy from `.env.example`):
-- `LLM_PROVIDER`: `ollama` (default), `claude`, or `mock`
+- `LLM_PROVIDER`: `ollama` (default), `claude`, `gemini`, or `mock`
 - `ANTHROPIC_API_KEY`: Required if using Claude provider
+- `GOOGLE_API_KEY`: Required if using Gemini provider
 - `OLLAMA_MODEL`: Default `llama3.2:latest`
+
+## Git Workflow
+
+See `POLICIES.md` for complete policies. Key points:
+
+**Branch naming**: `feature/ISSUE_NUMBER-short-description` (e.g., `feature/123-add-user-auth`)
+
+**Commit message format**: `#ISSUE_NUMBER: type: description`
+- Types: `feat`, `fix`, `docs`, `test`, `refactor`, `chore`
+- Example: `#123: feat: add user authentication endpoint`
+
+**PR requirements**: Link to issue, tests pass, pre-commit hooks pass.
 
 ## Shell Script Convention
 
@@ -167,6 +196,7 @@ Backend requires `.env` file (copy from `.env.example`):
 ## Documentation Location
 
 Documentation files are currently in the project root. Key files:
+- `POLICIES.md` - Git workflow, commit messages, PR requirements
 - `VALIDATION.md` - Smoke test checklist
 - `ENVIRONMENT.md` - API key configuration
 - `DEVELOPMENT.md` - Development workflow

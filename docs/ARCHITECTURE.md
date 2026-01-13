@@ -103,9 +103,27 @@ Transcription                              [Edge TTS]
 
 ### Database Schema
 
+See `docs/DATABASE_SCHEMA.md` for complete database schema documentation including:
+- Entity relationship diagrams (Mermaid)
+- Detailed table definitions
+- Relationships and constraints
+- Validation rules
+- Planned schema extensions
+
+Current tables:
 - `conversations`: Conversation sessions
 - `messages`: Individual messages within conversations
-- `settings`: User preferences
+
+Planned vocabulary tables (static, offline-filled):
+- `words`: Base vocabulary words predefined by language and difficulty level
+- `word_meanings`: Multiple meanings per word
+- `word_forms`: Word variations (plural, conjugations, etc.)
+- `word_difficulty_levels`: Associates words with CEFR levels (A1-C2) - enables offline vocabulary curation per level
+- `word_synonyms`: Synonym relationships between words
+- `word_examples`: Example sentences for word meanings
+- `user_word_progress`: Tracks user progress with individual words
+
+See `docs/DATABASE_SCHEMA.md` for complete vocabulary architecture documentation.
 
 ## Decision Records
 

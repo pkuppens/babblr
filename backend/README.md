@@ -216,7 +216,8 @@ SQLite database (`babblr.db`) will be created automatically on first run.
 Tables:
 - `conversations` - Conversation sessions
 - `messages` - Individual messages
-- `vocabulary_items` - Learned vocabulary
+
+See `docs/DATABASE_SCHEMA.md` for complete schema documentation including planned static vocabulary system.
 
 ## Architecture
 

@@ -21,9 +21,6 @@ class Conversation(Base):
 
     # Relationships
     messages = relationship("Message", back_populates="conversation", cascade="all, delete-orphan")
-    vocabulary_items = relationship(
-        "VocabularyItem", back_populates="conversation", cascade="all, delete-orphan"
-    )
 
 
 class Message(Base):
@@ -41,24 +38,3 @@ class Message(Base):
 
     # Relationships
     conversation = relationship("Conversation", back_populates="messages")
-
-
-class VocabularyItem(Base):
-    """Model for storing vocabulary items learned during conversations."""
-
-    __tablename__ = "vocabulary_items"
-
-    id = Column(Integer, primary_key=True, index=True)
-    conversation_id = Column(Integer, ForeignKey("conversations.id"), nullable=False)
-    word = Column(String(100), nullable=False)
-    translation = Column(String(100), nullable=False)
-    context = Column(Text, nullable=True)  # Sentence where it was used
-    difficulty = Column(
-        String(20), default="A1"
-    )  # Supports CEFR (A1-C2) or legacy (beginner/intermediate/advanced)
-    times_encountered = Column(Integer, default=1)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    last_seen = Column(DateTime, default=datetime.utcnow)
-
-    # Relationships
-    conversation = relationship("Conversation", back_populates="vocabulary_items")

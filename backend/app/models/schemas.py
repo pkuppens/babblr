@@ -84,22 +84,6 @@ class ChatResponse(BaseModel):
 
     assistant_message: str
     corrections: Optional[List[dict]] = None
-    vocabulary_items: Optional[List[dict]] = None
-
-
-class VocabularyItemResponse(BaseModel):
-    """Schema for vocabulary item response."""
-
-    id: int
-    word: str
-    translation: str
-    context: Optional[str] = None
-    difficulty: str
-    times_encountered: int
-    created_at: datetime
-    last_seen: datetime
-
-    model_config = ConfigDict(from_attributes=True)
 
 
 class TTSRequest(BaseModel):

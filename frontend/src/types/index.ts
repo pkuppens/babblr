@@ -54,21 +54,9 @@ export interface STTCorrection {
   reason: string;
 }
 
-export interface VocabularyItem {
-  id: number;
-  word: string;
-  translation: string;
-  context?: string;
-  difficulty: string;
-  times_encountered: number;
-  created_at: string;
-  last_seen: string;
-}
-
 export interface ChatResponse {
   assistant_message: string;
   corrections?: Correction[];
-  vocabulary_items?: VocabularyItem[];
 }
 
 export interface TranscriptionResponse {

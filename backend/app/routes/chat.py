@@ -65,7 +65,7 @@ async def chat(request: ChatRequest, db: AsyncSession = Depends(get_db)):
         await db.commit()
 
         # Generate AI response
-        assistant_response, vocabulary_items = await conversation_service.generate_response(
+        assistant_response = await conversation_service.generate_response(
             corrected_text if corrections else request.user_message,
             request.language,
             request.difficulty_level,
@@ -102,7 +102,6 @@ async def chat(request: ChatRequest, db: AsyncSession = Depends(get_db)):
         return ChatResponse(
             assistant_message=assistant_response,
             corrections=corrections,
-            vocabulary_items=vocabulary_items,
         )
 
     except LLMAuthenticationError as e:

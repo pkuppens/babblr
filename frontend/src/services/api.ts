@@ -5,7 +5,6 @@ import type {
   Message,
   ChatResponse,
   TranscriptionResponse,
-  VocabularyItem,
   TopicsData,
 } from '../types';
 
@@ -52,16 +51,6 @@ export const conversationService = {
   async getMessages(id: number): Promise<Message[]> {
     try {
       const response = await api.get(`/conversations/${id}/messages`);
-      return response.data;
-    } catch (error) {
-      handleError(error);
-      throw error;
-    }
-  },
-
-  async getVocabulary(id: number): Promise<VocabularyItem[]> {
-    try {
-      const response = await api.get(`/conversations/${id}/vocabulary`);
       return response.data;
     } catch (error) {
       handleError(error);
