@@ -162,6 +162,42 @@ export const speechService = {
       throw error;
     }
   },
+
+  async getSttConfig(): Promise<{
+    current_model: string;
+    available_models: string[];
+    cuda: {
+      available: boolean;
+      device: string;
+      device_name?: string | null;
+      memory_total_gb?: number | null;
+      memory_free_gb?: number | null;
+    };
+    device: string;
+  }> {
+    try {
+      const response = await api.get('/stt/config');
+      return response.data;
+    } catch (error) {
+      handleError(error);
+      throw error;
+    }
+  },
+
+  async updateSttModel(model: string): Promise<{
+    message: string;
+    requested_model: string;
+    current_model: string;
+    note: string;
+  }> {
+    try {
+      const response = await api.post('/stt/config/model', { model });
+      return response.data;
+    } catch (error) {
+      handleError(error);
+      throw error;
+    }
+  },
 };
 
 export const ttsService = {

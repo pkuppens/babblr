@@ -170,8 +170,18 @@ class WhisperService(STTService):
         "english": "en",
     }
 
-    # Available Whisper models
-    AVAILABLE_MODELS = ["tiny", "base", "small", "medium", "large"]
+    # Available Whisper models (including newer variants)
+    # Note: large-v2, large-v3, and turbo are newer models with improved accuracy/speed
+    AVAILABLE_MODELS = [
+        "tiny",
+        "base",
+        "small",
+        "medium",
+        "large",
+        "large-v2",  # Improved version of large
+        "large-v3",  # Latest and most accurate (recommended for best quality)
+        "turbo",  # Optimized for speed with good accuracy
+    ]
 
     # Default confidence when no segments available
     DEFAULT_CONFIDENCE = 0.9
@@ -181,31 +191,78 @@ class WhisperService(STTService):
         Initialize Whisper service.
 
         Args:
-            model_size: Model to use (tiny, base, small, medium, large)
+            model_size: Model to use (tiny, base, small, medium, large, large-v2, large-v3, turbo)
             device: Device to use ("auto", "cuda", or "cpu")
         """
         self.model = None
         self.model_size = model_size
         self.device = self._determine_device(device)
+        self._load_model(model_size)
 
+    def _load_model(self, model_size: str) -> bool:
+        """
+        Load a Whisper model.
+
+        Args:
+            model_size: Model to load
+
+        Returns:
+            True if model loaded successfully, False otherwise
+        """
         if not WHISPER_AVAILABLE:
             logger.warning("Whisper not available. Install with: pip install openai-whisper")
-            return
+            return False
 
         try:
             logger.info("Loading Whisper model: %s on device: %s", model_size, self.device)
             start_time = time.time()
 
-            # Load model
+            # Load model (this will automatically download if not cached)
             assert whisper is not None
             self.model = whisper.load_model(model_size, device=self.device)
+            self.model_size = model_size
 
             load_time = time.time() - start_time
             logger.info("Whisper model loaded successfully in %.2f seconds", load_time)
+            return True
 
         except Exception as e:
             logger.error("Failed to load Whisper model: %s", str(e), exc_info=True)
             self.model = None
+            return False
+
+    def switch_model(self, new_model_size: str) -> bool:
+        """
+        Switch to a different Whisper model without restarting the service.
+
+        Args:
+            new_model_size: New model to use
+
+        Returns:
+            True if switch was successful, False otherwise
+        """
+        if new_model_size not in self.AVAILABLE_MODELS:
+            logger.error(
+                "Invalid model size: %s. Available: %s", new_model_size, self.AVAILABLE_MODELS
+            )
+            return False
+
+        if new_model_size == self.model_size and self.model is not None:
+            logger.info("Model %s is already loaded", new_model_size)
+            return True
+
+        logger.info("Switching Whisper model from %s to %s", self.model_size, new_model_size)
+
+        # Unload current model to free memory
+        if self.model is not None:
+            del self.model
+            self.model = None
+            # Force garbage collection to free GPU memory if using CUDA
+            if self.device == "cuda" and torch is not None:
+                torch.cuda.empty_cache()
+
+        # Load new model
+        return self._load_model(new_model_size)
 
     def _determine_device(self, device: str) -> str:
         """
@@ -386,7 +443,58 @@ class WhisperService(STTService):
 
     def get_available_models(self) -> List[str]:
         """Return list of available Whisper models."""
-        return self.AVAILABLE_MODELS
+        return self.AVAILABLE_MODELS.copy()
+
+    def get_cuda_info(self) -> Dict[str, Any]:
+        """
+        Get CUDA availability and device information.
+
+        Returns:
+            Dictionary with CUDA status, device name, and memory info
+        """
+        if not WHISPER_AVAILABLE or torch is None:
+            return {
+                "available": False,
+                "device": "unknown",
+                "device_name": None,
+                "memory_total_gb": None,
+                "memory_free_gb": None,
+            }
+
+        cuda_available = torch.cuda.is_available()
+        info = {
+            "available": cuda_available,
+            "device": self.device,
+        }
+
+        if cuda_available:
+            try:
+                device_name = torch.cuda.get_device_name(0)
+                memory_total = torch.cuda.get_device_properties(0).total_memory / (1024**3)
+                memory_allocated = torch.cuda.memory_allocated(0) / (1024**3)
+                memory_free = memory_total - memory_allocated
+
+                info.update(
+                    {
+                        "device_name": device_name,
+                        "memory_total_gb": round(memory_total, 2),
+                        "memory_allocated_gb": round(memory_allocated, 2),
+                        "memory_free_gb": round(memory_free, 2),
+                    }
+                )
+            except Exception as e:
+                logger.warning(f"Failed to get CUDA device info: {e}")
+                info["device_name"] = "unknown"
+        else:
+            info.update(
+                {
+                    "device_name": None,
+                    "memory_total_gb": None,
+                    "memory_free_gb": None,
+                }
+            )
+
+        return info
 
 
 # Initialize the service with configuration

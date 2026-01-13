@@ -243,9 +243,14 @@ async def get_available_models():
     logger.debug("Getting available Whisper models")
 
     models = whisper_service.get_available_models()
-    current_model = settings.whisper_model
+    # Use the actual loaded model, not just the settings value
+    current_model = (
+        whisper_service.model_size
+        if hasattr(whisper_service, "model_size")
+        else settings.whisper_model
+    )
 
-    # Model details
+    # Model details with updated information
     model_details = {
         "tiny": {
             "name": "tiny",
@@ -253,6 +258,7 @@ async def get_available_models():
             "vram": "~1GB",
             "speed": "~10x faster",
             "description": "Fastest, least accurate",
+            "recommended_for": "Quick testing, low-resource systems",
         },
         "base": {
             "name": "base",
@@ -260,6 +266,7 @@ async def get_available_models():
             "vram": "~1GB",
             "speed": "~7x faster",
             "description": "Good balance (default)",
+            "recommended_for": "General use, balanced accuracy/speed",
         },
         "small": {
             "name": "small",
@@ -267,6 +274,7 @@ async def get_available_models():
             "vram": "~2GB",
             "speed": "~4x faster",
             "description": "Better accuracy",
+            "recommended_for": "Better accuracy without heavy resources",
         },
         "medium": {
             "name": "medium",
@@ -274,6 +282,7 @@ async def get_available_models():
             "vram": "~5GB",
             "speed": "~2x faster",
             "description": "High accuracy",
+            "recommended_for": "High accuracy, moderate GPU memory",
         },
         "large": {
             "name": "large",
@@ -281,22 +290,156 @@ async def get_available_models():
             "vram": "~10GB",
             "speed": "1x (baseline)",
             "description": "Best accuracy, requires GPU",
+            "recommended_for": "Maximum accuracy (legacy)",
+        },
+        "large-v2": {
+            "name": "large-v2",
+            "parameters": "1550M",
+            "vram": "~10GB",
+            "speed": "1x (baseline)",
+            "description": "Improved large model",
+            "recommended_for": "Better accuracy than large",
+        },
+        "large-v3": {
+            "name": "large-v3",
+            "parameters": "1550M",
+            "vram": "~10GB",
+            "speed": "1x (baseline)",
+            "description": "Latest and most accurate (recommended)",
+            "recommended_for": "Best accuracy, latest improvements",
+        },
+        "turbo": {
+            "name": "turbo",
+            "parameters": "~1500M",
+            "vram": "~10GB",
+            "speed": "~2x faster than large",
+            "description": "Optimized for speed with good accuracy",
+            "recommended_for": "Fast transcription with high accuracy",
         },
     }
+
+    # Get CUDA information
+    cuda_info = (
+        whisper_service.get_cuda_info()
+        if hasattr(whisper_service, "get_cuda_info")
+        else {"available": False, "device": "unknown"}
+    )
 
     return JSONResponse(
         content={
             "models": [model_details.get(model, {"name": model}) for model in models],
             "current_model": current_model,
             "device": whisper_service.device if hasattr(whisper_service, "device") else "unknown",
+            "cuda": cuda_info,
             "multilingual": True,
             "notes": [
                 "Whisper model selection is not language-specific (models are multilingual).",
                 "You may pass a language hint as ISO-639-1 (e.g., 'en') or locale (e.g., 'en-GB'); locales map to ISO-639-1.",
+                "Models are automatically downloaded on first use.",
+                "Larger models (large-v3, turbo) require more GPU memory but offer better accuracy.",
             ],
             "count": len(models),
         }
     )
+
+
+@router.get("/config")
+async def get_stt_config():
+    """
+    Get current STT configuration including CUDA status and available models.
+
+    Returns:
+        JSON object with STT configuration
+    """
+    logger.debug("Getting STT configuration")
+
+    # Get CUDA information
+    cuda_info = (
+        whisper_service.get_cuda_info()
+        if hasattr(whisper_service, "get_cuda_info")
+        else {"available": False, "device": "unknown"}
+    )
+
+    models = whisper_service.get_available_models()
+    # Use the actual loaded model, not just the settings value
+    current_model = (
+        whisper_service.model_size
+        if hasattr(whisper_service, "model_size")
+        else settings.whisper_model
+    )
+
+    return JSONResponse(
+        content={
+            "current_model": current_model,
+            "available_models": models,
+            "cuda": cuda_info,
+            "device": whisper_service.device if hasattr(whisper_service, "device") else "unknown",
+        }
+    )
+
+
+@router.post("/config/model")
+async def update_stt_model(request: dict):
+    """
+    Update the STT model dynamically (no server restart required).
+
+    Args:
+        request: JSON body with "model" key (e.g., {"model": "large-v3"})
+
+    Returns:
+        JSON object with updated configuration
+    """
+    from pydantic import BaseModel
+
+    class ModelUpdateRequest(BaseModel):
+        model: str
+
+    try:
+        update_request = ModelUpdateRequest(**request)
+        new_model = update_request.model
+
+        # Validate model
+        available_models = whisper_service.get_available_models()
+        if new_model not in available_models:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Invalid model '{new_model}'. Available models: {', '.join(available_models)}",
+            )
+
+        old_model = whisper_service.model_size
+
+        # Switch model dynamically
+        logger.info(f"Switching STT model from {old_model} to {new_model}")
+        success = whisper_service.switch_model(new_model)
+
+        if not success:
+            raise HTTPException(
+                status_code=500,
+                detail=f"Failed to switch to model '{new_model}'. Check server logs for details.",
+            )
+
+        # Update settings (for persistence across restarts)
+        # Note: This updates the in-memory settings, but .env file won't be updated
+        # The model will persist until server restart, then revert to .env value
+        settings.whisper_model = new_model
+
+        logger.info(f"Successfully switched STT model from {old_model} to {new_model}")
+
+        return JSONResponse(
+            content={
+                "message": f"Model switched successfully from {old_model} to {new_model}",
+                "requested_model": new_model,
+                "previous_model": old_model,
+                "current_model": new_model,
+                "note": "Model change is active immediately. The model will be automatically downloaded if not already cached. To persist across server restarts, update WHISPER_MODEL in .env file.",
+            }
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error updating STT model: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 async def _save_audio_file(temp_path: str, original_filename: str) -> str | None:

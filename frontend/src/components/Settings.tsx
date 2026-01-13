@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { X, Eye, EyeOff, CheckCircle, AlertCircle, Search } from 'lucide-react';
+import { X, Eye, EyeOff, CheckCircle, AlertCircle, Search, Cpu, Zap } from 'lucide-react';
 import {
   settingsService,
   type LLMProvider,
@@ -8,6 +8,7 @@ import {
   DEFAULT_MODELS,
 } from '../services/settings';
 import type { NativeLanguage } from '../types';
+import { speechService } from '../services/api';
 import {
   TIMEZONE_OPTIONS,
   TIME_FORMAT_OPTIONS,
@@ -59,6 +60,21 @@ function Settings({ isOpen, onClose, inline = false }: SettingsProps) {
   const [timezoneSearch, setTimezoneSearch] = useState('');
   const [isTimezoneDropdownOpen, setIsTimezoneDropdownOpen] = useState(false);
 
+  // STT settings state
+  const [sttConfig, setSttConfig] = useState<{
+    current_model: string;
+    available_models: string[];
+    cuda: {
+      available: boolean;
+      device: string;
+      device_name?: string | null;
+      memory_total_gb?: number | null;
+      memory_free_gb?: number | null;
+    };
+    device: string;
+  } | null>(null);
+  const [isLoadingSttConfig, setIsLoadingSttConfig] = useState(false);
+
   // Filtered timezone options based on search
   const filteredTimezones = useMemo(() => filterTimezones(timezoneSearch), [timezoneSearch]);
 
@@ -71,6 +87,7 @@ function Settings({ isOpen, onClose, inline = false }: SettingsProps) {
   useEffect(() => {
     if (isOpen) {
       loadSettings();
+      loadSttConfig();
     }
   }, [isOpen]);
 
@@ -114,6 +131,19 @@ function Settings({ isOpen, onClose, inline = false }: SettingsProps) {
     } catch (error) {
       console.error('Failed to load settings:', error);
       toast.error('Failed to load settings');
+    }
+  };
+
+  const loadSttConfig = async () => {
+    setIsLoadingSttConfig(true);
+    try {
+      const config = await speechService.getSttConfig();
+      setSttConfig(config);
+    } catch (error) {
+      console.error('Failed to load STT config:', error);
+      toast.error('Failed to load STT configuration');
+    } finally {
+      setIsLoadingSttConfig(false);
     }
   };
 
@@ -623,6 +653,104 @@ function Settings({ isOpen, onClose, inline = false }: SettingsProps) {
             </div>
           </div>
         )}
+
+        {/* STT (Speech-to-Text) Settings */}
+        <div className="settings-section">
+          <h3>Speech-to-Text (STT) Settings</h3>
+          <p className="settings-description">
+            Configure Whisper model for speech recognition. Larger models offer better accuracy but
+            require more resources.
+          </p>
+
+          {isLoadingSttConfig ? (
+            <p className="settings-description">Loading STT configuration...</p>
+          ) : sttConfig ? (
+            <>
+              {/* CUDA Status */}
+              <div className="stt-cuda-status">
+                <h4 className="settings-subsection-title">GPU (CUDA) Status</h4>
+                <div className="stt-cuda-info">
+                  {sttConfig.cuda.available ? (
+                    <>
+                      <div className="stt-cuda-badge available">
+                        <Zap size={16} />
+                        <span>CUDA Available</span>
+                      </div>
+                      {sttConfig.cuda.device_name && (
+                        <p className="settings-description">
+                          Device: <strong>{sttConfig.cuda.device_name}</strong>
+                        </p>
+                      )}
+                      {sttConfig.cuda.memory_total_gb !== null &&
+                        sttConfig.cuda.memory_total_gb !== undefined && (
+                          <p className="settings-description">
+                            GPU Memory: {sttConfig.cuda.memory_free_gb?.toFixed(1)} GB free /{' '}
+                            {sttConfig.cuda.memory_total_gb.toFixed(1)} GB total
+                          </p>
+                        )}
+                    </>
+                  ) : (
+                    <div className="stt-cuda-badge unavailable">
+                      <Cpu size={16} />
+                      <span>CUDA Not Available (Using CPU)</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Model Selection */}
+              <h4 className="settings-subsection-title">Whisper Model</h4>
+              <p className="settings-description">
+                Current model: <strong>{sttConfig.current_model}</strong>
+              </p>
+              <p className="settings-description">
+                <strong>Recommended models:</strong>
+                <br />• <strong>large-v3</strong>: Best accuracy (requires ~10GB GPU memory)
+                <br />• <strong>turbo</strong>: Fast with high accuracy (requires ~10GB GPU memory)
+                <br />• <strong>medium</strong>: Good accuracy, moderate resources (~5GB GPU memory)
+                <br />• <strong>base</strong>: Balanced accuracy/speed (~1GB, works on CPU)
+                <br />• <strong>tiny</strong>: Fastest, least accurate (~1GB, works on CPU)
+              </p>
+              <select
+                value={sttConfig.current_model}
+                onChange={async e => {
+                  const newModel = e.target.value;
+                  try {
+                    const result = await speechService.updateSttModel(newModel);
+                    toast.success(result.message);
+                    if (result.note) {
+                      toast(result.note, { duration: 5000 });
+                    }
+                    await loadSttConfig();
+                  } catch (error) {
+                    console.error('Failed to update STT model:', error);
+                  }
+                }}
+                className="settings-select"
+                disabled={isLoadingSttConfig}
+              >
+                {sttConfig.available_models.map(model => (
+                  <option key={model} value={model}>
+                    {model}
+                  </option>
+                ))}
+              </select>
+              <p
+                className="settings-description"
+                style={{ marginTop: '0.5rem', fontSize: '0.875rem' }}
+              >
+                <strong>Note:</strong> Model changes take effect immediately. The model will be
+                automatically downloaded if not already cached. To persist the model choice across
+                server restarts, update the <code>WHISPER_MODEL</code> environment variable or{' '}
+                <code>.env</code> file.
+              </p>
+            </>
+          ) : (
+            <p className="settings-description" style={{ color: '#ef4444' }}>
+              Failed to load STT configuration. Make sure the backend is running.
+            </p>
+          )}
+        </div>
 
         <div className="settings-footer">
           {!inline && (

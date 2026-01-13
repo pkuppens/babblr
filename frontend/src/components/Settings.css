@@ -464,3 +464,37 @@
   flex: 1;
   min-width: 200px;
 }
+
+/* STT Configuration Styles */
+.stt-cuda-status {
+  margin-bottom: 1.5rem;
+}
+
+.stt-cuda-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.stt-cuda-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  font-size: 0.9rem;
+  width: fit-content;
+}
+
+.stt-cuda-badge.available {
+  background-color: #d1fae5;
+  color: #065f46;
+  border: 1px solid #10b981;
+}
+
+.stt-cuda-badge.unavailable {
+  background-color: #f3f4f6;
+  color: #4b5563;
+  border: 1px solid #9ca3af;
+}
