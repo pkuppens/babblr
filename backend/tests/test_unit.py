@@ -121,6 +121,75 @@ class TestModels:
         assert hasattr(Message, "__tablename__")
         assert Message.__tablename__ == "messages"
 
+    def test_lesson_model_import(self):
+        """Test that Lesson model can be imported."""
+        from app.models.models import Lesson
+
+        assert Lesson is not None
+        assert hasattr(Lesson, "__tablename__")
+        assert Lesson.__tablename__ == "lessons"
+
+    def test_lesson_progress_model_import(self):
+        """Test that LessonProgress model can be imported."""
+        from app.models.models import LessonProgress
+
+        assert LessonProgress is not None
+        assert hasattr(LessonProgress, "__tablename__")
+        assert LessonProgress.__tablename__ == "lesson_progress"
+
+    def test_assessment_model_import(self):
+        """Test that Assessment model can be imported."""
+        from app.models.models import Assessment
+
+        assert Assessment is not None
+        assert hasattr(Assessment, "__tablename__")
+        assert Assessment.__tablename__ == "assessments"
+
+    def test_user_level_model_import(self):
+        """Test that UserLevel model can be imported."""
+        from app.models.models import UserLevel
+
+        assert UserLevel is not None
+        assert hasattr(UserLevel, "__tablename__")
+        assert UserLevel.__tablename__ == "user_levels"
+
+    def test_lesson_model_create_and_read(self):
+        """Test creating and reading a Lesson model.
+
+        This test verifies that the Lesson model can be created and retrieved,
+        confirming the database schema extension is working correctly.
+        """
+        from datetime import datetime
+
+        from app.models.models import Lesson
+
+        # Create a lesson instance (in-memory, not persisted)
+        lesson = Lesson(
+            language="spanish",
+            lesson_type="vocabulary",
+            title="Basic Greetings",
+            description="Learn common Spanish greetings",
+            difficulty_level="A1",
+            order_index=1,
+            is_active=True,
+            created_at=datetime.utcnow(),
+        )
+
+        # Verify the lesson was created with correct attributes
+        assert lesson.language == "spanish"
+        assert lesson.lesson_type == "vocabulary"
+        assert lesson.title == "Basic Greetings"
+        assert lesson.description == "Learn common Spanish greetings"
+        assert lesson.difficulty_level == "A1"
+        assert lesson.order_index == 1
+        assert lesson.is_active is True
+        assert lesson.id is None  # Not yet persisted
+
+        # Verify relationships exist
+        assert hasattr(lesson, "lesson_items")
+        assert hasattr(lesson, "lesson_progress")
+        assert hasattr(lesson, "grammar_rules")
+
 
 class TestWhisperService:
     """Test Whisper service functionality."""

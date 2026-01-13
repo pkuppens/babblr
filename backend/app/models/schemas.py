@@ -91,3 +91,114 @@ class TTSRequest(BaseModel):
 
     text: str
     language: str
+
+
+# Lesson schemas
+class LessonCreate(BaseModel):
+    """Schema for creating a new lesson."""
+
+    language: str = Field(..., description="Target language code")
+    lesson_type: str = Field(..., description="Type: 'vocabulary' or 'grammar'")
+    title: str = Field(..., description="Lesson title")
+    description: Optional[str] = None
+    difficulty_level: str = Field(default="A1", description="CEFR difficulty level")
+    order_index: int = Field(default=0, description="Display order")
+    is_active: bool = Field(default=True, description="Whether lesson is available")
+
+
+class LessonResponse(BaseModel):
+    """Schema for lesson response."""
+
+    id: int
+    language: str
+    lesson_type: str
+    title: str
+    description: Optional[str]
+    difficulty_level: str
+    order_index: int
+    is_active: bool
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+# LessonProgress schemas
+class LessonProgressCreate(BaseModel):
+    """Schema for creating lesson progress."""
+
+    lesson_id: int = Field(..., description="Reference to lesson")
+    language: str = Field(..., description="Target language code")
+    status: str = Field(
+        default="not_started", description="Status: 'not_started', 'in_progress', 'completed'"
+    )
+    completion_percentage: float = Field(
+        default=0.0, ge=0.0, le=100.0, description="Completion percentage"
+    )
+
+
+class LessonProgressResponse(BaseModel):
+    """Schema for lesson progress response."""
+
+    id: int
+    lesson_id: int
+    language: str
+    status: str
+    completion_percentage: float
+    started_at: Optional[datetime]
+    completed_at: Optional[datetime]
+    last_accessed_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+# Assessment schemas
+class AssessmentCreate(BaseModel):
+    """Schema for creating a new assessment."""
+
+    language: str = Field(..., description="Target language code")
+    assessment_type: str = Field(
+        ..., description="Type: 'cefr_placement', 'vocabulary', 'grammar', 'comprehensive'"
+    )
+    title: str = Field(..., description="Assessment title")
+    description: Optional[str] = None
+    difficulty_level: str = Field(..., description="Target CEFR level")
+    duration_minutes: Optional[int] = Field(None, gt=0, description="Estimated duration in minutes")
+    is_active: bool = Field(default=True, description="Whether assessment is available")
+
+
+class AssessmentResponse(BaseModel):
+    """Schema for assessment response."""
+
+    id: int
+    language: str
+    assessment_type: str
+    title: str
+    description: Optional[str]
+    difficulty_level: str
+    duration_minutes: Optional[int]
+    is_active: bool
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+# UserLevel schemas
+class UserLevelCreate(BaseModel):
+    """Schema for creating user level."""
+
+    language: str = Field(..., description="Target language code")
+    cefr_level: str = Field(default="A1", description="Current CEFR level")
+    proficiency_score: float = Field(default=0.0, ge=0.0, le=100.0, description="Proficiency score")
+
+
+class UserLevelResponse(BaseModel):
+    """Schema for user level response."""
+
+    id: int
+    language: str
+    cefr_level: str
+    proficiency_score: float
+    assessed_at: datetime
+    updated_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
