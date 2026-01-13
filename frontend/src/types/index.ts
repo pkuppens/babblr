@@ -27,6 +27,7 @@ export interface Conversation {
   id: number;
   language: string;
   difficulty_level: string;
+  topic_id?: string | null;
   created_at: string;
   updated_at: string;
 }

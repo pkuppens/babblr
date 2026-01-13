@@ -1,7 +1,7 @@
 import React from 'react';
 import TopicSelector from '../components/TopicSelector';
 import ConversationInterface from '../components/ConversationInterface';
-import type { Conversation, Language, DifficultyLevel } from '../types';
+import type { Conversation, Language, DifficultyLevel, Topic } from '../types';
 import type { TimeFormat } from '../services/settings';
 import './Screen.css';
 
@@ -10,7 +10,7 @@ interface ConversationsScreenProps {
   selectedLanguage: Language | null;
   selectedDifficulty: DifficultyLevel | null;
   showTopicSelector: boolean;
-  onTopicStarterSelected: (starter: string) => Promise<void>;
+  onTopicSelected: (topic: Topic) => Promise<void>;
   onSelectConversation: (conversation: Conversation | null) => void;
   timezone: string;
   timeFormat: TimeFormat;
@@ -30,7 +30,7 @@ const ConversationsScreen: React.FC<ConversationsScreenProps> = ({
   currentConversation,
   selectedLanguage,
   showTopicSelector,
-  onTopicStarterSelected,
+  onTopicSelected,
   onSelectConversation,
   timezone,
   timeFormat,
@@ -39,7 +39,7 @@ const ConversationsScreen: React.FC<ConversationsScreenProps> = ({
   if (showTopicSelector && selectedLanguage) {
     return (
       <div className="screen-container">
-        <TopicSelector language={selectedLanguage} onSelectStarter={onTopicStarterSelected} />
+        <TopicSelector language={selectedLanguage} onSelectTopic={onTopicSelected} />
       </div>
     );
   }

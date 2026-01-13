@@ -20,7 +20,9 @@ router = APIRouter(prefix="/conversations", tags=["conversations"])
 async def create_conversation(conversation: ConversationCreate, db: AsyncSession = Depends(get_db)):
     """Create a new conversation session."""
     new_conversation = Conversation(
-        language=conversation.language, difficulty_level=conversation.difficulty_level
+        language=conversation.language,
+        difficulty_level=conversation.difficulty_level,
+        topic_id=conversation.topic_id,
     )
     db.add(new_conversation)
     await db.commit()

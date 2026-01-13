@@ -18,9 +18,17 @@ const api = axios.create({
 });
 
 export const conversationService = {
-  async create(language: string, difficulty_level: string): Promise<Conversation> {
+  async create(
+    language: string,
+    difficulty_level: string,
+    topic_id?: string
+  ): Promise<Conversation> {
     try {
-      const response = await api.post('/conversations', { language, difficulty_level });
+      const response = await api.post('/conversations', {
+        language,
+        difficulty_level,
+        topic_id,
+      });
       return response.data;
     } catch (error) {
       handleError(error);
@@ -93,6 +101,26 @@ export const chatService = {
       return response.data;
     } catch (error) {
       console.error('[Chat] Request failed');
+      handleError(error);
+      throw error;
+    }
+  },
+
+  async generateInitialMessage(
+    conversation_id: number,
+    language: string,
+    difficulty_level: string,
+    topic_id: string
+  ): Promise<ChatResponse> {
+    try {
+      const response = await api.post('/chat/initial-message', {
+        conversation_id,
+        language,
+        difficulty_level,
+        topic_id,
+      });
+      return response.data;
+    } catch (error) {
       handleError(error);
       throw error;
     }

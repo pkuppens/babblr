@@ -1,4 +1,3 @@
-import json
 import logging
 from datetime import datetime
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
@@ -19,6 +18,106 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/chat", tags=["chat"])
 
 
+@router.post("/initial-message", response_model=ChatResponse)
+async def generate_initial_message(
+    conversation_id: int,
+    language: str,
+    difficulty_level: str,
+    topic_id: str,
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Generate an initial tutor message to start a conversation based on topic.
+    This creates the first message from the tutor without requiring user input.
+    """
+    try:
+        logger.info(
+            f"Generating initial message for conversation {conversation_id} with topic {topic_id}"
+        )
+
+        # Verify conversation exists
+        result = await db.execute(select(Conversation).where(Conversation.id == conversation_id))
+        conversation = result.scalar_one_or_none()
+        if not conversation:
+            raise HTTPException(status_code=404, detail="Conversation not found")
+
+        # Load topic information
+        import json
+        from pathlib import Path
+
+        topics_file = Path(__file__).parent.parent / "static" / "topics.json"
+        with open(topics_file, "r", encoding="utf-8") as f:
+            topics_data = json.load(f)
+
+        topic = None
+        for t in topics_data.get("topics", []):
+            if t.get("id") == topic_id:
+                topic = t
+                break
+
+        if not topic:
+            raise HTTPException(status_code=404, detail=f"Topic '{topic_id}' not found")
+
+        # Get topic name and description in the target language
+        topic_name = topic.get("names", {}).get(language.lower(), topic_id)
+        topic_description = topic.get("descriptions", {}).get(language.lower(), "")
+
+        # Get conversation service
+        conversation_service = get_conversation_service()
+
+        # Generate initial message
+        initial_message = await conversation_service.generate_initial_message(
+            language=language,
+            difficulty_level=difficulty_level,
+            topic=topic_name,
+            topic_description=topic_description,
+        )
+
+        # Save assistant message
+        assistant_message = Message(
+            conversation_id=conversation_id, role="assistant", content=initial_message
+        )
+        db.add(assistant_message)
+
+        # Update conversation timestamp
+        try:
+            from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
+
+            tz = ZoneInfo(settings.babblr_timezone)
+        except ZoneInfoNotFoundError:
+            logger.warning(
+                f"Invalid/unavailable timezone '{settings.babblr_timezone}'; falling back to UTC."
+            )
+            tz = ZoneInfo("UTC")
+
+        conversation.updated_at = datetime.now(tz).replace(tzinfo=None)
+        await db.commit()
+        await db.refresh(assistant_message)  # Refresh to get the saved message with ID
+
+        # Log what was actually saved to verify consistency
+        logger.info(
+            f"Saved initial assistant message (ID: {assistant_message.id}) for conversation {conversation_id}: "
+            f"'{initial_message[:100]}...' (truncated)"
+        )
+
+        logger.info(f"Successfully generated initial message for conversation {conversation_id}")
+
+        return ChatResponse(assistant_message=initial_message, corrections=None)
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error generating initial message: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail={
+                "error": "internal_error",
+                "message": "Failed to generate initial message",
+                "technical_details": str(e),
+            },
+        )
+
+
 @router.post("", response_model=ChatResponse)
 async def chat(request: ChatRequest, db: AsyncSession = Depends(get_db)):
     """
@@ -36,7 +135,8 @@ async def chat(request: ChatRequest, db: AsyncSession = Depends(get_db)):
         if not conversation:
             raise HTTPException(status_code=404, detail="Conversation not found")
 
-        # Get conversation history
+        # Get conversation history BEFORE saving new user message
+        # This ensures we don't include the current message twice (it will be added by generate_response)
         messages_result = await db.execute(
             select(Message)
             .where(Message.conversation_id == request.conversation_id)
@@ -44,17 +144,42 @@ async def chat(request: ChatRequest, db: AsyncSession = Depends(get_db)):
         )
         messages = messages_result.scalars().all()
 
-        conversation_history = [{"role": msg.role, "content": msg.content} for msg in messages]
+        # Convert messages to dict format, ensuring content is string (not Column)
+        conversation_history = [
+            {"role": str(msg.role), "content": str(msg.content)} for msg in messages
+        ]
 
         # Get conversation service (uses configured provider, defaults to Ollama)
         conversation_service = get_conversation_service()
+
+        # Get topic information if conversation has a topic
+        topic_name = "general conversation"
+        if conversation.topic_id is not None:
+            import json
+            from pathlib import Path
+
+            topics_file = Path(__file__).parent.parent / "static" / "topics.json"
+            try:
+                with open(topics_file, "r", encoding="utf-8") as f:
+                    topics_data = json.load(f)
+
+                for t in topics_data.get("topics", []):
+                    if t.get("id") == conversation.topic_id:
+                        topic_name = t.get("names", {}).get(
+                            request.language.lower(), conversation.topic_id
+                        )
+                        break
+            except Exception as e:
+                logger.warning(f"Failed to load topic information: {e}")
 
         # First, correct the user's message if needed
         corrected_text, corrections = await conversation_service.correct_text(
             request.user_message, request.language, request.difficulty_level
         )
 
-        # Save user message (with original text)
+        # Save user message (with original text) - save BEFORE generating response
+        # so it's in the database, but don't include it in conversation_history
+        # since generate_response will add it
         user_message = Message(
             conversation_id=request.conversation_id,
             role="user",
@@ -64,12 +189,20 @@ async def chat(request: ChatRequest, db: AsyncSession = Depends(get_db)):
         db.add(user_message)
         await db.commit()
 
-        # Generate AI response
+        # Log conversation history for debugging
+        logger.debug(
+            f"Conversation history for {request.conversation_id}: {len(conversation_history)} messages "
+            f"(before adding current user message)"
+        )
+
+        # Generate AI response with topic context
+        # Pass corrected_text as user_message - generate_response will add it to the history
         assistant_response = await conversation_service.generate_response(
             corrected_text if corrections else request.user_message,
             request.language,
             request.difficulty_level,
             conversation_history,
+            topic=topic_name,
         )
 
         # Save assistant message
@@ -96,6 +229,13 @@ async def chat(request: ChatRequest, db: AsyncSession = Depends(get_db)):
         conversation.updated_at = datetime.now(tz).replace(tzinfo=None)
 
         await db.commit()
+        await db.refresh(assistant_message)  # Refresh to get the saved message with ID
+
+        # Log what was actually saved to verify consistency
+        logger.info(
+            f"Saved assistant message (ID: {assistant_message.id}) for conversation {request.conversation_id}: "
+            f"'{assistant_response[:100]}...' (truncated)"
+        )
 
         logger.info(f"Successfully processed chat for conversation {request.conversation_id}")
 

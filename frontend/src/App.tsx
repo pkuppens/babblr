@@ -59,21 +59,35 @@ function App() {
     setActiveTab('conversations');
   };
 
-  const handleTopicStarterSelected = async (starter: string) => {
-    // Create the conversation and send the starter message
+  const handleTopicSelected = async (topic: Topic) => {
+    // Create the conversation with topic and generate initial tutor message
     if (!selectedLanguage || !selectedDifficulty) return;
 
     try {
-      const conversation = await conversationService.create(selectedLanguage, selectedDifficulty);
+      // Create conversation with topic_id
+      const conversation = await conversationService.create(
+        selectedLanguage,
+        selectedDifficulty,
+        topic.id
+      );
       setCurrentConversation(conversation);
       setShowTopicSelector(false);
 
-      // Send the starter message immediately
-      await chatService.sendMessage(conversation.id, starter, selectedLanguage, selectedDifficulty);
+      // Generate initial tutor message based on topic
+      await chatService.generateInitialMessage(
+        conversation.id,
+        selectedLanguage,
+        selectedDifficulty,
+        topic.id
+      );
+
+      // Reload conversation to get updated messages
+      const updatedConversation = await conversationService.get(conversation.id);
+      setCurrentConversation(updatedConversation);
 
       await loadConversations();
     } catch (error) {
-      console.error('Failed to create conversation with starter:', error);
+      console.error('Failed to create conversation with topic:', error);
       // The error handler in api.ts will show a toast notification to the user
     }
   };
@@ -127,7 +141,7 @@ function App() {
             selectedLanguage={selectedLanguage}
             selectedDifficulty={selectedDifficulty}
             showTopicSelector={showTopicSelector}
-            onTopicStarterSelected={handleTopicStarterSelected}
+            onTopicSelected={handleTopicSelected}
             onSelectConversation={handleSelectConversation}
             timezone={timezone}
             timeFormat={timeFormat}

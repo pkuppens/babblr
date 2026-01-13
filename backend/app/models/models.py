@@ -16,6 +16,9 @@ class Conversation(Base):
     difficulty_level = Column(
         String(20), default="A1"
     )  # Supports CEFR (A1-C2) or legacy (beginner/intermediate/advanced)
+    topic_id = Column(
+        String(100), nullable=True
+    )  # Topic identifier from topics.json (e.g., "restaurant", "classroom")
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 

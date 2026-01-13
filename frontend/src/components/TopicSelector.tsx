@@ -1,22 +1,20 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Search } from 'lucide-react';
 import TopicCard from './TopicCard';
-import ConversationStarters from './ConversationStarters';
 import type { Topic, Language, DifficultyLevel } from '../types';
 import { topicsService } from '../services/api';
 import './TopicSelector.css';
 
 interface TopicSelectorProps {
   language: Language;
-  onSelectStarter: (starter: string) => void;
+  onSelectTopic: (topic: Topic) => void;
 }
 
 const RECENT_TOPICS_KEY = 'babblr_recent_topics';
 const MAX_RECENT_TOPICS = 3;
 
-const TopicSelector: React.FC<TopicSelectorProps> = ({ language, onSelectStarter }) => {
+const TopicSelector: React.FC<TopicSelectorProps> = ({ language, onSelectTopic }) => {
   const [topics, setTopics] = useState<Topic[]>([]);
-  const [selectedTopic, setSelectedTopic] = useState<Topic | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [levelFilter, setLevelFilter] = useState<DifficultyLevel | 'all'>('all');
   const [recentTopicIds, setRecentTopicIds] = useState<string[]>([]);
@@ -51,10 +49,8 @@ const TopicSelector: React.FC<TopicSelectorProps> = ({ language, onSelectStarter
     }
   }, []);
 
-  // Save topic to recent when selected
+  // Handle topic selection - automatically start conversation
   const handleTopicClick = (topic: Topic) => {
-    setSelectedTopic(topic);
-
     // Update recent topics
     const newRecent = [topic.id, ...recentTopicIds.filter(id => id !== topic.id)].slice(
       0,
@@ -66,6 +62,9 @@ const TopicSelector: React.FC<TopicSelectorProps> = ({ language, onSelectStarter
     } catch (error) {
       console.error('Failed to save recent topics:', error);
     }
+
+    // Call parent handler to start conversation
+    onSelectTopic(topic);
   };
 
   const handleResetFilters = () => {
@@ -181,15 +180,6 @@ const TopicSelector: React.FC<TopicSelectorProps> = ({ language, onSelectStarter
           </div>
         )}
       </div>
-
-      {selectedTopic && (
-        <ConversationStarters
-          topic={selectedTopic}
-          language={language}
-          onSelectStarter={onSelectStarter}
-          onClose={() => setSelectedTopic(null)}
-        />
-      )}
     </div>
   );
 };

@@ -263,6 +263,99 @@ class ConversationService:
             common_mistakes=common_mistakes,
         )
 
+    async def generate_initial_message(
+        self,
+        language: str,
+        difficulty_level: str,
+        topic: str,
+        topic_description: str | None = None,
+    ) -> str:
+        """Generate an initial tutor message to start a conversation based on topic.
+
+        Args:
+            language: Target language.
+            difficulty_level: Student's proficiency level.
+            topic: Conversation topic name (e.g., "restaurant", "classroom").
+            topic_description: Optional description of the topic context.
+
+        Returns:
+            Initial tutor message in the target language.
+        """
+        # Build system prompt with topic context
+        system_prompt = self._build_system_prompt(
+            language=language,
+            difficulty_level=difficulty_level,
+            topic=topic_description or topic,
+        )
+
+        # Create a prompt for generating the initial message
+        # Build roleplay context based on topic
+        roleplay_context = self._get_roleplay_context(topic, topic_description)
+
+        initial_prompt = f"""You are starting a conversation with a {difficulty_level} level student.
+
+Context: {roleplay_context}
+
+Generate a friendly, engaging opening message in {language} that:
+1. Greets the student warmly
+2. Establishes the roleplay scenario naturally
+3. Uses vocabulary appropriate for {difficulty_level} level (follow the vocabulary constraints in your system prompt)
+4. Asks a simple, engaging question to start the conversation
+5. Is natural and conversational, not like a textbook
+
+Keep it short (1-2 sentences maximum). Respond ONLY in {language}."""
+
+        try:
+            response = await self._provider.generate(
+                messages=[{"role": "user", "content": initial_prompt}],
+                system_prompt=system_prompt,
+                max_tokens=settings.llm_max_tokens,
+                temperature=settings.llm_temperature,
+            )
+
+            return response.content
+
+        except Exception as e:
+            logger.error(f"Error in generate_initial_message: {e}")
+            raise
+
+    def _get_roleplay_context(self, topic: str, topic_description: str | None) -> str:
+        """Get roleplay context description based on topic.
+
+        Args:
+            topic: Topic name (e.g., "restaurant", "classroom")
+            topic_description: Optional topic description
+
+        Returns:
+            Roleplay context string
+        """
+        roleplay_contexts = {
+            "restaurant": "You are a friendly waiter/server at a restaurant. The student is a customer.",
+            "travel": "You are a helpful travel guide or local person. The student is a tourist.",
+            "shopping": "You are a shop assistant or store clerk. The student is a customer.",
+            "work": "You are a colleague or business contact. The student is your coworker or business partner.",
+            "hobbies": "You are a friend sharing common interests. The student is your friend.",
+            "health": "You are a doctor, nurse, or healthcare professional. The student is a patient.",
+            "weather": "You are a friend or acquaintance making small talk. The student is your friend.",
+            "family": "You are a family member or close friend. The student is your relative or friend.",
+            "daily_routine": "You are a friend or roommate. The student is your friend or roommate.",
+            "sports": "You are a friend or sports enthusiast. The student is your friend or fellow fan.",
+            "culture": "You are a friend or cultural guide. The student is your friend or someone interested in culture.",
+            "technology": "You are a friend or tech support person. The student is your friend or a customer.",
+            "housing": "You are a real estate agent or landlord. The student is looking for housing.",
+            "education": "You are a teacher or student. The student is your student or classmate.",
+            "emergency": "You are a helpful person or emergency responder. The student needs help.",
+            "classroom": "You are a patient and encouraging language teacher. The student is your language student. Focus on teaching the language through lessons, exercises, and explanations. Use simple vocabulary and grammar appropriate for the student's level.",
+        }
+
+        context = roleplay_contexts.get(
+            topic.lower(), f"You are having a conversation about {topic}."
+        )
+        if topic_description:
+            context += f" Topic: {topic_description}"
+
+        return context
+
     async def correct_text(
         self, text: str, language: str, difficulty_level: str
     ) -> tuple[str, list[dict]]:
@@ -341,6 +434,7 @@ class ConversationService:
         language: str,
         difficulty_level: str,
         conversation_history: list[dict[str, str]] | None = None,
+        topic: str = "general conversation",
     ) -> str:
         """Generate a conversational response from the AI tutor.
 
@@ -349,6 +443,7 @@ class ConversationService:
             language: Target language.
             difficulty_level: User's proficiency level.
             conversation_history: Previous messages in the conversation.
+            topic: Current conversation topic.
 
         Returns:
             Assistant response message.
@@ -362,8 +457,8 @@ class ConversationService:
         if conversation_history:
             self._memory.load_from_history(conversation_history)
 
-        # Build system prompt
-        system_prompt = self._build_system_prompt(language, difficulty_level)
+        # Build system prompt with topic context
+        system_prompt = self._build_system_prompt(language, difficulty_level, topic=topic)
 
         # Build messages for the provider
         messages = self._memory.get_messages()

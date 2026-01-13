@@ -172,6 +172,15 @@ const ConversationInterface: React.FC<ConversationInterfaceProps> = ({
   const loadMessages = useCallback(async () => {
     try {
       const msgs = await conversationService.getMessages(conversation.id);
+      console.log(
+        `[ConversationInterface] Loaded ${msgs.length} messages for conversation ${conversation.id}`
+      );
+      if (msgs.length > 0) {
+        const lastMessage = msgs[msgs.length - 1];
+        console.log(
+          `[ConversationInterface] Last message (ID: ${lastMessage.id}): "${lastMessage.content.substring(0, 100)}..."`
+        );
+      }
       setMessages(msgs);
     } catch (error) {
       console.error('Failed to load messages:', error);
@@ -180,7 +189,7 @@ const ConversationInterface: React.FC<ConversationInterfaceProps> = ({
 
   useEffect(() => {
     loadMessages();
-  }, [loadMessages]);
+  }, [loadMessages, conversation.updated_at]); // Reload when conversation is updated
 
   useEffect(() => {
     // Load TTS rate per CEFR level.

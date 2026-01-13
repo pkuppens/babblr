@@ -225,7 +225,7 @@ frontend/dist/
 frontend/release/
 
 # Database
-backend/babblr.db
+backend/*.db
 backend/audio_output/
 backend/audio_files/
 audio_files/

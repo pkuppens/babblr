@@ -839,6 +839,62 @@
           "Kunt u mij alstublieft helpen?"
         ]
       }
+    },
+    {
+      "id": "classroom",
+      "icon": "📚",
+      "level": "A1",
+      "names": {
+        "spanish": "En el aula",
+        "italian": "In classe",
+        "german": "Im Klassenzimmer",
+        "french": "En classe",
+        "dutch": "In de klas"
+      },
+      "descriptions": {
+        "spanish": "Aprender el idioma con lecciones y ejercicios",
+        "italian": "Imparare la lingua con lezioni ed esercizi",
+        "german": "Sprache lernen mit Lektionen und Übungen",
+        "french": "Apprendre la langue avec des leçons et des exercices",
+        "dutch": "Taal leren met lessen en oefeningen"
+      },
+      "starters": {
+        "spanish": [
+          "¿Puede explicar esto, por favor?",
+          "No entiendo esta palabra",
+          "¿Cómo se dice...?",
+          "¿Puedo hacer una pregunta?",
+          "¿Puede repetir, por favor?"
+        ],
+        "italian": [
+          "Può spiegare questo, per favore?",
+          "Non capisco questa parola",
+          "Come si dice...?",
+          "Posso fare una domanda?",
+          "Può ripetere, per favore?"
+        ],
+        "german": [
+          "Können Sie das bitte erklären?",
+          "Ich verstehe dieses Wort nicht",
+          "Wie sagt man...?",
+          "Darf ich eine Frage stellen?",
+          "Können Sie das bitte wiederholen?"
+        ],
+        "french": [
+          "Pouvez-vous expliquer cela, s'il vous plaît?",
+          "Je ne comprends pas ce mot",
+          "Comment dit-on...?",
+          "Puis-je poser une question?",
+          "Pouvez-vous répéter, s'il vous plaît?"
+        ],
+        "dutch": [
+          "Kunt u dit alstublieft uitleggen?",
+          "Ik begrijp dit woord niet",
+          "Hoe zeg je...?",
+          "Mag ik een vraag stellen?",
+          "Kunt u dit alstublieft herhalen?"
+        ]
+      }
     }
   ]
 }

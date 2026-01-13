@@ -12,6 +12,9 @@ class ConversationCreate(BaseModel):
         default="A1",
         description="Proficiency level: CEFR (A1, A2, B1, B2, C1, C2) or legacy (beginner, intermediate, advanced)",
     )
+    topic_id: Optional[str] = Field(
+        None, description="Topic identifier from topics.json (e.g., 'restaurant', 'classroom')"
+    )
 
 
 class ConversationResponse(BaseModel):
@@ -20,6 +23,7 @@ class ConversationResponse(BaseModel):
     id: int
     language: str
     difficulty_level: str
+    topic_id: Optional[str] = None
     created_at: datetime
     updated_at: datetime
 
