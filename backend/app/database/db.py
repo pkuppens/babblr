@@ -49,6 +49,7 @@ async def init_db():
 
         # Run migrations for existing databases
         await _migrate_add_topic_id()
+        await _migrate_add_mastery_score()
 
         logger.info("Database tables initialized successfully")
     except Exception as e:
@@ -99,6 +100,58 @@ async def _migrate_add_topic_id():
 
         conn.commit()
         logger.info("Successfully added topic_id column to conversations table.")
+
+    except sqlite3.Error as e:
+        logger.error(f"Error during migration: {e}")
+        conn.rollback()
+        # Don't raise - allow app to continue even if migration fails
+    finally:
+        conn.close()
+
+
+async def _migrate_add_mastery_score():
+    """Add mastery_score column to lesson_progress table if it doesn't exist."""
+    import sqlite3
+    from pathlib import Path
+
+    # Get database path from settings
+    db_url = settings.babblr_conversation_database_url
+
+    # Extract file path from SQLite URL
+    if db_url.startswith("sqlite+aiosqlite:///"):
+        db_path = db_url.replace("sqlite+aiosqlite:///", "")
+    elif db_url.startswith("sqlite:///"):
+        db_path = db_url.replace("sqlite:///", "")
+    else:
+        # Not SQLite, skip migration
+        return
+
+    db_path = Path(db_path)
+
+    if not db_path.exists():
+        # Database will be created with correct schema
+        return
+
+    # Use synchronous sqlite3 for migration (simpler for schema changes)
+    conn = sqlite3.connect(str(db_path))
+    cursor = conn.cursor()
+
+    try:
+        # Check if mastery_score column already exists
+        cursor.execute("PRAGMA table_info(lesson_progress)")
+        columns = [row[1] for row in cursor.fetchall()]
+
+        if "mastery_score" in columns:
+            logger.debug("Column mastery_score already exists. No migration needed.")
+            return
+
+        logger.info("Adding mastery_score column to lesson_progress table...")
+
+        # Add mastery_score column (nullable, as it's optional)
+        cursor.execute("ALTER TABLE lesson_progress ADD COLUMN mastery_score FLOAT")
+
+        conn.commit()
+        logger.info("Successfully added mastery_score column to lesson_progress table.")
 
     except sqlite3.Error as e:
         logger.error(f"Error during migration: {e}")

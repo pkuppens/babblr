@@ -150,6 +150,9 @@ class LessonProgressCreate(BaseModel):
     completion_percentage: float = Field(
         default=0.0, ge=0.0, le=100.0, description="Completion percentage"
     )
+    mastery_score: Optional[float] = Field(
+        None, ge=0.0, le=1.0, description="Mastery score (0.0-1.0) for adaptive scheduling"
+    )
 
 
 class LessonProgressResponse(BaseModel):
@@ -160,6 +163,7 @@ class LessonProgressResponse(BaseModel):
     language: str
     status: str
     completion_percentage: float
+    mastery_score: Optional[float] = None
     started_at: Optional[datetime]
     completed_at: Optional[datetime]
     last_accessed_at: datetime

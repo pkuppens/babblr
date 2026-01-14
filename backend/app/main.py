@@ -7,7 +7,7 @@ from fastapi.responses import FileResponse, RedirectResponse
 
 from app.config import settings
 from app.database.db import init_db
-from app.routes import chat, conversations, stt, topics, tts, vocabulary
+from app.routes import chat, conversations, grammar, stt, topics, tts, vocabulary
 from app.services.llm import ProviderFactory
 from app.services.tts_service import tts_service
 from app.services.whisper_service import whisper_service
@@ -46,6 +46,7 @@ app.include_router(tts.router)
 app.include_router(stt.router)
 app.include_router(topics.router)
 app.include_router(vocabulary.router)
+app.include_router(grammar.router)
 
 
 @app.get("/favicon.svg", include_in_schema=False)

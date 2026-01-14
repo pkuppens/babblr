@@ -21,8 +21,42 @@ function App() {
   const [currentConversation, setCurrentConversation] = useState<Conversation | null>(null);
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [showTopicSelector, setShowTopicSelector] = useState(false);
-  const [selectedLanguage, setSelectedLanguage] = useState<Language | null>(null);
-  const [selectedDifficulty, setSelectedDifficulty] = useState<DifficultyLevel | null>(null);
+
+  // Language/level selection (persisted in localStorage)
+  const loadLanguageSelection = (): { language: Language; difficulty: DifficultyLevel } => {
+    try {
+      const stored = localStorage.getItem('babblr_language_selection');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (parsed.language && parsed.difficulty) {
+          return { language: parsed.language, difficulty: parsed.difficulty };
+        }
+      }
+    } catch (error) {
+      console.error('Failed to load language selection:', error);
+    }
+    // Defaults
+    return { language: 'spanish', difficulty: 'A1' };
+  };
+
+  const saveLanguageSelection = (language: Language, difficulty: DifficultyLevel) => {
+    try {
+      localStorage.setItem('babblr_language_selection', JSON.stringify({ language, difficulty }));
+    } catch (error) {
+      console.error('Failed to save language selection:', error);
+    }
+  };
+
+  const initialSelection = loadLanguageSelection();
+  const [selectedLanguage, setSelectedLanguage] = useState<Language>(initialSelection.language);
+  const [selectedDifficulty, setSelectedDifficulty] = useState<DifficultyLevel>(
+    initialSelection.difficulty
+  );
+
+  // Save to localStorage whenever selection changes
+  useEffect(() => {
+    saveLanguageSelection(selectedLanguage, selectedDifficulty);
+  }, [selectedLanguage, selectedDifficulty]);
 
   // Settings state
   const [showSettings, setShowSettings] = useState(false);
@@ -51,8 +85,14 @@ function App() {
     loadDisplaySettings();
   }, []);
 
+  const handleLanguageSelectionChange = (language: Language, difficulty: DifficultyLevel) => {
+    // Update selection immediately (persists across tabs)
+    setSelectedLanguage(language);
+    setSelectedDifficulty(difficulty);
+  };
+
   const handleStartNewConversation = async (language: Language, difficulty: DifficultyLevel) => {
-    // Store the selection and switch to conversations tab with topic selector
+    // Ensure selection is updated (should already be set, but ensure consistency)
     setSelectedLanguage(language);
     setSelectedDifficulty(difficulty);
     setShowTopicSelector(true);
@@ -115,6 +155,9 @@ function App() {
       case 'home':
         return (
           <HomeScreen
+            selectedLanguage={selectedLanguage}
+            selectedDifficulty={selectedDifficulty}
+            onLanguageSelectionChange={handleLanguageSelectionChange}
             onStartNewConversation={handleStartNewConversation}
             conversations={conversations}
             onSelectConversation={handleSelectConversation}
@@ -133,7 +176,12 @@ function App() {
       case 'vocabulary':
         return <VocabularyScreen />;
       case 'grammar':
-        return <GrammarScreen />;
+        return (
+          <GrammarScreen
+            selectedLanguage={selectedLanguage}
+            selectedDifficulty={selectedDifficulty}
+          />
+        );
       case 'conversations':
         return (
           <ConversationsScreen

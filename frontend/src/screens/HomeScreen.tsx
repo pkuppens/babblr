@@ -6,6 +6,9 @@ import type { TimeFormat } from '../services/settings';
 import './Screen.css';
 
 interface HomeScreenProps {
+  selectedLanguage: Language;
+  selectedDifficulty: DifficultyLevel;
+  onLanguageSelectionChange: (language: Language, difficulty: DifficultyLevel) => void;
   onStartNewConversation: (language: Language, difficulty: DifficultyLevel) => void;
   conversations: Conversation[];
   onSelectConversation: (conversation: Conversation) => void;
@@ -24,6 +27,9 @@ interface HomeScreenProps {
  * Future: This screen will also host the progress dashboard (issue #11).
  */
 const HomeScreen: React.FC<HomeScreenProps> = ({
+  selectedLanguage,
+  selectedDifficulty,
+  onLanguageSelectionChange,
   onStartNewConversation,
   conversations,
   onSelectConversation,
@@ -34,7 +40,12 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
   return (
     <div className="screen-container">
       <div className="home-container">
-        <LanguageSelector onStart={onStartNewConversation} />
+        <LanguageSelector
+          selectedLanguage={selectedLanguage}
+          selectedDifficulty={selectedDifficulty}
+          onSelectionChange={onLanguageSelectionChange}
+          onStart={onStartNewConversation}
+        />
         <ConversationList
           conversations={conversations}
           onSelect={onSelectConversation}

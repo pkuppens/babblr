@@ -99,6 +99,7 @@ class LessonProgress(Base):
         String(20), nullable=False, default="not_started"
     )  # 'not_started', 'in_progress', 'completed'
     completion_percentage = Column(Float, nullable=False, default=0.0)
+    mastery_score = Column(Float, nullable=True, default=None)  # 0.0-1.0 for adaptive scheduling
     started_at = Column(DateTime, nullable=True)
     completed_at = Column(DateTime, nullable=True)
     last_accessed_at = Column(DateTime, default=datetime.utcnow)

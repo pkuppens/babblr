@@ -10,7 +10,7 @@ import type {
 
 const API_BASE_URL = 'http://localhost:8000';
 
-const api = axios.create({
+export const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
@@ -236,6 +236,120 @@ export const topicsService = {
   async getTopics(): Promise<TopicsData> {
     try {
       const response = await api.get('/topics');
+      return response.data;
+    } catch (error) {
+      handleError(error);
+      throw error;
+    }
+  },
+};
+
+// Grammar lesson types
+export interface GrammarLesson {
+  id: number;
+  language: string;
+  lesson_type: string;
+  title: string;
+  description?: string;
+  difficulty_level: string;
+  order_index: number;
+  is_active: boolean;
+  created_at: string;
+}
+
+export interface GrammarLessonDetail extends GrammarLesson {
+  rules: Array<{
+    id: number;
+    title: string;
+    description: string;
+    examples: Array<{ es?: string; en?: string; [key: string]: string }>;
+    difficulty_level: string;
+  }>;
+  examples: Array<{
+    text: string;
+    translation?: string;
+    audio_url?: string;
+  }>;
+  exercises: Array<{
+    type: string;
+    question?: string;
+    options?: string[];
+    correct?: number;
+    [key: string]: unknown;
+  }>;
+  items: Array<{
+    id: number;
+    item_type: string;
+    content: string;
+    item_metadata?: string;
+    order_index: number;
+    created_at: string;
+  }>;
+}
+
+export interface LessonProgress {
+  id: number;
+  lesson_id: number;
+  language: string;
+  status: 'not_started' | 'in_progress' | 'completed';
+  completion_percentage: number;
+  mastery_score?: number;
+  started_at?: string;
+  completed_at?: string;
+  last_accessed_at: string;
+}
+
+export interface LessonProgressCreate {
+  lesson_id: number;
+  language: string;
+  status: 'not_started' | 'in_progress' | 'completed';
+  completion_percentage: number;
+  mastery_score?: number;
+}
+
+export const grammarService = {
+  async listLessons(
+    language: string,
+    level?: string,
+    type?: 'new' | 'practice' | 'test' | 'recap'
+  ): Promise<GrammarLesson[]> {
+    try {
+      const params = new URLSearchParams({ language });
+      if (level) params.append('level', level);
+      if (type) params.append('type', type);
+      const response = await api.get(`/grammar/lessons?${params.toString()}`);
+      return response.data;
+    } catch (error) {
+      handleError(error);
+      throw error;
+    }
+  },
+
+  async getLesson(lessonId: number): Promise<GrammarLessonDetail> {
+    try {
+      const response = await api.get(`/grammar/lessons/${lessonId}`);
+      return response.data;
+    } catch (error) {
+      handleError(error);
+      throw error;
+    }
+  },
+
+  async updateProgress(progress: LessonProgressCreate): Promise<LessonProgress> {
+    try {
+      const response = await api.post('/grammar/progress', progress);
+      return response.data;
+    } catch (error) {
+      handleError(error);
+      throw error;
+    }
+  },
+
+  async getRecaps(language: string, level?: string): Promise<GrammarLesson[]> {
+    try {
+      const params = new URLSearchParams({ language });
+      if (level) params.append('level', level);
+      const response = await api.get(`/grammar/recaps?${params.toString()}`);
       return response.data;
     } catch (error) {
       handleError(error);
