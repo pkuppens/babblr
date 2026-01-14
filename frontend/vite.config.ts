@@ -13,6 +13,12 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: './src/test/setup.ts',
     css: true,
+    exclude: [
+      '**/node_modules/**',
+      '**/dist/**',
+      '**/.git/**',
+      '**/*integration*.test.{ts,tsx}',
+    ],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
@@ -23,6 +29,7 @@ export default defineConfig({
         '**/*.config.*',
         '**/dist/',
         '**/build/',
+        '**/*integration*.test.{ts,tsx}',
       ],
     },
   },

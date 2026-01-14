@@ -92,6 +92,7 @@ def test_initial_message_validation_errors(client: TestClient):
     assert response.status_code == 422
 
 
+@pytest.mark.integration
 @pytest.mark.asyncio
 async def test_initial_message_restaurant_topic(client: TestClient, db: AsyncSession):
     """Test initial message for restaurant topic returns relevant content."""

@@ -83,8 +83,9 @@ async def health_check():
     ollama_available_models: list[str] | None = None
     try:
         ollama = ProviderFactory.get_provider("ollama")
-        if hasattr(ollama, "list_models"):
-            ollama_available_models = await ollama.list_models()
+        # Check if provider has list_models method (OllamaProvider specific)
+        if hasattr(ollama, "list_models") and callable(getattr(ollama, "list_models", None)):
+            ollama_available_models = await ollama.list_models()  # type: ignore[attr-defined]
     except Exception:
         ollama_available_models = None
 
@@ -102,7 +103,7 @@ async def health_check():
                 "current_model": settings.whisper_model,
                 "supported_models": whisper_service.get_available_models(),
                 "supported_locales": (
-                    whisper_service.get_supported_locales()
+                    whisper_service.get_supported_locales()  # type: ignore[attr-defined]
                     if hasattr(whisper_service, "get_supported_locales")
                     else whisper_service.get_supported_languages()
                 ),

@@ -1,7 +1,7 @@
 """Tests for vocabulary lesson endpoints."""
 
 import pytest
-from httpx import AsyncClient
+from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.main import app
@@ -11,7 +11,8 @@ from app.models.models import Lesson, LessonItem
 @pytest.fixture
 async def async_client():
     """Create an async test client."""
-    async with AsyncClient(app=app, base_url="http://test") as client:
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
         yield client
 
 

@@ -74,6 +74,8 @@ function Settings({ isOpen, onClose, inline = false }: SettingsProps) {
     device: string;
   } | null>(null);
   const [isLoadingSttConfig, setIsLoadingSttConfig] = useState(false);
+  const [isSwitchingModel, setIsSwitchingModel] = useState(false);
+  const [modelSwitchProgress, setModelSwitchProgress] = useState<string>('');
 
   // Filtered timezone options based on search
   const filteredTimezones = useMemo(() => filterTimezones(timezoneSearch), [timezoneSearch]);
@@ -141,7 +143,9 @@ function Settings({ isOpen, onClose, inline = false }: SettingsProps) {
       setSttConfig(config);
     } catch (error) {
       console.error('Failed to load STT config:', error);
-      toast.error('Failed to load STT configuration');
+      toast.error('Failed to load STT configuration. Make sure the backend is running.');
+      // Set to null so the error message is shown
+      setSttConfig(null);
     } finally {
       setIsLoadingSttConfig(false);
     }
@@ -715,19 +719,92 @@ function Settings({ isOpen, onClose, inline = false }: SettingsProps) {
                 value={sttConfig.current_model}
                 onChange={async e => {
                   const newModel = e.target.value;
+                  if (newModel === sttConfig.current_model) return;
+
+                  setIsSwitchingModel(true);
+                  setModelSwitchProgress('Initiating model switch...');
+
                   try {
+                    // Start the model switch (returns immediately)
                     const result = await speechService.updateSttModel(newModel);
-                    toast.success(result.message);
-                    if (result.note) {
-                      toast(result.note, { duration: 5000 });
+                    const action = result.action || 'switching'; // 'switching' or 'downloading'
+
+                    // Update progress message based on action
+                    if (action === 'downloading') {
+                      setModelSwitchProgress(
+                        `Downloading model ${newModel}... (this may take a few minutes)`
+                      );
+                    } else {
+                      setModelSwitchProgress(`Switching to model ${newModel}...`);
                     }
-                    await loadSttConfig();
+
+                    toast.success(result.message);
+
+                    // Poll for completion
+                    const pollInterval = setInterval(async () => {
+                      try {
+                        // Check switch status
+                        const status = await speechService.getSttSwitchStatus();
+
+                        if (status.status === 'idle') {
+                          clearInterval(pollInterval);
+
+                          if (status.error) {
+                            setModelSwitchProgress('Model switch failed');
+                            toast.error(`Failed to switch model: ${status.error}`);
+                            setIsSwitchingModel(false);
+                            setModelSwitchProgress('');
+                            await loadSttConfig();
+                            return;
+                          }
+
+                          // Check if model actually changed
+                          const config = await speechService.getSttConfig();
+                          if (config.current_model === newModel) {
+                            setModelSwitchProgress('Model loaded successfully!');
+                            setTimeout(() => {
+                              setIsSwitchingModel(false);
+                              setModelSwitchProgress('');
+                            }, 1000);
+                          } else {
+                            // Still switching, keep polling
+                            return;
+                          }
+
+                          await loadSttConfig();
+                        } else if (status.status === 'downloading') {
+                          setModelSwitchProgress(
+                            `Downloading model ${newModel}... (this may take a few minutes)`
+                          );
+                        } else if (status.status === 'switching') {
+                          setModelSwitchProgress(`Switching to model ${newModel}...`);
+                        }
+                      } catch (error) {
+                        clearInterval(pollInterval);
+                        setIsSwitchingModel(false);
+                        setModelSwitchProgress('');
+                        console.error('Failed to check switch status:', error);
+                      }
+                    }, 1000); // Poll every second
+
+                    // Set a maximum timeout (5 minutes for downloads)
+                    setTimeout(() => {
+                      clearInterval(pollInterval);
+                      if (isSwitchingModel) {
+                        setIsSwitchingModel(false);
+                        setModelSwitchProgress('');
+                        toast.error('Model switch timed out. Check server logs for details.');
+                      }
+                    }, 300000); // 5 minutes
                   } catch (error) {
                     console.error('Failed to update STT model:', error);
+                    setIsSwitchingModel(false);
+                    setModelSwitchProgress('');
+                    toast.error('Failed to initiate model switch. Check server logs for details.');
                   }
                 }}
                 className="settings-select"
-                disabled={isLoadingSttConfig}
+                disabled={isLoadingSttConfig || isSwitchingModel}
               >
                 {sttConfig.available_models.map(model => (
                   <option key={model} value={model}>
@@ -735,6 +812,21 @@ function Settings({ isOpen, onClose, inline = false }: SettingsProps) {
                   </option>
                 ))}
               </select>
+              {isSwitchingModel && (
+                <div className="stt-model-switch-progress" style={{ marginTop: '1rem' }}>
+                  <div className="stt-progress-spinner"></div>
+                  <p className="settings-description" style={{ margin: '0.5rem 0 0 0' }}>
+                    {modelSwitchProgress || 'Switching model...'}
+                  </p>
+                  <p
+                    className="settings-description"
+                    style={{ fontSize: '0.8rem', color: '#6b7280' }}
+                  >
+                    This may take a few minutes if the model needs to be downloaded. Progress is
+                    shown in the server console.
+                  </p>
+                </div>
+              )}
               <p
                 className="settings-description"
                 style={{ marginTop: '0.5rem', fontSize: '0.875rem' }}

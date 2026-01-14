@@ -84,7 +84,14 @@ Response format:
                 model=self.model, max_tokens=1024, messages=[{"role": "user", "content": prompt}]
             )
 
-            result = json.loads(response.content[0].text)
+            # Extract text from response content (handles different block types)
+            content_block = response.content[0]
+            if hasattr(content_block, "text"):
+                text_content = content_block.text  # type: ignore[attr-defined]
+            else:
+                # Fallback for non-text blocks
+                text_content = str(content_block)
+            result = json.loads(text_content)
             return result.get("corrected_text", text), result.get("corrections", [])
         except AuthenticationError as e:
             logger.error(f"Authentication error in correct_text: {e}")
@@ -95,7 +102,6 @@ Response format:
             return text, []
         except Exception as e:
             logger.error(f"Unexpected error in correct_text: {e}")
-            return text, []
             return text, []
 
     async def generate_response(
@@ -135,7 +141,13 @@ Response format:
                 model=self.model, max_tokens=2048, system=system_prompt, messages=messages
             )
 
-            assistant_message = response.content[0].text
+            # Extract text from response content (handles different block types)
+            content_block = response.content[0]
+            if hasattr(content_block, "text"):
+                assistant_message = content_block.text  # type: ignore[attr-defined]
+            else:
+                # Fallback for non-text blocks
+                assistant_message = str(content_block)
 
             return assistant_message
         except AuthenticationError as e:

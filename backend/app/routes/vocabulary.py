@@ -79,12 +79,12 @@ async def get_lesson(
         if not lesson:
             raise HTTPException(status_code=404, detail=f"Lesson {lesson_id} not found")
 
-        if lesson.lesson_type != "vocabulary":
+        if lesson.lesson_type != "vocabulary":  # type: ignore[comparison-overlap]
             raise HTTPException(
                 status_code=400, detail=f"Lesson {lesson_id} is not a vocabulary lesson"
             )
 
-        if not lesson.is_active:
+        if not lesson.is_active:  # type: ignore[comparison-overlap]
             raise HTTPException(status_code=404, detail=f"Lesson {lesson_id} is not active")
 
         # Get lesson items
@@ -148,7 +148,7 @@ async def create_progress(
         if not lesson:
             raise HTTPException(status_code=404, detail=f"Lesson {progress.lesson_id} not found")
 
-        if lesson.lesson_type != "vocabulary":
+        if lesson.lesson_type != "vocabulary":  # type: ignore[comparison-overlap]
             raise HTTPException(
                 status_code=400,
                 detail=f"Lesson {progress.lesson_id} is not a vocabulary lesson",
@@ -176,20 +176,20 @@ async def create_progress(
 
         if existing:
             # Update existing progress
-            existing.status = progress.status
-            existing.completion_percentage = progress.completion_percentage
-            existing.last_accessed_at = now
+            existing.status = progress.status  # type: ignore[assignment]
+            existing.completion_percentage = progress.completion_percentage  # type: ignore[assignment]
+            existing.last_accessed_at = now  # type: ignore[assignment]
 
             # Update started_at if transitioning from not_started
-            if existing.status == "in_progress" and existing.started_at is None:
-                existing.started_at = now
+            if existing.status == "in_progress" and existing.started_at is None:  # type: ignore[comparison-overlap]
+                existing.started_at = now  # type: ignore[assignment]
 
             # Update completed_at if status is completed
-            if existing.status == "completed":
-                existing.completed_at = now
-            elif existing.status != "completed" and existing.completed_at is not None:
+            if existing.status == "completed":  # type: ignore[comparison-overlap]
+                existing.completed_at = now  # type: ignore[assignment]
+            elif existing.status != "completed" and existing.completed_at is not None:  # type: ignore[comparison-overlap]
                 # Reset completed_at if status changed from completed
-                existing.completed_at = None
+                existing.completed_at = None  # type: ignore[assignment]
 
             await db.commit()
             await db.refresh(existing)
@@ -255,7 +255,7 @@ async def update_progress(
         if not lesson:
             raise HTTPException(status_code=404, detail=f"Lesson {progress.lesson_id} not found")
 
-        if lesson.lesson_type != "vocabulary":
+        if lesson.lesson_type != "vocabulary":  # type: ignore[comparison-overlap]
             raise HTTPException(
                 status_code=400,
                 detail=f"Lesson {progress.lesson_id} is not a vocabulary lesson",
@@ -271,22 +271,22 @@ async def update_progress(
 
         # Update progress
         now = datetime.utcnow()
-        existing.lesson_id = progress.lesson_id
-        existing.language = progress.language
-        existing.status = progress.status
-        existing.completion_percentage = progress.completion_percentage
-        existing.last_accessed_at = now
+        existing.lesson_id = progress.lesson_id  # type: ignore[assignment]
+        existing.language = progress.language  # type: ignore[assignment]
+        existing.status = progress.status  # type: ignore[assignment]
+        existing.completion_percentage = progress.completion_percentage  # type: ignore[assignment]
+        existing.last_accessed_at = now  # type: ignore[assignment]
 
         # Update started_at if transitioning from not_started
-        if existing.status == "in_progress" and existing.started_at is None:
-            existing.started_at = now
+        if existing.status == "in_progress" and existing.started_at is None:  # type: ignore[comparison-overlap]
+            existing.started_at = now  # type: ignore[assignment]
 
         # Update completed_at if status is completed
-        if existing.status == "completed":
-            existing.completed_at = now
-        elif existing.status != "completed" and existing.completed_at is not None:
+        if existing.status == "completed":  # type: ignore[comparison-overlap]
+            existing.completed_at = now  # type: ignore[assignment]
+        elif existing.status != "completed" and existing.completed_at is not None:  # type: ignore[comparison-overlap]
             # Reset completed_at if status changed from completed
-            existing.completed_at = None
+            existing.completed_at = None  # type: ignore[assignment]
 
         await db.commit()
         await db.refresh(existing)

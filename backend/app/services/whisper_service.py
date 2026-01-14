@@ -199,6 +199,31 @@ class WhisperService(STTService):
         self.device = self._determine_device(device)
         self._load_model(model_size)
 
+    def is_model_cached(self, model_size: str) -> bool:
+        """
+        Check if a Whisper model is already cached (downloaded).
+
+        Args:
+            model_size: Model to check
+
+        Returns:
+            True if model is cached, False otherwise
+        """
+        if not WHISPER_AVAILABLE or whisper is None:
+            return False
+
+        try:
+            # Check if model file exists in whisper cache
+            from pathlib import Path
+
+            # Whisper stores models in ~/.cache/whisper/ by default
+            cache_dir = Path.home() / ".cache" / "whisper"
+            model_file = cache_dir / f"{model_size}.pt"
+
+            return model_file.exists()
+        except Exception:
+            return False
+
     def _load_model(self, model_size: str) -> bool:
         """
         Load a Whisper model.
@@ -214,7 +239,9 @@ class WhisperService(STTService):
             return False
 
         try:
-            logger.info("Loading Whisper model: %s on device: %s", model_size, self.device)
+            is_cached = self.is_model_cached(model_size)
+            action = "Loading" if is_cached else "Downloading and loading"
+            logger.info("%s Whisper model: %s on device: %s", action, model_size, self.device)
             start_time = time.time()
 
             # Load model (this will automatically download if not cached)
@@ -389,21 +416,26 @@ class WhisperService(STTService):
         result = self.model.transcribe(audio, **options)
 
         # Extract information
-        text = result["text"].strip()
-        detected_language = result.get("language", "unknown")
+        # Whisper returns a dict with "text" as a string
+        text = str(result.get("text", "")).strip()  # type: ignore[union-attr]
+        detected_language = str(result.get("language", "unknown"))  # type: ignore[union-attr]
 
         # Calculate average confidence from segments
-        segments = result.get("segments", [])
+        segments = result.get("segments", [])  # type: ignore[union-attr]
         if segments:
             # Whisper provides "no_speech_prob" per segment; confidence = 1 - no_speech_prob
-            confidences = [1.0 - seg.get("no_speech_prob", 0.0) for seg in segments]
+            confidences = [
+                1.0 - (seg.get("no_speech_prob", 0.0) if isinstance(seg, dict) else 0.0)
+                for seg in segments
+            ]
             avg_confidence = sum(confidences) / len(confidences)
         else:
             avg_confidence = self.DEFAULT_CONFIDENCE  # Default if no segments
 
         # Get audio duration from segments
         if segments:
-            duration = segments[-1].get("end", 0.0)
+            last_segment = segments[-1]
+            duration = last_segment.get("end", 0.0) if isinstance(last_segment, dict) else 0.0
         else:
             duration = 0.0
 

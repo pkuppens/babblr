@@ -15,6 +15,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.models import Conversation, Message
 
 
+@pytest.mark.integration
 @pytest.mark.asyncio
 async def test_initial_message_creates_tutor_message(client: TestClient, db: AsyncSession):
     """Test that initial message endpoint creates a tutor message in the database."""
@@ -59,6 +60,7 @@ async def test_initial_message_creates_tutor_message(client: TestClient, db: Asy
     assert message.content == data["assistant_message"]
 
 
+@pytest.mark.integration
 @pytest.mark.asyncio
 async def test_initial_message_restaurant_topic(client: TestClient, db: AsyncSession):
     """Test that initial message for restaurant topic is contextually relevant."""
@@ -105,6 +107,7 @@ async def test_initial_message_restaurant_topic(client: TestClient, db: AsyncSes
     )
 
 
+@pytest.mark.integration
 @pytest.mark.asyncio
 async def test_initial_message_travel_topic(client: TestClient, db: AsyncSession):
     """Test that initial message for travel topic is contextually relevant."""
@@ -228,6 +231,7 @@ async def test_initial_message_validates_request_body(client: TestClient, db: As
     assert response.status_code == 422
 
 
+@pytest.mark.integration
 @pytest.mark.asyncio
 async def test_initial_message_updates_conversation_timestamp(client: TestClient, db: AsyncSession):
     """Test that generating initial message updates conversation timestamp."""
@@ -265,6 +269,7 @@ async def test_initial_message_updates_conversation_timestamp(client: TestClient
     assert conversation.updated_at > original_updated_at
 
 
+@pytest.mark.integration
 @pytest.mark.asyncio
 async def test_initial_message_different_languages(client: TestClient, db: AsyncSession):
     """Test that initial message works for different languages."""
@@ -299,6 +304,7 @@ async def test_initial_message_different_languages(client: TestClient, db: Async
         await db.commit()
 
 
+@pytest.mark.integration
 @pytest.mark.asyncio
 async def test_initial_message_different_difficulty_levels(client: TestClient, db: AsyncSession):
     """Test that initial message adapts to different difficulty levels."""

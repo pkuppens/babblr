@@ -102,10 +102,18 @@ class ClaudeProvider:
                 model=self._model,
                 max_tokens=max_tokens,
                 system=system_prompt,
-                messages=messages,
+                messages=messages,  # type: ignore[arg-type]
             )
 
-            content = response.content[0].text if response.content else ""
+            # Extract text from response content (handles different block types)
+            if response.content:
+                content_block = response.content[0]
+                if hasattr(content_block, "text"):
+                    content = content_block.text  # type: ignore[attr-defined]
+                else:
+                    content = str(content_block)
+            else:
+                content = ""
             tokens_used = None
             if hasattr(response, "usage"):
                 tokens_used = response.usage.input_tokens + response.usage.output_tokens

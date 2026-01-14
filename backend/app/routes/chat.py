@@ -89,7 +89,7 @@ async def generate_initial_message(
             )
             tz = ZoneInfo("UTC")
 
-        conversation.updated_at = datetime.now(tz).replace(tzinfo=None)
+        conversation.updated_at = datetime.now(tz).replace(tzinfo=None)  # type: ignore[assignment]
         await db.commit()
         await db.refresh(assistant_message)  # Refresh to get the saved message with ID
 
@@ -229,7 +229,7 @@ async def chat(request: ChatRequest, db: AsyncSession = Depends(get_db)):
             )
             tz = ZoneInfo("UTC")
 
-        conversation.updated_at = datetime.now(tz).replace(tzinfo=None)
+        conversation.updated_at = datetime.now(tz).replace(tzinfo=None)  # type: ignore[assignment]
 
         await db.commit()
         await db.refresh(assistant_message)  # Refresh to get the saved message with ID

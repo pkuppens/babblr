@@ -15,6 +15,7 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  timeout: 10000, // 10 second timeout for all requests
 });
 
 export const conversationService = {
@@ -187,11 +188,26 @@ export const speechService = {
   async updateSttModel(model: string): Promise<{
     message: string;
     requested_model: string;
-    current_model: string;
+    previous_model: string;
+    action: string;
     note: string;
   }> {
     try {
       const response = await api.post('/stt/config/model', { model });
+      return response.data;
+    } catch (error) {
+      handleError(error);
+      throw error;
+    }
+  },
+
+  async getSttSwitchStatus(): Promise<{
+    status: string;
+    target_model: string | null;
+    error: string | null;
+  }> {
+    try {
+      const response = await api.get('/stt/config/status');
       return response.data;
     } catch (error) {
       handleError(error);

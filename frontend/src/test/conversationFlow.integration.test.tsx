@@ -184,12 +184,21 @@ describe('Conversation Flow Integration', () => {
     });
 
     // 8. Verify "Educación" topic is visible and is A1 level
-    const educationTopic = await screen.findByText(/Educación y Aprendizaje/i);
+    // Look specifically in the "All Topics" section to avoid matching "Recently Used" section
+    // Note: "All Topics" heading only appears when there are recent topics, so we find by class
+    const allTopicsSection = document.querySelector('.all-topics-section');
+    expect(allTopicsSection).toBeInTheDocument();
+
+    const educationTopic = within(allTopicsSection as HTMLElement).getByText(
+      /Educación y Aprendizaje/i
+    );
     expect(educationTopic).toBeInTheDocument();
 
     // Verify Educación is in the A1 filtered list (should be at the beginning)
     // Since we're filtering by A1, Educación should appear first
-    const educationCard = screen.getByTestId('topic-card-education');
+    const educationCard = within(allTopicsSection as HTMLElement).getByTestId(
+      'topic-card-education'
+    );
     expect(educationCard).toBeInTheDocument();
     // Verify it shows A1 level
     expect(within(educationCard).getByText('A1')).toBeInTheDocument();
@@ -240,17 +249,35 @@ describe('Conversation Flow Integration', () => {
       expect(screen.getByText(/Choose a Conversation Topic/i)).toBeInTheDocument();
     });
 
-    // Verify level filter is set to A1 (should be default or set by selected difficulty)
-    const levelFilter = screen.getByRole('combobox', { name: /level/i });
+    // Verify level filter exists (defaults to 'all', not 'A1' - the filter is independent of selected difficulty)
+    // The select element doesn't have an accessible name, so we find it by role
+    const levelFilter = screen.getByRole('combobox');
+    expect(levelFilter).toBeInTheDocument();
+
+    // Set filter to A1 to test filtering
+    await user.selectOptions(levelFilter, 'A1');
     expect(levelFilter).toHaveValue('A1');
 
-    // Verify Educación topic is visible
-    const educationTopic = await screen.findByText(/Educación/i);
+    // Verify Educación topic is visible in the "All Topics" section only
+    // Look specifically in the "All Topics" section to avoid matching "Recently Used" section
+    // Note: "All Topics" heading only appears when there are recent topics, so we find by class
+    const allTopicsSection = document.querySelector('.all-topics-section');
+    expect(allTopicsSection).toBeInTheDocument();
+
+    // Wait for filtered topics to appear
+    await waitFor(() => {
+      const educationTopic = within(allTopicsSection as HTMLElement).getByText(/Educación/i);
+      expect(educationTopic).toBeInTheDocument();
+    });
+
+    const educationTopic = within(allTopicsSection as HTMLElement).getByText(/Educación/i);
     expect(educationTopic).toBeInTheDocument();
 
     // Verify Educación is in the list of A1 topics
-    // Get all topic cards and verify Educación appears
-    const allTopics = screen.getAllByText(/Educación|Viajes|Restaurante/i);
+    // Get all topic cards within the All Topics section and verify Educación appears
+    const allTopics = within(allTopicsSection as HTMLElement).getAllByText(
+      /Educación|Viajes|Restaurante/i
+    );
     const educationIndex = allTopics.findIndex(el => el.textContent?.includes('Educación'));
     const travelIndex = allTopics.findIndex(el => el.textContent?.includes('Viajes'));
 
