@@ -5,21 +5,11 @@ and validation. They are separate from SQLAlchemy database models.
 """
 
 from datetime import datetime
-from enum import Enum
 from typing import Optional, Union
 
 from pydantic import BaseModel, Field
 
-
-class CEFRLevel(str, Enum):
-    """CEFR proficiency levels."""
-
-    A1 = "A1"
-    A2 = "A2"
-    B1 = "B1"
-    B2 = "B2"
-    C1 = "C1"
-    C2 = "C2"
+from app.models.cefr import CEFRLevel
 
 
 class Exercise(BaseModel):

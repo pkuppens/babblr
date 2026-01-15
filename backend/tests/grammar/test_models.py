@@ -6,12 +6,12 @@ import pytest
 from pydantic import ValidationError
 
 from app.grammar.models import (
-    CEFRLevel,
     Exercise,
     GrammarLesson,
     LessonProgress,
     TopicVocabularyProgress,
 )
+from app.models.cefr import CEFRLevel
 
 
 class TestExercise:
