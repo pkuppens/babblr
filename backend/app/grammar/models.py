@@ -16,13 +16,16 @@ class Exercise(BaseModel):
     """An exercise in a grammar lesson."""
 
     id: str = Field(..., description="Unique exercise identifier")
-    type: str = Field(..., description="Exercise type: 'multiple_choice', 'fill_in_blank', etc.")
+    type: str = Field(
+        ..., description="Exercise type: 'multiple_choice', 'fill_in_blank', 'word_order', etc."
+    )
     question: str = Field(..., description="Exercise question or prompt")
     options: Optional[list[str]] = Field(
         None, description="Answer options for multiple choice exercises"
     )
-    correct_answer: Union[str, int] = Field(
-        ..., description="Correct answer (string for fill-in, int index for multiple choice)"
+    correct_answer: Union[str, int, list] = Field(
+        ...,
+        description="Correct answer (string for fill-in, int index for multiple choice, list for word order)",
     )
     explanation: str = Field(..., description="Feedback explanation shown after answer submission")
 
