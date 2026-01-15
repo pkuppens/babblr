@@ -84,7 +84,14 @@ Response format:
                 model=self.model, max_tokens=1024, messages=[{"role": "user", "content": prompt}]
             )
 
-            result = json.loads(response.content[0].text)
+            # Extract text from response content (handles different block types)
+            content_block = response.content[0]
+            if hasattr(content_block, "text"):
+                text_content = content_block.text  # type: ignore[attr-defined]
+            else:
+                # Fallback for non-text blocks
+                text_content = str(content_block)
+            result = json.loads(text_content)
             return result.get("corrected_text", text), result.get("corrections", [])
         except AuthenticationError as e:
             logger.error(f"Authentication error in correct_text: {e}")
@@ -96,7 +103,6 @@ Response format:
         except Exception as e:
             logger.error(f"Unexpected error in correct_text: {e}")
             return text, []
-            return text, []
 
     async def generate_response(
         self,
@@ -104,7 +110,7 @@ Response format:
         language: str,
         difficulty_level: str,
         conversation_history: List[Dict[str, str]] | None = None,
-    ) -> Tuple[str, List[Dict]]:
+    ) -> str:
         """
         Generate a conversational response from the AI tutor.
 
@@ -115,7 +121,7 @@ Response format:
             conversation_history: Previous messages in the conversation
 
         Returns:
-            Tuple of (assistant_response, vocabulary_items)
+            Assistant response message.
         """
         if conversation_history is None:
             conversation_history = []
@@ -135,12 +141,15 @@ Response format:
                 model=self.model, max_tokens=2048, system=system_prompt, messages=messages
             )
 
-            assistant_message = response.content[0].text
+            # Extract text from response content (handles different block types)
+            content_block = response.content[0]
+            if hasattr(content_block, "text"):
+                assistant_message = content_block.text  # type: ignore[attr-defined]
+            else:
+                # Fallback for non-text blocks
+                assistant_message = str(content_block)
 
-            # Extract vocabulary items (simple extraction for MVP)
-            vocabulary_items = self._extract_vocabulary(assistant_message, language)
-
-            return assistant_message, vocabulary_items
+            return assistant_message
         except AuthenticationError as e:
             logger.error(f"Authentication error in generate_response: {e}")
             raise
@@ -179,15 +188,6 @@ Response format:
             recent_vocab=recent_vocab,
             common_mistakes=common_mistakes,
         )
-
-    def _extract_vocabulary(self, text: str, language: str) -> List[Dict]:
-        """
-        Extract potentially new vocabulary from the assistant's message.
-        This is a simple implementation - could be enhanced with NLP.
-        """
-        # For MVP, return empty list. In production, you'd use language-specific
-        # analysis to identify uncommon words worth learning
-        return []
 
 
 # Create a singleton instance

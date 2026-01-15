@@ -2,6 +2,7 @@ import React, { useCallback, useMemo, useState, useEffect, useRef } from 'react'
 import { Mic, Square, Send, Volume2, Play, RotateCcw, Check } from 'lucide-react';
 import type { Conversation, Message, Correction, STTCorrection } from '../types';
 import { conversationService, chatService, speechService } from '../services/api';
+import { settingsService } from '../services/settings';
 import MessageBubble from './MessageBubble';
 import { TTSControls } from './TTSControls';
 import { getPreferredVoiceURI, useTTS } from '../hooks/useTTS';
@@ -172,6 +173,15 @@ const ConversationInterface: React.FC<ConversationInterfaceProps> = ({
   const loadMessages = useCallback(async () => {
     try {
       const msgs = await conversationService.getMessages(conversation.id);
+      console.log(
+        `[ConversationInterface] Loaded ${msgs.length} messages for conversation ${conversation.id}`
+      );
+      if (msgs.length > 0) {
+        const lastMessage = msgs[msgs.length - 1];
+        console.log(
+          `[ConversationInterface] Last message (ID: ${lastMessage.id}): "${lastMessage.content.substring(0, 100)}..."`
+        );
+      }
       setMessages(msgs);
     } catch (error) {
       console.error('Failed to load messages:', error);
@@ -180,7 +190,7 @@ const ConversationInterface: React.FC<ConversationInterfaceProps> = ({
 
   useEffect(() => {
     loadMessages();
-  }, [loadMessages]);
+  }, [loadMessages, conversation.updated_at]); // Reload when conversation is updated
 
   useEffect(() => {
     // Load TTS rate per CEFR level.
@@ -296,8 +306,10 @@ const ConversationInterface: React.FC<ConversationInterfaceProps> = ({
     // Determine which message to play
     let messageToPlay: Message | null = null;
 
-    if (messages.length === 0) {
-      // New conversation: play the starter message
+    // Don't auto-play starter message if there are actual messages
+    // The initial topic message should be played instead
+    if (messages.length === 0 && !conversation.topic_id) {
+      // Only play starter message if no topic was selected (general conversation)
       messageToPlay = starterMessage;
     } else {
       // Existing conversation: play the last assistant message
@@ -573,7 +585,8 @@ const ConversationInterface: React.FC<ConversationInterfaceProps> = ({
       </div>
 
       <div className="messages-container">
-        {messages.length === 0 ? (
+        {messages.length === 0 && !conversation.topic_id ? (
+          // Only show starter message if no topic was selected (general conversation)
           <MessageBubble
             message={starterMessage}
             ttsSupported={supported}
@@ -590,6 +603,7 @@ const ConversationInterface: React.FC<ConversationInterfaceProps> = ({
             }}
             timezone={timezone}
             timeFormat={timeFormat}
+            nativeLanguage={settingsService.loadNativeLanguage()}
           />
         ) : (
           messages.map(message => (
@@ -601,8 +615,13 @@ const ConversationInterface: React.FC<ConversationInterfaceProps> = ({
               isActive={activeMessageId === message.id}
               onPlay={textToSpeak => {
                 setActiveMessageId(message.id);
+                // Determine language: use conversation language for main message, native for translation
+                const isTranslation = message.translation && textToSpeak === message.translation;
+                const ttsLanguage = isTranslation
+                  ? settingsService.loadNativeLanguage()
+                  : conversation.language;
                 speak(textToSpeak, {
-                  language: conversation.language,
+                  language: ttsLanguage,
                   rate: ttsRate,
                   autoPlay: ttsAutoPlay,
                   voiceURI: ttsVoiceURI ?? undefined,
@@ -610,6 +629,7 @@ const ConversationInterface: React.FC<ConversationInterfaceProps> = ({
               }}
               timezone={timezone}
               timeFormat={timeFormat}
+              nativeLanguage={settingsService.loadNativeLanguage()}
             />
           ))
         )}

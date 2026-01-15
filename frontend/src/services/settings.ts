@@ -1,5 +1,6 @@
 import { encrypt, decrypt } from '../utils/encryption';
 import { detectUserTimezone, detectTimeFormat, type TimeFormat } from '../utils/dateTime';
+import type { NativeLanguage } from '../types';
 
 const SETTINGS_KEYS = {
   ANTHROPIC_API_KEY: 'babblr_anthropic_api_key',
@@ -10,6 +11,7 @@ const SETTINGS_KEYS = {
   GEMINI_MODEL: 'babblr_gemini_model',
   TIMEZONE: 'babblr_timezone',
   TIME_FORMAT: 'babblr_time_format',
+  NATIVE_LANGUAGE: 'babblr_native_language',
 };
 
 // Available models per provider
@@ -54,6 +56,7 @@ export interface AppSettings {
   geminiModel: string;
   timezone: string;
   timeFormat: TimeFormat;
+  nativeLanguage: NativeLanguage;
 }
 
 export type { TimeFormat };
@@ -189,6 +192,25 @@ class SettingsService {
   }
 
   /**
+   * Save native/reference language preference
+   */
+  saveNativeLanguage(language: NativeLanguage): void {
+    localStorage.setItem(SETTINGS_KEYS.NATIVE_LANGUAGE, language);
+  }
+
+  /**
+   * Load native/reference language preference (defaults to 'english' if not set)
+   */
+  loadNativeLanguage(): NativeLanguage {
+    const stored = localStorage.getItem(SETTINGS_KEYS.NATIVE_LANGUAGE);
+    if (stored && ['spanish', 'italian', 'german', 'french', 'dutch', 'english'].includes(stored)) {
+      return stored as NativeLanguage;
+    }
+    // Default to English as the most common reference language
+    return 'english';
+  }
+
+  /**
    * Load all settings
    */
   async loadSettings(): Promise<AppSettings> {
@@ -206,6 +228,7 @@ class SettingsService {
       geminiModel: this.loadModel('gemini'),
       timezone: this.loadTimezone(),
       timeFormat: this.loadTimeFormat(),
+      nativeLanguage: this.loadNativeLanguage(),
     };
   }
 
@@ -221,6 +244,7 @@ class SettingsService {
     localStorage.removeItem(SETTINGS_KEYS.GEMINI_MODEL);
     localStorage.removeItem(SETTINGS_KEYS.TIMEZONE);
     localStorage.removeItem(SETTINGS_KEYS.TIME_FORMAT);
+    localStorage.removeItem(SETTINGS_KEYS.NATIVE_LANGUAGE);
   }
 }
 

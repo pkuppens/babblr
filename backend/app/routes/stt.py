@@ -13,7 +13,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
-from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
+from fastapi import APIRouter, BackgroundTasks, Depends, File, HTTPException, UploadFile
 from fastapi.responses import JSONResponse
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -27,6 +27,9 @@ from app.services.stt_correction_service import get_stt_correction_service
 from app.services.whisper_service import whisper_service
 
 logger = logging.getLogger(__name__)
+
+# Global state for model switching status
+_model_switch_status: dict = {"status": "idle", "target_model": None, "error": None}
 
 # Configuration constants
 DEFAULT_TRANSCRIPTION_TIMEOUT = 30  # seconds
@@ -243,9 +246,14 @@ async def get_available_models():
     logger.debug("Getting available Whisper models")
 
     models = whisper_service.get_available_models()
-    current_model = settings.whisper_model
+    # Use the actual loaded model, not just the settings value
+    current_model = (
+        whisper_service.model_size
+        if hasattr(whisper_service, "model_size")
+        else settings.whisper_model
+    )
 
-    # Model details
+    # Model details with updated information
     model_details = {
         "tiny": {
             "name": "tiny",
@@ -253,6 +261,7 @@ async def get_available_models():
             "vram": "~1GB",
             "speed": "~10x faster",
             "description": "Fastest, least accurate",
+            "recommended_for": "Quick testing, low-resource systems",
         },
         "base": {
             "name": "base",
@@ -260,6 +269,7 @@ async def get_available_models():
             "vram": "~1GB",
             "speed": "~7x faster",
             "description": "Good balance (default)",
+            "recommended_for": "General use, balanced accuracy/speed",
         },
         "small": {
             "name": "small",
@@ -267,6 +277,7 @@ async def get_available_models():
             "vram": "~2GB",
             "speed": "~4x faster",
             "description": "Better accuracy",
+            "recommended_for": "Better accuracy without heavy resources",
         },
         "medium": {
             "name": "medium",
@@ -274,6 +285,7 @@ async def get_available_models():
             "vram": "~5GB",
             "speed": "~2x faster",
             "description": "High accuracy",
+            "recommended_for": "High accuracy, moderate GPU memory",
         },
         "large": {
             "name": "large",
@@ -281,22 +293,244 @@ async def get_available_models():
             "vram": "~10GB",
             "speed": "1x (baseline)",
             "description": "Best accuracy, requires GPU",
+            "recommended_for": "Maximum accuracy (legacy)",
+        },
+        "large-v2": {
+            "name": "large-v2",
+            "parameters": "1550M",
+            "vram": "~10GB",
+            "speed": "1x (baseline)",
+            "description": "Improved large model",
+            "recommended_for": "Better accuracy than large",
+        },
+        "large-v3": {
+            "name": "large-v3",
+            "parameters": "1550M",
+            "vram": "~10GB",
+            "speed": "1x (baseline)",
+            "description": "Latest and most accurate (recommended)",
+            "recommended_for": "Best accuracy, latest improvements",
+        },
+        "turbo": {
+            "name": "turbo",
+            "parameters": "~1500M",
+            "vram": "~10GB",
+            "speed": "~2x faster than large",
+            "description": "Optimized for speed with good accuracy",
+            "recommended_for": "Fast transcription with high accuracy",
         },
     }
+
+    # Get CUDA information
+    cuda_info = (
+        whisper_service.get_cuda_info()
+        if hasattr(whisper_service, "get_cuda_info")
+        else {"available": False, "device": "unknown"}
+    )
 
     return JSONResponse(
         content={
             "models": [model_details.get(model, {"name": model}) for model in models],
             "current_model": current_model,
             "device": whisper_service.device if hasattr(whisper_service, "device") else "unknown",
+            "cuda": cuda_info,
             "multilingual": True,
             "notes": [
                 "Whisper model selection is not language-specific (models are multilingual).",
                 "You may pass a language hint as ISO-639-1 (e.g., 'en') or locale (e.g., 'en-GB'); locales map to ISO-639-1.",
+                "Models are automatically downloaded on first use.",
+                "Larger models (large-v3, turbo) require more GPU memory but offer better accuracy.",
             ],
             "count": len(models),
         }
     )
+
+
+@router.get("/config")
+async def get_stt_config(include_status: bool = False):
+    """
+    Get current STT configuration including CUDA status and available models.
+
+    Returns:
+        JSON object with STT configuration
+    """
+    try:
+        logger.debug("Getting STT configuration")
+
+        # Get CUDA information with error handling and timeout protection
+        cuda_info = {"available": False, "device": "unknown"}
+        try:
+            if hasattr(whisper_service, "get_cuda_info"):
+                # Run CUDA check in executor to avoid blocking
+                import asyncio
+
+                loop = asyncio.get_event_loop()
+                cuda_info = await asyncio.wait_for(
+                    loop.run_in_executor(None, whisper_service.get_cuda_info),
+                    timeout=2.0,  # 2 second timeout for CUDA detection
+                )
+        except asyncio.TimeoutError:
+            logger.warning("CUDA info check timed out, using defaults")
+            cuda_info = {"available": False, "device": "unknown", "timeout": True}
+        except Exception as e:
+            logger.warning(f"Failed to get CUDA info: {e}")
+            cuda_info = {"available": False, "device": "unknown", "error": str(e)}
+
+        # Get available models with error handling
+        try:
+            models = whisper_service.get_available_models()
+        except Exception as e:
+            logger.error(f"Failed to get available models: {e}")
+            models = ["base"]  # Fallback
+
+        # Use the actual loaded model, not just the settings value
+        try:
+            current_model = (
+                whisper_service.model_size
+                if hasattr(whisper_service, "model_size")
+                else settings.whisper_model
+            )
+        except Exception as e:
+            logger.warning(f"Failed to get current model: {e}")
+            current_model = settings.whisper_model
+
+        # Get device with error handling
+        try:
+            device = whisper_service.device if hasattr(whisper_service, "device") else "unknown"
+        except Exception as e:
+            logger.warning(f"Failed to get device: {e}")
+            device = "unknown"
+
+        response_content = {
+            "current_model": current_model,
+            "available_models": models,
+            "cuda": cuda_info,
+            "device": device,
+        }
+
+        # Include switch status if requested
+        if include_status:
+            response_content["switch_status"] = _model_switch_status
+
+        return JSONResponse(content=response_content)
+    except Exception as e:
+        logger.error(f"Error in get_stt_config: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Failed to get STT configuration: {str(e)}")
+
+
+def _switch_model_background(new_model: str):
+    """
+    Background task to switch the Whisper model.
+
+    Args:
+        new_model: Model to switch to
+    """
+    global _model_switch_status
+    try:
+        _model_switch_status["status"] = "switching"
+        _model_switch_status["target_model"] = new_model
+        _model_switch_status["error"] = None
+
+        # Check if model needs to be downloaded
+        is_cached = whisper_service.is_model_cached(new_model)
+        if not is_cached:
+            _model_switch_status["status"] = "downloading"
+
+        # Switch model (this may take time if downloading)
+        success = whisper_service.switch_model(new_model)
+
+        if success:
+            settings.whisper_model = new_model
+            _model_switch_status["status"] = "idle"
+            _model_switch_status["target_model"] = None
+            logger.info(f"Successfully switched STT model to {new_model}")
+        else:
+            _model_switch_status["status"] = "idle"
+            _model_switch_status["error"] = f"Failed to switch to model '{new_model}'"
+            logger.error(f"Failed to switch STT model to {new_model}")
+    except Exception as e:
+        _model_switch_status["status"] = "idle"
+        _model_switch_status["error"] = str(e)
+        logger.error(f"Error in background model switch: {e}", exc_info=True)
+
+
+@router.post("/config/model")
+async def update_stt_model(request: dict, background_tasks: BackgroundTasks):
+    """
+    Update the STT model dynamically (no server restart required).
+
+    This endpoint returns immediately and switches the model in the background.
+    Use GET /stt/config/status to check the switch progress.
+
+    Args:
+        request: JSON body with "model" key (e.g., {"model": "large-v3"})
+        background_tasks: FastAPI background tasks
+
+    Returns:
+        JSON object indicating the switch has been initiated
+    """
+    from pydantic import BaseModel
+
+    class ModelUpdateRequest(BaseModel):
+        model: str
+
+    try:
+        update_request = ModelUpdateRequest(**request)
+        new_model = update_request.model
+
+        # Validate model
+        available_models = whisper_service.get_available_models()
+        if new_model not in available_models:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Invalid model '{new_model}'. Available models: {', '.join(available_models)}",
+            )
+
+        # Check if already switching
+        if _model_switch_status["status"] != "idle":
+            raise HTTPException(
+                status_code=409,
+                detail=f"Model switch already in progress. Current status: {_model_switch_status['status']}",
+            )
+
+        old_model = whisper_service.model_size
+
+        # Check if model is cached to determine if download is needed
+        is_cached = whisper_service.is_model_cached(new_model)
+        action = "switching" if is_cached else "downloading"
+
+        # Start background task
+        background_tasks.add_task(_switch_model_background, new_model)
+
+        logger.info(
+            f"Initiating STT model switch from {old_model} to {new_model} (action: {action})"
+        )
+
+        return JSONResponse(
+            content={
+                "message": f"Model switch initiated from {old_model} to {new_model}",
+                "requested_model": new_model,
+                "previous_model": old_model,
+                "action": action,
+                "note": "Model switch is in progress. Use GET /stt/config/status to check progress. The model will be automatically downloaded if not already cached. To persist across server restarts, update WHISPER_MODEL in .env file.",
+            }
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error initiating STT model switch: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Failed to initiate model switch: {str(e)}")
+
+
+@router.get("/config/status")
+async def get_stt_switch_status():
+    """
+    Get the current status of a model switch operation.
+
+    Returns:
+        JSON object with switch status
+    """
+    return JSONResponse(content=_model_switch_status)
 
 
 async def _save_audio_file(temp_path: str, original_filename: str) -> str | None:

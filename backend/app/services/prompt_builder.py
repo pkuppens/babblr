@@ -179,18 +179,53 @@ class PromptBuilder:
         else:
             mistakes_str = "none identified yet"
 
+        # Get vocabulary constraints based on level
+        vocab_constraint = self._get_vocabulary_constraint(cefr_level)
+
         # Substitute variables in template
-        prompt = template_str.format(
-            language=language,
-            level=cefr_level,
-            topic=topic,
-            native_language=native_language,
-            recent_vocab=vocab_str,
-            common_mistakes=mistakes_str,
-        )
+        try:
+            prompt = template_str.format(
+                language=language,
+                level=cefr_level,
+                topic=topic,
+                native_language=native_language,
+                recent_vocab=vocab_str,
+                common_mistakes=mistakes_str,
+            )
+        except KeyError:
+            # If template doesn't have vocab_constraint placeholder, add it after formatting
+            prompt = template_str.format(
+                language=language,
+                level=cefr_level,
+                topic=topic,
+                native_language=native_language,
+                recent_vocab=vocab_str,
+                common_mistakes=mistakes_str,
+            )
+            # Append vocabulary constraint if not in template
+            prompt += f"\n\n**Vocabulary Constraint:**\n{vocab_constraint}"
 
         logger.debug(f"Built prompt for {language} at {cefr_level} level")
         return prompt
+
+    def _get_vocabulary_constraint(self, cefr_level: str) -> str:
+        """Get vocabulary constraint guidance based on CEFR level.
+
+        Args:
+            cefr_level: CEFR level (A1-C2)
+
+        Returns:
+            Vocabulary constraint guidance string
+        """
+        constraints = {
+            "A1": "Use only basic vocabulary (~300-500 words). Use simple, common words that a beginner would know. Avoid complex or specialized vocabulary.",
+            "A2": "Use elementary vocabulary (~1000 words). Prefer common, everyday words. Introduce some new vocabulary gradually.",
+            "B1": "Use intermediate vocabulary (~3000 words). You can use more varied vocabulary but keep it accessible.",
+            "B2": "Use upper-intermediate vocabulary (~5000 words). More sophisticated vocabulary is appropriate.",
+            "C1": "Use advanced vocabulary (~8000 words). Complex and nuanced vocabulary is appropriate.",
+            "C2": "Use proficient vocabulary (~10000+ words). Full range of vocabulary including specialized terms when contextually appropriate.",
+        }
+        return constraints.get(cefr_level, constraints["A1"])
 
     def get_template_metadata(self, level: str) -> dict[str, Any]:
         """

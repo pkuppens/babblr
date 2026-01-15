@@ -1,0 +1,104 @@
+.tab-bar-wrapper {
+  background: var(--surface);
+  border-bottom: 2px solid var(--border);
+  box-shadow: 0 2px 4px var(--shadow);
+}
+
+.tab-bar {
+  display: flex;
+  max-width: 1400px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 0 2rem;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: thin;
+  -webkit-overflow-scrolling: touch;
+}
+
+.tab-bar::-webkit-scrollbar {
+  height: 6px;
+}
+
+.tab-bar::-webkit-scrollbar-track {
+  background: var(--background);
+}
+
+.tab-bar::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+
+.tab-bar::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary);
+}
+
+.tab-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem 1.5rem;
+  background: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  color: var(--text-secondary);
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  min-width: fit-content;
+  position: relative;
+}
+
+.tab-button:hover:not(.tab-button-active) {
+  color: var(--text-primary);
+  background: var(--background);
+}
+
+.tab-button:focus-visible {
+  outline: 2px solid var(--primary-color);
+  outline-offset: -2px;
+  border-radius: 4px 4px 0 0;
+}
+
+.tab-button-active {
+  color: var(--primary-color);
+  border-bottom-color: var(--primary-color);
+  background: var(--background);
+  font-weight: 600;
+}
+
+.tab-icon {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.tab-label {
+  display: inline-block;
+}
+
+/* Responsive: hide labels on very small screens, show only icons */
+@media (max-width: 640px) {
+  .tab-label {
+    display: none;
+  }
+
+  .tab-button {
+    padding: 1rem;
+    min-width: 3rem;
+    justify-content: center;
+  }
+}
+
+/* Medium screens: show abbreviated labels */
+@media (min-width: 641px) and (max-width: 1024px) {
+  .tab-label {
+    font-size: 0.9rem;
+  }
+
+  .tab-button {
+    padding: 1rem 1rem;
+  }
+}

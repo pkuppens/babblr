@@ -1,8 +1,11 @@
-import React, { useState } from 'react';
+import React from 'react';
 import type { Language, DifficultyLevel } from '../types';
 import './LanguageSelector.css';
 
 interface LanguageSelectorProps {
+  selectedLanguage: Language;
+  selectedDifficulty: DifficultyLevel;
+  onSelectionChange: (language: Language, difficulty: DifficultyLevel) => void;
   onStart: (language: Language, difficulty: DifficultyLevel) => void;
 }
 
@@ -12,6 +15,7 @@ const LANGUAGES: { value: Language; label: string; flag: string }[] = [
   { value: 'german', label: 'German', flag: '🇩🇪' },
   { value: 'french', label: 'French', flag: '🇫🇷' },
   { value: 'dutch', label: 'Dutch', flag: '🇳🇱' },
+  { value: 'english', label: 'English', flag: '🇬🇧' },
 ];
 
 const DIFFICULTIES: { value: DifficultyLevel; label: string; description: string }[] = [
@@ -27,9 +31,19 @@ const DIFFICULTIES: { value: DifficultyLevel; label: string; description: string
   { value: 'C2', label: 'C2', description: 'Proficient: near-native comprehension and expression' },
 ];
 
-const LanguageSelector: React.FC<LanguageSelectorProps> = ({ onStart }) => {
-  const [selectedLanguage, setSelectedLanguage] = useState<Language>('spanish');
-  const [selectedDifficulty, setSelectedDifficulty] = useState<DifficultyLevel>('A1');
+const LanguageSelector: React.FC<LanguageSelectorProps> = ({
+  selectedLanguage,
+  selectedDifficulty,
+  onSelectionChange,
+  onStart,
+}) => {
+  const handleLanguageChange = (language: Language) => {
+    onSelectionChange(language, selectedDifficulty);
+  };
+
+  const handleDifficultyChange = (difficulty: DifficultyLevel) => {
+    onSelectionChange(selectedLanguage, difficulty);
+  };
 
   const handleStart = () => {
     onStart(selectedLanguage, selectedDifficulty);
@@ -46,7 +60,7 @@ const LanguageSelector: React.FC<LanguageSelectorProps> = ({ onStart }) => {
             <button
               key={lang.value}
               className={`language-card ${selectedLanguage === lang.value ? 'selected' : ''}`}
-              onClick={() => setSelectedLanguage(lang.value)}
+              onClick={() => handleLanguageChange(lang.value)}
             >
               <span className="flag">{lang.flag}</span>
               <span className="label">{lang.label}</span>
@@ -62,7 +76,7 @@ const LanguageSelector: React.FC<LanguageSelectorProps> = ({ onStart }) => {
             <button
               key={diff.value}
               className={`difficulty-card ${selectedDifficulty === diff.value ? 'selected' : ''}`}
-              onClick={() => setSelectedDifficulty(diff.value)}
+              onClick={() => handleDifficultyChange(diff.value)}
             >
               <span className="label">{diff.label}</span>
               <span className="description">{diff.description}</span>

@@ -96,6 +96,10 @@ class ProviderFactory:
         if name is None:
             name = getattr(settings, "llm_provider", "mock")
 
+        # Ensure name is not None after fallback
+        if name is None:
+            name = "mock"
+
         if name in cls._instances:
             return cls._instances[name]
 

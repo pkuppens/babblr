@@ -98,6 +98,31 @@ Pre-commit hooks are configured and must pass:
 - Architecture changes require `docs/ARCHITECTURE.md` updates
 - Keep `CLAUDE.md` current with development guidelines
 
+### Database Schema Documentation
+All database models must be documented in `docs/DATABASE_SCHEMA.md`:
+
+**Required for new models:**
+- Mermaid ER diagram showing relationships
+- Table definition with all columns, types, constraints, and descriptions
+- Relationship descriptions (foreign keys, cascades)
+- Validation rules for each field
+- Examples of common query patterns
+
+**Required for schema changes:**
+- Update existing table documentation
+- Update ER diagrams
+- Document migration strategy if applicable
+- Note any breaking changes
+
+**Validation requirements:**
+- All NOT NULL fields must have validation rules documented
+- Enum/choice fields must list all valid values
+- Numeric fields must specify valid ranges
+- Date/time fields must document temporal constraints
+- Foreign key relationships must be clearly defined
+
+See `docs/DATABASE_SCHEMA.md` for the complete schema reference and documentation template.
+
 ## Issue Management
 
 ### Issue Updates

@@ -46,6 +46,13 @@ const STARTER_MESSAGES: Record<string, Record<StarterTier, string>> = {
     advanced:
       'Hoi. Ik ben je docent Nederlands.\nLaten we een actueel onderwerp bespreken: wat vind jij van de invloed van technologie op het dagelijks leven?',
   },
+  english: {
+    beginner: 'Hello! I am your English tutor.\nWhat is your name? Where are you from?',
+    intermediate:
+      'Hello! I am your English tutor.\nTell me about your day. What have you done today?',
+    advanced:
+      'Hello. I am your English tutor.\nLet us discuss a current topic: what do you think about the impact of technology on daily life?',
+  },
 };
 
 export function getStarterMessage(language: string, level: string): string {

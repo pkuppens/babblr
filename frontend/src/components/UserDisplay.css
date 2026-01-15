@@ -1,0 +1,42 @@
+.user-display {
+  position: absolute;
+  top: 1.5rem;
+  right: 2rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  transition: background-color 0.2s ease;
+}
+
+.user-info:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.username {
+  font-weight: 500;
+}
+
+.user-status-icon {
+  opacity: 0.8;
+  flex-shrink: 0;
+}
+
+.user-status-icon-inactive {
+  opacity: 0.5;
+}
+
+/* Adjust settings button position when user display is present */
+.app-header .settings-button-header {
+  right: 10rem;
+}

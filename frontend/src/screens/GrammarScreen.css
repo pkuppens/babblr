@@ -1,0 +1,369 @@
+.grammar-screen {
+  padding: 1.5rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.grammar-screen h1 {
+  margin-bottom: 1.5rem;
+  color: var(--text-primary, #333);
+}
+
+.grammar-selection-info {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: var(--bg-secondary, #f9f9f9);
+  border-radius: 8px;
+  border: 1px solid var(--border-color, #ddd);
+}
+
+.selection-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.selection-label {
+  font-weight: 600;
+  color: var(--text-secondary, #666);
+  font-size: 0.9rem;
+}
+
+.selection-value {
+  padding: 0.25rem 0.75rem;
+  background: var(--primary-color, #007bff);
+  color: white;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.grammar-filters {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+
+.filter-select {
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--border-color, #ddd);
+  border-radius: 4px;
+  background: white;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.filter-select:hover {
+  border-color: var(--primary-color, #007bff);
+}
+
+.lessons-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.lesson-card {
+  background: white;
+  border: 1px solid var(--border-color, #ddd);
+  border-radius: 8px;
+  padding: 1.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.lesson-card:hover {
+  border-color: var(--primary-color, #007bff);
+  box-shadow: 0 2px 8px rgba(0, 123, 255, 0.1);
+  transform: translateY(-2px);
+}
+
+.lesson-card.recap-due {
+  border-color: #ff9800;
+  background: #fff8f0;
+}
+
+.lesson-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  margin-bottom: 0.5rem;
+}
+
+.lesson-header h3 {
+  margin: 0;
+  color: var(--text-primary, #333);
+  font-size: 1.1rem;
+}
+
+.recap-badge {
+  background: #ff9800;
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.lesson-description-preview {
+  color: var(--text-secondary, #666);
+  font-size: 0.9rem;
+  margin: 0.5rem 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.lesson-meta {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.level-badge {
+  background: var(--primary-color, #007bff);
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.grammar-lesson-view {
+  padding: 1.5rem;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.back-button {
+  background: transparent;
+  border: 1px solid var(--border-color, #ddd);
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-bottom: 1.5rem;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+}
+
+.back-button:hover {
+  background: var(--bg-secondary, #f5f5f5);
+  border-color: var(--primary-color, #007bff);
+}
+
+.grammar-lesson-view h1 {
+  margin-bottom: 0.5rem;
+  color: var(--text-primary, #333);
+}
+
+.lesson-description {
+  color: var(--text-secondary, #666);
+  margin-bottom: 2rem;
+  font-size: 1rem;
+}
+
+.grammar-rules,
+.lesson-examples,
+.lesson-exercises {
+  margin-bottom: 2.5rem;
+}
+
+.grammar-rules h2,
+.lesson-examples h2,
+.lesson-exercises h2 {
+  margin-bottom: 1rem;
+  color: var(--text-primary, #333);
+  font-size: 1.3rem;
+}
+
+.grammar-rule {
+  background: var(--bg-secondary, #f9f9f9);
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+}
+
+.grammar-rule h3 {
+  margin: 0 0 0.5rem 0;
+  color: var(--text-primary, #333);
+  font-size: 1.1rem;
+}
+
+.grammar-rule p {
+  margin: 0.5rem 0;
+  color: var(--text-secondary, #666);
+}
+
+.rule-examples {
+  margin-top: 1rem;
+  padding-left: 1.5rem;
+}
+
+.rule-examples li {
+  margin: 0.5rem 0;
+  color: var(--text-secondary, #666);
+}
+
+.example-item {
+  background: white;
+  border: 1px solid var(--border-color, #ddd);
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+}
+
+.example-text {
+  font-size: 1.1rem;
+  margin: 0 0 0.5rem 0;
+  color: var(--text-primary, #333);
+  font-weight: 500;
+}
+
+.example-translation {
+  color: var(--text-secondary, #666);
+  font-size: 0.9rem;
+  margin: 0 0 0.5rem 0;
+}
+
+.audio-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--primary-color, #007bff);
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background 0.2s ease;
+}
+
+.audio-button:hover {
+  background: #0056b3;
+}
+
+.exercise-item {
+  background: white;
+  border: 1px solid var(--border-color, #ddd);
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+}
+
+.exercise-question {
+  font-size: 1rem;
+  font-weight: 500;
+  margin: 0 0 1rem 0;
+  color: var(--text-primary, #333);
+}
+
+.exercise-options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.option-button {
+  padding: 0.75rem 1rem;
+  border: 2px solid var(--border-color, #ddd);
+  border-radius: 4px;
+  background: white;
+  cursor: pointer;
+  text-align: left;
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+}
+
+.option-button:hover:not(:disabled) {
+  border-color: var(--primary-color, #007bff);
+  background: #f0f8ff;
+}
+
+.option-button.selected {
+  border-color: var(--primary-color, #007bff);
+  background: #e7f3ff;
+}
+
+.option-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.exercise-input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 2px solid var(--border-color, #ddd);
+  border-radius: 4px;
+  font-size: 0.95rem;
+  margin-bottom: 1rem;
+}
+
+.exercise-input:focus {
+  outline: none;
+  border-color: var(--primary-color, #007bff);
+}
+
+.exercise-input:disabled {
+  background: #f5f5f5;
+  cursor: not-allowed;
+}
+
+.submit-button {
+  background: var(--primary-color, #007bff);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 500;
+  transition: background 0.2s ease;
+}
+
+.submit-button:hover {
+  background: #0056b3;
+}
+
+.exercise-feedback {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  border-radius: 4px;
+  margin-top: 1rem;
+  font-weight: 500;
+}
+
+.exercise-feedback.correct {
+  background: #d4edda;
+  color: #155724;
+}
+
+.exercise-feedback.incorrect {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.loading-message,
+.error-message,
+.empty-message {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 2rem;
+  text-align: center;
+  color: var(--text-secondary, #666);
+}
+
+.error-message {
+  color: #dc3545;
+  background: #f8d7da;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+}

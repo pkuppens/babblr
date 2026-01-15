@@ -26,6 +26,7 @@ pytestmark = pytest.mark.skipif(
 )
 
 
+@pytest.mark.integration
 class TestLangChainGeminiIntegration:
     """Integration tests for LangChain with Gemini."""
 
@@ -70,6 +71,7 @@ class TestLangChainGeminiIntegration:
         assert len(chunks) > 0, "Should receive at least one chunk"
 
 
+@pytest.mark.integration
 class TestGeminiProviderIntegration:
     """Integration tests for GeminiProvider wrapper."""
 
@@ -128,6 +130,7 @@ class TestGeminiProviderIntegration:
         assert is_healthy is True
 
 
+@pytest.mark.integration
 class TestConversationServiceGeminiIntegration:
     """Integration tests for ConversationService with Gemini."""
 

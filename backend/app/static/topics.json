@@ -1,0 +1,900 @@
+{
+  "topics": [
+    {
+      "id": "restaurant",
+      "icon": "🍽️",
+      "level": "A1",
+      "names": {
+        "spanish": "Restaurante",
+        "italian": "Ristorante",
+        "german": "Restaurant",
+        "french": "Restaurant",
+        "dutch": "Restaurant"
+      },
+      "descriptions": {
+        "spanish": "Pedir comida y bebidas",
+        "italian": "Ordinare cibo e bevande",
+        "german": "Essen und Getränke bestellen",
+        "french": "Commander nourriture et boissons",
+        "dutch": "Eten en drinken bestellen"
+      },
+      "starters": {
+        "spanish": [
+          "¿Tiene una mesa para dos personas?",
+          "¿Qué me recomienda?",
+          "Me gustaría pedir...",
+          "¿Puedo ver el menú, por favor?",
+          "La cuenta, por favor"
+        ],
+        "italian": [
+          "Ha un tavolo per due persone?",
+          "Cosa mi consiglia?",
+          "Vorrei ordinare...",
+          "Posso vedere il menù, per favore?",
+          "Il conto, per favore"
+        ],
+        "german": [
+          "Haben Sie einen Tisch für zwei Personen?",
+          "Was empfehlen Sie?",
+          "Ich möchte bestellen...",
+          "Kann ich bitte die Speisekarte sehen?",
+          "Die Rechnung, bitte"
+        ],
+        "french": [
+          "Avez-vous une table pour deux personnes?",
+          "Que me recommandez-vous?",
+          "Je voudrais commander...",
+          "Puis-je voir le menu, s'il vous plaît?",
+          "L'addition, s'il vous plaît"
+        ],
+        "dutch": [
+          "Heeft u een tafel voor twee personen?",
+          "Wat raadt u aan?",
+          "Ik zou graag willen bestellen...",
+          "Mag ik de menukaart zien, alstublieft?",
+          "De rekening, alstublieft"
+        ]
+      }
+    },
+    {
+      "id": "travel",
+      "icon": "✈️",
+      "level": "A2",
+      "names": {
+        "spanish": "Viajes y Transporte",
+        "italian": "Viaggi e Trasporti",
+        "german": "Reisen und Transport",
+        "french": "Voyages et Transports",
+        "dutch": "Reizen en Vervoer"
+      },
+      "descriptions": {
+        "spanish": "Navegando aeropuertos y trenes",
+        "italian": "Navigare aeroporti e treni",
+        "german": "Flughäfen und Züge navigieren",
+        "french": "Naviguer dans les aéroports et trains",
+        "dutch": "Luchthavens en treinen navigeren"
+      },
+      "starters": {
+        "spanish": [
+          "¿Dónde está la puerta de embarque?",
+          "¿Cuánto cuesta un billete a...?",
+          "¿A qué hora sale el próximo tren?",
+          "¿Necesito hacer transbordo?",
+          "¿Dónde puedo recoger mi equipaje?"
+        ],
+        "italian": [
+          "Dov'è il gate d'imbarco?",
+          "Quanto costa un biglietto per...?",
+          "A che ora parte il prossimo treno?",
+          "Devo fare cambio?",
+          "Dove posso ritirare il mio bagaglio?"
+        ],
+        "german": [
+          "Wo ist das Boarding-Gate?",
+          "Wie viel kostet ein Ticket nach...?",
+          "Wann fährt der nächste Zug?",
+          "Muss ich umsteigen?",
+          "Wo kann ich mein Gepäck abholen?"
+        ],
+        "french": [
+          "Où est la porte d'embarquement?",
+          "Combien coûte un billet pour...?",
+          "À quelle heure part le prochain train?",
+          "Dois-je changer de train?",
+          "Où puis-je récupérer mes bagages?"
+        ],
+        "dutch": [
+          "Waar is de gate?",
+          "Hoeveel kost een ticket naar...?",
+          "Hoe laat vertrekt de volgende trein?",
+          "Moet ik overstappen?",
+          "Waar kan ik mijn bagage ophalen?"
+        ]
+      }
+    },
+    {
+      "id": "shopping",
+      "icon": "🛍️",
+      "level": "A1",
+      "names": {
+        "spanish": "Compras",
+        "italian": "Shopping",
+        "german": "Einkaufen",
+        "french": "Achats",
+        "dutch": "Winkelen"
+      },
+      "descriptions": {
+        "spanish": "Comprando ropa y productos",
+        "italian": "Acquistare vestiti e prodotti",
+        "german": "Kleidung und Produkte kaufen",
+        "french": "Acheter des vêtements et produits",
+        "dutch": "Kleding en producten kopen"
+      },
+      "starters": {
+        "spanish": [
+          "¿Cuánto cuesta esto?",
+          "¿Tiene esto en otra talla?",
+          "¿Puedo probarme esto?",
+          "¿Aceptan tarjetas de crédito?",
+          "Estoy buscando..."
+        ],
+        "italian": [
+          "Quanto costa questo?",
+          "Ha questo in un'altra taglia?",
+          "Posso provare questo?",
+          "Accettate carte di credito?",
+          "Sto cercando..."
+        ],
+        "german": [
+          "Wie viel kostet das?",
+          "Haben Sie das in einer anderen Größe?",
+          "Kann ich das anprobieren?",
+          "Akzeptieren Sie Kreditkarten?",
+          "Ich suche..."
+        ],
+        "french": [
+          "Combien ça coûte?",
+          "Avez-vous ceci dans une autre taille?",
+          "Puis-je essayer ceci?",
+          "Acceptez-vous les cartes de crédit?",
+          "Je cherche..."
+        ],
+        "dutch": [
+          "Hoeveel kost dit?",
+          "Heeft u dit in een andere maat?",
+          "Mag ik dit passen?",
+          "Accepteert u creditcards?",
+          "Ik ben op zoek naar..."
+        ]
+      }
+    },
+    {
+      "id": "work",
+      "icon": "💼",
+      "level": "B1",
+      "names": {
+        "spanish": "Trabajo y Oficina",
+        "italian": "Lavoro e Ufficio",
+        "german": "Arbeit und Büro",
+        "french": "Travail et Bureau",
+        "dutch": "Werk en Kantoor"
+      },
+      "descriptions": {
+        "spanish": "Comunicación profesional",
+        "italian": "Comunicazione professionale",
+        "german": "Professionelle Kommunikation",
+        "french": "Communication professionnelle",
+        "dutch": "Professionele communicatie"
+      },
+      "starters": {
+        "spanish": [
+          "Tengo una reunión a las...",
+          "¿Podría ayudarme con este proyecto?",
+          "Necesito una extensión del plazo",
+          "¿Cuándo es la fecha límite?",
+          "Me gustaría discutir mi progreso"
+        ],
+        "italian": [
+          "Ho una riunione alle...",
+          "Potrebbe aiutarmi con questo progetto?",
+          "Ho bisogno di una proroga",
+          "Quando è la scadenza?",
+          "Vorrei discutere i miei progressi"
+        ],
+        "german": [
+          "Ich habe ein Meeting um...",
+          "Könnten Sie mir bei diesem Projekt helfen?",
+          "Ich brauche eine Fristverlängerung",
+          "Wann ist die Deadline?",
+          "Ich möchte meinen Fortschritt besprechen"
+        ],
+        "french": [
+          "J'ai une réunion à...",
+          "Pourriez-vous m'aider avec ce projet?",
+          "J'ai besoin d'une prolongation",
+          "Quelle est la date limite?",
+          "Je voudrais discuter de mes progrès"
+        ],
+        "dutch": [
+          "Ik heb een vergadering om...",
+          "Kunt u mij helpen met dit project?",
+          "Ik heb een deadline verlenging nodig",
+          "Wanneer is de deadline?",
+          "Ik zou graag mijn voortgang bespreken"
+        ]
+      }
+    },
+    {
+      "id": "hobbies",
+      "icon": "🎨",
+      "level": "A2",
+      "names": {
+        "spanish": "Pasatiempos e Intereses",
+        "italian": "Hobby e Interessi",
+        "german": "Hobbys und Interessen",
+        "french": "Loisirs et Intérêts",
+        "dutch": "Hobby's en Interesses"
+      },
+      "descriptions": {
+        "spanish": "Hablando de actividades favoritas",
+        "italian": "Parlare di attività preferite",
+        "german": "Über Lieblingsaktivitäten sprechen",
+        "french": "Parler d'activités favorites",
+        "dutch": "Over favoriete activiteiten praten"
+      },
+      "starters": {
+        "spanish": [
+          "Me encanta...",
+          "En mi tiempo libre, yo...",
+          "¿Qué te gusta hacer?",
+          "Mi pasatiempo favorito es...",
+          "¿Has probado alguna vez...?"
+        ],
+        "italian": [
+          "Mi piace molto...",
+          "Nel mio tempo libero, io...",
+          "Cosa ti piace fare?",
+          "Il mio hobby preferito è...",
+          "Hai mai provato...?"
+        ],
+        "german": [
+          "Ich liebe...",
+          "In meiner Freizeit...",
+          "Was machst du gerne?",
+          "Mein Lieblingshobby ist...",
+          "Hast du jemals... ausprobiert?"
+        ],
+        "french": [
+          "J'adore...",
+          "Pendant mon temps libre, je...",
+          "Qu'aimes-tu faire?",
+          "Mon passe-temps favori est...",
+          "As-tu déjà essayé...?"
+        ],
+        "dutch": [
+          "Ik hou van...",
+          "In mijn vrije tijd...",
+          "Wat vind je leuk om te doen?",
+          "Mijn favoriete hobby is...",
+          "Heb je ooit... geprobeerd?"
+        ]
+      }
+    },
+    {
+      "id": "health",
+      "icon": "🏥",
+      "level": "A2",
+      "names": {
+        "spanish": "Salud y Doctor",
+        "italian": "Salute e Dottore",
+        "german": "Gesundheit und Arzt",
+        "french": "Santé et Médecin",
+        "dutch": "Gezondheid en Dokter"
+      },
+      "descriptions": {
+        "spanish": "Describiendo síntomas y salud",
+        "italian": "Descrivere sintomi e salute",
+        "german": "Symptome und Gesundheit beschreiben",
+        "french": "Décrire symptômes et santé",
+        "dutch": "Symptomen en gezondheid beschrijven"
+      },
+      "starters": {
+        "spanish": [
+          "No me siento bien",
+          "Me duele la cabeza",
+          "Necesito una cita con el médico",
+          "¿Tiene algo para...?",
+          "Soy alérgico a..."
+        ],
+        "italian": [
+          "Non mi sento bene",
+          "Mi fa male la testa",
+          "Ho bisogno di un appuntamento dal medico",
+          "Ha qualcosa per...?",
+          "Sono allergico a..."
+        ],
+        "german": [
+          "Ich fühle mich nicht gut",
+          "Ich habe Kopfschmerzen",
+          "Ich brauche einen Arzttermin",
+          "Haben Sie etwas für...?",
+          "Ich bin allergisch gegen..."
+        ],
+        "french": [
+          "Je ne me sens pas bien",
+          "J'ai mal à la tête",
+          "J'ai besoin d'un rendez-vous chez le médecin",
+          "Avez-vous quelque chose pour...?",
+          "Je suis allergique à..."
+        ],
+        "dutch": [
+          "Ik voel me niet goed",
+          "Ik heb hoofdpijn",
+          "Ik heb een afspraak bij de dokter nodig",
+          "Heeft u iets voor...?",
+          "Ik ben allergisch voor..."
+        ]
+      }
+    },
+    {
+      "id": "weather",
+      "icon": "🌤️",
+      "level": "A1",
+      "names": {
+        "spanish": "Clima y Charla",
+        "italian": "Tempo e Chiacchiere",
+        "german": "Wetter und Smalltalk",
+        "french": "Météo et Discussion",
+        "dutch": "Weer en Kletsen"
+      },
+      "descriptions": {
+        "spanish": "Conversación casual sobre el clima",
+        "italian": "Conversazione casual sul tempo",
+        "german": "Ungezwungene Konversation über das Wetter",
+        "french": "Conversation décontractée sur la météo",
+        "dutch": "Informeel gesprek over het weer"
+      },
+      "starters": {
+        "spanish": [
+          "¡Qué buen día hace hoy!",
+          "¿Cómo está el clima?",
+          "Parece que va a llover",
+          "Hace mucho calor hoy",
+          "¿Qué temperatura hace?"
+        ],
+        "italian": [
+          "Che bella giornata oggi!",
+          "Com'è il tempo?",
+          "Sembra che pioverà",
+          "Fa molto caldo oggi",
+          "Che temperatura c'è?"
+        ],
+        "german": [
+          "Was für ein schöner Tag heute!",
+          "Wie ist das Wetter?",
+          "Es sieht nach Regen aus",
+          "Es ist heute sehr heiß",
+          "Wie viel Grad sind es?"
+        ],
+        "french": [
+          "Quelle belle journée aujourd'hui!",
+          "Quel temps fait-il?",
+          "On dirait qu'il va pleuvoir",
+          "Il fait très chaud aujourd'hui",
+          "Quelle est la température?"
+        ],
+        "dutch": [
+          "Wat een mooie dag vandaag!",
+          "Hoe is het weer?",
+          "Het lijkt te gaan regenen",
+          "Het is vandaag erg warm",
+          "Hoeveel graden is het?"
+        ]
+      }
+    },
+    {
+      "id": "family",
+      "icon": "👨‍👩‍👧‍👦",
+      "level": "A1",
+      "names": {
+        "spanish": "Familia y Amigos",
+        "italian": "Famiglia e Amici",
+        "german": "Familie und Freunde",
+        "french": "Famille et Amis",
+        "dutch": "Familie en Vrienden"
+      },
+      "descriptions": {
+        "spanish": "Hablando de relaciones",
+        "italian": "Parlare di relazioni",
+        "german": "Über Beziehungen sprechen",
+        "french": "Parler de relations",
+        "dutch": "Over relaties praten"
+      },
+      "starters": {
+        "spanish": [
+          "Tengo dos hermanos",
+          "Mi familia es grande",
+          "¿Tienes hermanos?",
+          "Mis padres viven en...",
+          "Mi mejor amigo se llama..."
+        ],
+        "italian": [
+          "Ho due fratelli",
+          "La mia famiglia è grande",
+          "Hai fratelli?",
+          "I miei genitori vivono a...",
+          "Il mio migliore amico si chiama..."
+        ],
+        "german": [
+          "Ich habe zwei Geschwister",
+          "Meine Familie ist groß",
+          "Hast du Geschwister?",
+          "Meine Eltern wohnen in...",
+          "Mein bester Freund heißt..."
+        ],
+        "french": [
+          "J'ai deux frères et sœurs",
+          "Ma famille est grande",
+          "As-tu des frères et sœurs?",
+          "Mes parents vivent à...",
+          "Mon meilleur ami s'appelle..."
+        ],
+        "dutch": [
+          "Ik heb twee broers en zussen",
+          "Mijn familie is groot",
+          "Heb je broers of zussen?",
+          "Mijn ouders wonen in...",
+          "Mijn beste vriend heet..."
+        ]
+      }
+    },
+    {
+      "id": "daily-routine",
+      "icon": "⏰",
+      "level": "A2",
+      "names": {
+        "spanish": "Rutina Diaria",
+        "italian": "Routine Quotidiana",
+        "german": "Tägliche Routine",
+        "french": "Routine Quotidienne",
+        "dutch": "Dagelijkse Routine"
+      },
+      "descriptions": {
+        "spanish": "Describiendo actividades diarias",
+        "italian": "Descrivere attività quotidiane",
+        "german": "Tägliche Aktivitäten beschreiben",
+        "french": "Décrire activités quotidiennes",
+        "dutch": "Dagelijkse activiteiten beschrijven"
+      },
+      "starters": {
+        "spanish": [
+          "Me despierto a las...",
+          "Todos los días, yo...",
+          "Por la mañana, primero...",
+          "Después del trabajo, yo...",
+          "Mi rutina típica es..."
+        ],
+        "italian": [
+          "Mi sveglio alle...",
+          "Ogni giorno, io...",
+          "La mattina, prima...",
+          "Dopo il lavoro, io...",
+          "La mia routine tipica è..."
+        ],
+        "german": [
+          "Ich wache um... Uhr auf",
+          "Jeden Tag...",
+          "Am Morgen, zuerst...",
+          "Nach der Arbeit...",
+          "Meine typische Routine ist..."
+        ],
+        "french": [
+          "Je me réveille à...",
+          "Tous les jours, je...",
+          "Le matin, d'abord...",
+          "Après le travail, je...",
+          "Ma routine typique est..."
+        ],
+        "dutch": [
+          "Ik word wakker om...",
+          "Elke dag...",
+          "'s Ochtends eerst...",
+          "Na het werk...",
+          "Mijn typische routine is..."
+        ]
+      }
+    },
+    {
+      "id": "sports",
+      "icon": "⚽",
+      "level": "A2",
+      "names": {
+        "spanish": "Deportes y Fitness",
+        "italian": "Sport e Fitness",
+        "german": "Sport und Fitness",
+        "french": "Sports et Fitness",
+        "dutch": "Sport en Fitness"
+      },
+      "descriptions": {
+        "spanish": "Hablando de ejercicio y deportes",
+        "italian": "Parlare di esercizio e sport",
+        "german": "Über Bewegung und Sport sprechen",
+        "french": "Parler d'exercice et sports",
+        "dutch": "Over oefening en sport praten"
+      },
+      "starters": {
+        "spanish": [
+          "Me gusta jugar al...",
+          "Voy al gimnasio tres veces por semana",
+          "¿Practicas algún deporte?",
+          "Mi equipo favorito es...",
+          "¿Viste el partido ayer?"
+        ],
+        "italian": [
+          "Mi piace giocare a...",
+          "Vado in palestra tre volte a settimana",
+          "Pratichi qualche sport?",
+          "La mia squadra preferita è...",
+          "Hai visto la partita ieri?"
+        ],
+        "german": [
+          "Ich spiele gerne...",
+          "Ich gehe dreimal pro Woche ins Fitnessstudio",
+          "Machst du Sport?",
+          "Meine Lieblingsmannschaft ist...",
+          "Hast du das Spiel gestern gesehen?"
+        ],
+        "french": [
+          "J'aime jouer au...",
+          "Je vais à la salle de sport trois fois par semaine",
+          "Pratiques-tu un sport?",
+          "Mon équipe préférée est...",
+          "As-tu vu le match hier?"
+        ],
+        "dutch": [
+          "Ik speel graag...",
+          "Ik ga drie keer per week naar de sportschool",
+          "Beoefen je een sport?",
+          "Mijn favoriete team is...",
+          "Heb je de wedstrijd gisteren gezien?"
+        ]
+      }
+    },
+    {
+      "id": "culture",
+      "icon": "🎭",
+      "level": "B1",
+      "names": {
+        "spanish": "Cultura y Entretenimiento",
+        "italian": "Cultura e Intrattenimento",
+        "german": "Kultur und Unterhaltung",
+        "french": "Culture et Divertissement",
+        "dutch": "Cultuur en Entertainment"
+      },
+      "descriptions": {
+        "spanish": "Discutiendo películas, música y arte",
+        "italian": "Discutere di film, musica e arte",
+        "german": "Über Filme, Musik und Kunst diskutieren",
+        "french": "Discuter de films, musique et art",
+        "dutch": "Films, muziek en kunst bespreken"
+      },
+      "starters": {
+        "spanish": [
+          "¿Has visto la nueva película de...?",
+          "Mi género musical favorito es...",
+          "¿Qué tipo de libros lees?",
+          "Me encanta ir a museos",
+          "¿Cuál es tu serie favorita?"
+        ],
+        "italian": [
+          "Hai visto il nuovo film di...?",
+          "Il mio genere musicale preferito è...",
+          "Che tipo di libri leggi?",
+          "Mi piace molto andare ai musei",
+          "Qual è la tua serie preferita?"
+        ],
+        "german": [
+          "Hast du den neuen Film von... gesehen?",
+          "Mein Lieblingsmusikgenre ist...",
+          "Welche Art von Büchern liest du?",
+          "Ich gehe gerne in Museen",
+          "Was ist deine Lieblingsserie?"
+        ],
+        "french": [
+          "As-tu vu le nouveau film de...?",
+          "Mon genre musical préféré est...",
+          "Quel type de livres lis-tu?",
+          "J'adore aller aux musées",
+          "Quelle est ta série préférée?"
+        ],
+        "dutch": [
+          "Heb je de nieuwe film van... gezien?",
+          "Mijn favoriete muziekgenre is...",
+          "Wat voor boeken lees je?",
+          "Ik ga graag naar museums",
+          "Wat is je favoriete serie?"
+        ]
+      }
+    },
+    {
+      "id": "technology",
+      "icon": "💻",
+      "level": "B1",
+      "names": {
+        "spanish": "Tecnología",
+        "italian": "Tecnologia",
+        "german": "Technologie",
+        "french": "Technologie",
+        "dutch": "Technologie"
+      },
+      "descriptions": {
+        "spanish": "Hablando de dispositivos y digital",
+        "italian": "Parlare di dispositivi e digitale",
+        "german": "Über Geräte und Digital sprechen",
+        "french": "Parler d'appareils et numérique",
+        "dutch": "Over apparaten en digitaal praten"
+      },
+      "starters": {
+        "spanish": [
+          "¿Usas redes sociales?",
+          "Mi teléfono no funciona",
+          "¿Me puedes ayudar con la wifi?",
+          "¿Qué aplicaciones usas?",
+          "La tecnología está cambiando todo"
+        ],
+        "italian": [
+          "Usi i social media?",
+          "Il mio telefono non funziona",
+          "Puoi aiutarmi con il wifi?",
+          "Quali app usi?",
+          "La tecnologia sta cambiando tutto"
+        ],
+        "german": [
+          "Benutzt du soziale Medien?",
+          "Mein Telefon funktioniert nicht",
+          "Kannst du mir mit dem WLAN helfen?",
+          "Welche Apps benutzt du?",
+          "Technologie verändert alles"
+        ],
+        "french": [
+          "Utilises-tu les réseaux sociaux?",
+          "Mon téléphone ne fonctionne pas",
+          "Peux-tu m'aider avec le wifi?",
+          "Quelles applications utilises-tu?",
+          "La technologie change tout"
+        ],
+        "dutch": [
+          "Gebruik je social media?",
+          "Mijn telefoon werkt niet",
+          "Kun je me helpen met de wifi?",
+          "Welke apps gebruik je?",
+          "Technologie verandert alles"
+        ]
+      }
+    },
+    {
+      "id": "housing",
+      "icon": "🏠",
+      "level": "B1",
+      "names": {
+        "spanish": "Vivienda y Bienes Raíces",
+        "italian": "Casa e Immobiliare",
+        "german": "Wohnen und Immobilien",
+        "french": "Logement et Immobilier",
+        "dutch": "Huisvesting en Vastgoed"
+      },
+      "descriptions": {
+        "spanish": "Buscando y describiendo casas",
+        "italian": "Cercare e descrivere case",
+        "german": "Häuser suchen und beschreiben",
+        "french": "Chercher et décrire maisons",
+        "dutch": "Huizen zoeken en beschrijven"
+      },
+      "starters": {
+        "spanish": [
+          "Estoy buscando un apartamento",
+          "¿Cuál es el alquiler mensual?",
+          "¿Cuántos dormitorios tiene?",
+          "¿Está amueblado?",
+          "¿Cuándo está disponible?"
+        ],
+        "italian": [
+          "Sto cercando un appartamento",
+          "Qual è l'affitto mensile?",
+          "Quante camere da letto ha?",
+          "È arredato?",
+          "Quando è disponibile?"
+        ],
+        "german": [
+          "Ich suche eine Wohnung",
+          "Wie hoch ist die monatliche Miete?",
+          "Wie viele Schlafzimmer hat sie?",
+          "Ist sie möbliert?",
+          "Wann ist sie verfügbar?"
+        ],
+        "french": [
+          "Je cherche un appartement",
+          "Quel est le loyer mensuel?",
+          "Combien de chambres a-t-il?",
+          "Est-il meublé?",
+          "Quand est-il disponible?"
+        ],
+        "dutch": [
+          "Ik ben op zoek naar een appartement",
+          "Wat is de maandelijkse huur?",
+          "Hoeveel slaapkamers heeft het?",
+          "Is het gemeubileerd?",
+          "Wanneer is het beschikbaar?"
+        ]
+      }
+    },
+    {
+      "id": "education",
+      "icon": "📚",
+      "level": "B1",
+      "names": {
+        "spanish": "Educación y Aprendizaje",
+        "italian": "Istruzione e Apprendimento",
+        "german": "Bildung und Lernen",
+        "french": "Éducation et Apprentissage",
+        "dutch": "Onderwijs en Leren"
+      },
+      "descriptions": {
+        "spanish": "Discutiendo estudios y escuela",
+        "italian": "Discutere di studi e scuola",
+        "german": "Über Studium und Schule diskutieren",
+        "french": "Discuter d'études et école",
+        "dutch": "Studies en school bespreken"
+      },
+      "starters": {
+        "spanish": [
+          "Estudio...",
+          "¿Qué estás estudiando?",
+          "Tengo un examen la próxima semana",
+          "Mi profesor es muy bueno",
+          "¿Dónde estudiaste?"
+        ],
+        "italian": [
+          "Studio...",
+          "Cosa stai studiando?",
+          "Ho un esame la prossima settimana",
+          "Il mio professore è molto bravo",
+          "Dove hai studiato?"
+        ],
+        "german": [
+          "Ich studiere...",
+          "Was studierst du?",
+          "Ich habe nächste Woche eine Prüfung",
+          "Mein Professor ist sehr gut",
+          "Wo hast du studiert?"
+        ],
+        "french": [
+          "J'étudie...",
+          "Qu'étudies-tu?",
+          "J'ai un examen la semaine prochaine",
+          "Mon professeur est très bon",
+          "Où as-tu étudié?"
+        ],
+        "dutch": [
+          "Ik studeer...",
+          "Wat studeer je?",
+          "Ik heb volgende week een tentamen",
+          "Mijn docent is erg goed",
+          "Waar heb je gestudeerd?"
+        ]
+      }
+    },
+    {
+      "id": "emergency",
+      "icon": "🚨",
+      "level": "A2",
+      "names": {
+        "spanish": "Situaciones de Emergencia",
+        "italian": "Situazioni di Emergenza",
+        "german": "Notsituationen",
+        "french": "Situations d'Urgence",
+        "dutch": "Noodsituaties"
+      },
+      "descriptions": {
+        "spanish": "Pidiendo ayuda urgente",
+        "italian": "Chiedere aiuto urgente",
+        "german": "Dringende Hilfe erbitten",
+        "french": "Demander aide urgente",
+        "dutch": "Dringende hulp vragen"
+      },
+      "starters": {
+        "spanish": [
+          "¡Necesito ayuda!",
+          "¿Dónde está el hospital más cercano?",
+          "He perdido mi pasaporte",
+          "¡Llame a la policía!",
+          "¿Puede ayudarme, por favor?"
+        ],
+        "italian": [
+          "Ho bisogno di aiuto!",
+          "Dov'è l'ospedale più vicino?",
+          "Ho perso il passaporto",
+          "Chiami la polizia!",
+          "Può aiutarmi, per favore?"
+        ],
+        "german": [
+          "Ich brauche Hilfe!",
+          "Wo ist das nächste Krankenhaus?",
+          "Ich habe meinen Pass verloren",
+          "Rufen Sie die Polizei!",
+          "Können Sie mir bitte helfen?"
+        ],
+        "french": [
+          "J'ai besoin d'aide!",
+          "Où est l'hôpital le plus proche?",
+          "J'ai perdu mon passeport",
+          "Appelez la police!",
+          "Pouvez-vous m'aider, s'il vous plaît?"
+        ],
+        "dutch": [
+          "Ik heb hulp nodig!",
+          "Waar is het dichtstbijzijnde ziekenhuis?",
+          "Ik ben mijn paspoort kwijt",
+          "Bel de politie!",
+          "Kunt u mij alstublieft helpen?"
+        ]
+      }
+    },
+    {
+      "id": "classroom",
+      "icon": "📚",
+      "level": "A1",
+      "names": {
+        "spanish": "En el aula",
+        "italian": "In classe",
+        "german": "Im Klassenzimmer",
+        "french": "En classe",
+        "dutch": "In de klas"
+      },
+      "descriptions": {
+        "spanish": "Aprender el idioma con lecciones y ejercicios",
+        "italian": "Imparare la lingua con lezioni ed esercizi",
+        "german": "Sprache lernen mit Lektionen und Übungen",
+        "french": "Apprendre la langue avec des leçons et des exercices",
+        "dutch": "Taal leren met lessen en oefeningen"
+      },
+      "starters": {
+        "spanish": [
+          "¿Puede explicar esto, por favor?",
+          "No entiendo esta palabra",
+          "¿Cómo se dice...?",
+          "¿Puedo hacer una pregunta?",
+          "¿Puede repetir, por favor?"
+        ],
+        "italian": [
+          "Può spiegare questo, per favore?",
+          "Non capisco questa parola",
+          "Come si dice...?",
+          "Posso fare una domanda?",
+          "Può ripetere, per favore?"
+        ],
+        "german": [
+          "Können Sie das bitte erklären?",
+          "Ich verstehe dieses Wort nicht",
+          "Wie sagt man...?",
+          "Darf ich eine Frage stellen?",
+          "Können Sie das bitte wiederholen?"
+        ],
+        "french": [
+          "Pouvez-vous expliquer cela, s'il vous plaît?",
+          "Je ne comprends pas ce mot",
+          "Comment dit-on...?",
+          "Puis-je poser une question?",
+          "Pouvez-vous répéter, s'il vous plaît?"
+        ],
+        "dutch": [
+          "Kunt u dit alstublieft uitleggen?",
+          "Ik begrijp dit woord niet",
+          "Hoe zeg je...?",
+          "Mag ik een vraag stellen?",
+          "Kunt u dit alstublieft herhalen?"
+        ]
+      }
+    }
+  ]
+}

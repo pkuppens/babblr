@@ -7,7 +7,7 @@ from fastapi.responses import FileResponse, RedirectResponse
 
 from app.config import settings
 from app.database.db import init_db
-from app.routes import chat, conversations, stt, tts
+from app.routes import chat, conversations, grammar, stt, topics, tts, vocabulary
 from app.services.llm import ProviderFactory
 from app.services.tts_service import tts_service
 from app.services.whisper_service import whisper_service
@@ -44,6 +44,9 @@ app.include_router(conversations.router)
 app.include_router(chat.router)
 app.include_router(tts.router)
 app.include_router(stt.router)
+app.include_router(topics.router)
+app.include_router(vocabulary.router)
+app.include_router(grammar.router)
 
 
 @app.get("/favicon.svg", include_in_schema=False)
@@ -81,8 +84,9 @@ async def health_check():
     ollama_available_models: list[str] | None = None
     try:
         ollama = ProviderFactory.get_provider("ollama")
-        if hasattr(ollama, "list_models"):
-            ollama_available_models = await ollama.list_models()
+        # Check if provider has list_models method (OllamaProvider specific)
+        if hasattr(ollama, "list_models") and callable(getattr(ollama, "list_models", None)):
+            ollama_available_models = await ollama.list_models()  # type: ignore[attr-defined]
     except Exception:
         ollama_available_models = None
 
@@ -100,7 +104,7 @@ async def health_check():
                 "current_model": settings.whisper_model,
                 "supported_models": whisper_service.get_available_models(),
                 "supported_locales": (
-                    whisper_service.get_supported_locales()
+                    whisper_service.get_supported_locales()  # type: ignore[attr-defined]
                     if hasattr(whisper_service, "get_supported_locales")
                     else whisper_service.get_supported_languages()
                 ),
@@ -125,15 +129,25 @@ async def health_check():
 if __name__ == "__main__":
     import uvicorn
 
+    # When run directly (python main.py), start without reload.
+    # For development with auto-reload, use: uvicorn main:app --reload
     uvicorn.run(
-        "main:app", host=settings.babblr_api_host, port=settings.babblr_api_port, reload=True
+        "main:app",
+        host=settings.babblr_api_host,
+        port=settings.babblr_api_port,
     )
 
 
 def main():
-    """Entry point for uv script."""
+    """Start the Babblr backend API server (production mode, no reload).
+
+    For development with auto-reload, use: uv run uvicorn app.main:app --reload
+    or run the helper script: ./run-backend.sh dev
+    """
     import uvicorn
 
     uvicorn.run(
-        "app.main:app", host=settings.babblr_api_host, port=settings.babblr_api_port, reload=True
+        "app.main:app",
+        host=settings.babblr_api_host,
+        port=settings.babblr_api_port,
     )
