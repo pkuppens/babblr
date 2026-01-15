@@ -44,19 +44,29 @@ class Message(Base):
 
 
 class Lesson(Base):
-    """Model for storing structured lesson content for vocabulary and grammar."""
+    """Model for storing structured lesson content for vocabulary, grammar, and listening."""
 
     __tablename__ = "lessons"
 
     id = Column(Integer, primary_key=True, index=True)
     language = Column(String(50), nullable=False)
-    lesson_type = Column(String(50), nullable=False)  # 'vocabulary' or 'grammar'
+    lesson_type = Column(String(50), nullable=False)  # 'vocabulary', 'grammar', 'listening'
     title = Column(String(200), nullable=False)
-    description = Column(Text, nullable=True)
+    oneliner = Column(String(500), nullable=True)  # Brief one-sentence description for lesson cards
+    description = Column(Text, nullable=True)  # Detailed description
+    tutor_prompt = Column(Text, nullable=True)  # Extensive LLM prompt for content generation
+    subject = Column(
+        String(100), nullable=True
+    )  # Subject/topic identifier (e.g., "present_ar_verbs", "shopping")
+    topic_id = Column(String(100), nullable=True)  # Link to vocabulary topic if applicable
     difficulty_level = Column(String(20), nullable=False, default="A1")
     order_index = Column(Integer, nullable=False, default=0)
     is_active = Column(Boolean, nullable=False, default=True)
     created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    last_accessed_at = Column(
+        DateTime, nullable=True
+    )  # For gamification streaks and recap decisions
 
     # Relationships
     lesson_items = relationship("LessonItem", back_populates="lesson", cascade="all, delete-orphan")

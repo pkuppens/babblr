@@ -114,9 +114,19 @@ class LessonCreate(BaseModel):
     """Schema for creating a new lesson."""
 
     language: str = Field(..., description="Target language code")
-    lesson_type: str = Field(..., description="Type: 'vocabulary' or 'grammar'")
+    lesson_type: str = Field(..., description="Type: 'vocabulary', 'grammar', or 'listening'")
     title: str = Field(..., description="Lesson title")
+    oneliner: Optional[str] = Field(
+        None, description="Brief one-sentence description for lesson cards"
+    )
     description: Optional[str] = None
+    tutor_prompt: Optional[str] = Field(
+        None, description="Extensive LLM prompt for content generation"
+    )
+    subject: Optional[str] = Field(
+        None, description="Subject/topic identifier (e.g., 'present_ar_verbs', 'shopping')"
+    )
+    topic_id: Optional[str] = Field(None, description="Link to vocabulary topic if applicable")
     difficulty_level: str = Field(default="A1", description="CEFR difficulty level")
     order_index: int = Field(default=0, description="Display order")
     is_active: bool = Field(default=True, description="Whether lesson is available")
@@ -129,11 +139,33 @@ class LessonResponse(BaseModel):
     language: str
     lesson_type: str
     title: str
+    oneliner: Optional[str]
     description: Optional[str]
+    tutor_prompt: Optional[str]
+    subject: Optional[str]
+    topic_id: Optional[str]
     difficulty_level: str
     order_index: int
     is_active: bool
     created_at: datetime
+    updated_at: datetime
+    last_accessed_at: Optional[datetime]
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class LessonSummary(BaseModel):
+    """Schema for lesson summary in list responses."""
+
+    id: int
+    title: str
+    oneliner: Optional[str]
+    lesson_type: str
+    subject: Optional[str]
+    difficulty_level: str
+    completed: bool = False
+    mastery_score: float = 0.0
+    last_accessed_at: Optional[datetime] = None
 
     model_config = ConfigDict(from_attributes=True)
 
