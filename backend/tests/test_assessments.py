@@ -181,3 +181,145 @@ class TestAssessmentModels:
         from app.models.models import AssessmentAttempt
 
         assert hasattr(AssessmentAttempt, "skill_scores_json")
+
+
+class TestScoringService:
+    """Test assessment scoring service."""
+
+    def test_calculate_scores_basic(self):
+        """Should calculate overall and per-skill scores."""
+        from app.services.scoring_service import calculate_scores
+
+        questions = [
+            {"id": 1, "skill_category": "grammar", "correct_answer": "a", "points": 1},
+            {"id": 2, "skill_category": "grammar", "correct_answer": "b", "points": 1},
+            {"id": 3, "skill_category": "vocabulary", "correct_answer": "c", "points": 1},
+            {"id": 4, "skill_category": "vocabulary", "correct_answer": "d", "points": 1},
+        ]
+        answers = {1: "a", 2: "b", 3: "c", 4: "wrong"}  # 3/4 correct
+
+        result = calculate_scores(questions, answers)
+
+        assert result["overall"]["score"] == 75.0
+        assert result["overall"]["correct"] == 3
+        assert result["overall"]["total"] == 4
+        assert result["grammar"]["score"] == 100.0  # 2/2
+        assert result["vocabulary"]["score"] == 50.0  # 1/2
+
+    def test_calculate_scores_empty_answers(self):
+        """Should handle empty/missing answers."""
+        from app.services.scoring_service import calculate_scores
+
+        questions = [
+            {"id": 1, "skill_category": "grammar", "correct_answer": "a", "points": 1},
+        ]
+        answers = {}  # No answers
+
+        result = calculate_scores(questions, answers)
+        assert result["overall"]["score"] == 0.0
+        assert result["overall"]["correct"] == 0
+
+    def test_determine_cefr_level_ranges(self):
+        """Should map scores to correct CEFR levels."""
+        from app.services.scoring_service import determine_cefr_level
+
+        assert determine_cefr_level(10) == "A1"
+        assert determine_cefr_level(30) == "A2"
+        assert determine_cefr_level(50) == "B1"
+        assert determine_cefr_level(70) == "B2"
+        assert determine_cefr_level(85) == "C1"
+        assert determine_cefr_level(95) == "C2"
+
+    def test_determine_cefr_level_boundary_cases(self):
+        """Should handle boundary scores correctly."""
+        from app.services.scoring_service import determine_cefr_level
+
+        assert determine_cefr_level(0) == "A1"
+        assert determine_cefr_level(20) == "A1"
+        assert determine_cefr_level(21) == "A2"
+        assert determine_cefr_level(100) == "C2"
+
+    def test_generate_practice_recommendations(self):
+        """Should generate recommendations for weak areas."""
+        from app.services.scoring_service import generate_practice_recommendations
+
+        skill_scores = {
+            "grammar": {"score": 80.0, "total": 10, "correct": 8},
+            "vocabulary": {"score": 50.0, "total": 10, "correct": 5},
+            "listening": {"score": 30.0, "total": 5, "correct": 1},
+        }
+
+        recommendations = generate_practice_recommendations(skill_scores)
+
+        assert len(recommendations) >= 1
+        # Should recommend focusing on listening (lowest)
+        assert any("listening" in r.lower() for r in recommendations)
+
+    def test_generate_no_recommendations_for_high_scores(self):
+        """Should generate congratulatory message for high scores."""
+        from app.services.scoring_service import generate_practice_recommendations
+
+        skill_scores = {
+            "grammar": {"score": 90.0, "total": 10, "correct": 9},
+            "vocabulary": {"score": 85.0, "total": 10, "correct": 8},
+        }
+
+        recommendations = generate_practice_recommendations(skill_scores)
+        # May have congratulatory message or be empty
+        assert isinstance(recommendations, list)
+
+
+class TestAssessmentSeedService:
+    """Test assessment seed data service."""
+
+    @pytest.mark.asyncio
+    async def test_seed_creates_assessment(self, db):
+        """Seed should create assessment with questions."""
+        from app.services.assessment_seed import get_seeded_assessment, seed_assessment_data
+
+        await seed_assessment_data(db, language="es")
+
+        assessment = await get_seeded_assessment(db, language="es")
+        assert assessment is not None
+        assert assessment.language == "es"
+        assert assessment.assessment_type == "cefr_placement"
+        assert len(assessment.assessment_questions) >= 15  # At least 15 questions
+
+    @pytest.mark.asyncio
+    async def test_seed_includes_all_skill_categories(self, db):
+        """Seed should include questions for all skill categories."""
+        from app.services.assessment_seed import get_seeded_assessment, seed_assessment_data
+
+        await seed_assessment_data(db, language="es")
+        assessment = await get_seeded_assessment(db, language="es")
+
+        skill_categories = {q.skill_category for q in assessment.assessment_questions}
+        assert "grammar" in skill_categories
+        assert "vocabulary" in skill_categories
+
+    @pytest.mark.asyncio
+    async def test_seed_is_idempotent(self, db):
+        """Running seed twice should not create duplicates."""
+        from app.services.assessment_seed import get_all_assessments, seed_assessment_data
+
+        await seed_assessment_data(db, language="es")
+        await seed_assessment_data(db, language="es")
+
+        assessments = await get_all_assessments(db, language="es")
+        assert len(assessments) == 1  # Only one assessment
+
+    @pytest.mark.asyncio
+    async def test_questions_have_valid_structure(self, db):
+        """Questions should have valid options and answers."""
+        import json
+
+        from app.services.assessment_seed import get_seeded_assessment, seed_assessment_data
+
+        await seed_assessment_data(db, language="es")
+        assessment = await get_seeded_assessment(db, language="es")
+
+        for question in assessment.assessment_questions:
+            if question.question_type == "multiple_choice":
+                options = json.loads(question.options)
+                assert len(options) >= 2
+                assert question.correct_answer in options
