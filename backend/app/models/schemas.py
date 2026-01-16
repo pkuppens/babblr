@@ -1,7 +1,8 @@
 from datetime import datetime
-from typing import List, Optional
+from enum import Enum
+from typing import Dict, List, Optional
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
 class ConversationCreate(BaseModel):
@@ -252,5 +253,125 @@ class UserLevelResponse(BaseModel):
     proficiency_score: float
     assessed_at: datetime
     updated_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class UserLevelUpdate(BaseModel):
+    """Schema for updating user level."""
+
+    cefr_level: str = Field(..., description="CEFR level (A1-C2)")
+    proficiency_score: float = Field(..., ge=0.0, le=100.0, description="Score percentage")
+
+
+# ============================================================================
+# CEFR Assessment Schemas
+# ============================================================================
+
+
+class SkillCategory(str, Enum):
+    """Valid skill categories for assessments."""
+
+    GRAMMAR = "grammar"
+    VOCABULARY = "vocabulary"
+    LISTENING = "listening"
+    # Future: SPEAKING = "speaking"
+
+
+class SkillScore(BaseModel):
+    """Score for a specific skill category."""
+
+    skill: str = Field(..., description="Skill category name")
+    score: float = Field(..., ge=0.0, le=100.0, description="Percentage score")
+    total: int = Field(..., ge=0, description="Total questions in this category")
+    correct: int = Field(..., ge=0, description="Correct answers in this category")
+
+    @model_validator(mode="after")
+    def validate_correct_not_greater_than_total(self) -> "SkillScore":
+        """Validate that correct answers don't exceed total."""
+        if self.correct > self.total:
+            raise ValueError("correct cannot be greater than total")
+        return self
+
+
+class AssessmentQuestionResponse(BaseModel):
+    """Schema for assessment question response (without correct answer for test-takers)."""
+
+    id: int
+    assessment_id: int
+    question_type: str
+    skill_category: str
+    question_text: str
+    options: Optional[List[str]] = None
+    points: int
+    order_index: int
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class AssessmentListResponse(BaseModel):
+    """Schema for assessment list response - includes skill categories and question count."""
+
+    id: int
+    language: str
+    assessment_type: str
+    title: str
+    description: Optional[str]
+    difficulty_level: str
+    duration_minutes: Optional[int]
+    skill_categories: List[str] = Field(
+        default_factory=list, description="Skill categories covered by this assessment"
+    )
+    is_active: bool
+    created_at: datetime
+    question_count: int = Field(default=0, description="Number of questions")
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class AssessmentDetailResponse(AssessmentListResponse):
+    """Schema for assessment detail response - includes questions (without answers)."""
+
+    questions: List[AssessmentQuestionResponse] = Field(
+        default_factory=list, description="Assessment questions without correct answers"
+    )
+
+
+class AttemptCreate(BaseModel):
+    """Schema for submitting assessment answers."""
+
+    answers: Dict[str, str] = Field(..., description="Question ID to selected answer mapping")
+
+
+class AttemptResultResponse(BaseModel):
+    """Schema for assessment attempt result with skill breakdown."""
+
+    id: int
+    assessment_id: int
+    language: str
+    score: float = Field(..., ge=0.0, le=100.0)
+    recommended_level: str
+    skill_scores: List[SkillScore]
+    total_questions: int
+    correct_answers: int
+    started_at: datetime
+    completed_at: Optional[datetime]
+    practice_recommendations: List[str] = Field(
+        default_factory=list, description="Suggested areas to practice"
+    )
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class AttemptSummary(BaseModel):
+    """Summary of an assessment attempt for history list."""
+
+    id: int
+    assessment_id: int
+    assessment_title: str
+    language: str
+    score: float
+    recommended_level: Optional[str]
+    completed_at: Optional[datetime]
 
     model_config = ConfigDict(from_attributes=True)
