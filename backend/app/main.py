@@ -13,6 +13,7 @@ from app.routes import (
     conversations,
     grammar,
     lessons,
+    progress,
     stt,
     topics,
     tts,
@@ -65,6 +66,7 @@ app.include_router(grammar.router)
 app.include_router(lessons.router)
 app.include_router(assessments.router)
 app.include_router(user_levels.router)
+app.include_router(progress.router)
 
 
 @app.get("/favicon.svg", include_in_schema=False)

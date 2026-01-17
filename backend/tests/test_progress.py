@@ -12,7 +12,11 @@ Following TDD approach: tests are written first, then implementation.
 from datetime import datetime
 
 import pytest
+from httpx import ASGITransport, AsyncClient
 from pydantic import ValidationError
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.main import app
 
 
 class TestProgressSummarySchemas:
@@ -230,7 +234,6 @@ class TestProgressService:
     @pytest.mark.asyncio
     async def test_get_vocabulary_progress_last_activity(self, db):
         """get_vocabulary_progress should return most recent activity timestamp."""
-        from datetime import datetime, timedelta
 
         from app.models.models import Lesson, LessonProgress
         from app.services.progress_service import get_vocabulary_progress
@@ -325,7 +328,6 @@ class TestProgressService:
     @pytest.mark.asyncio
     async def test_get_grammar_progress_last_activity(self, db):
         """get_grammar_progress should return most recent activity timestamp."""
-        from datetime import datetime
 
         from app.models.models import Lesson, LessonProgress
         from app.services.progress_service import get_grammar_progress
@@ -364,7 +366,7 @@ class TestAssessmentProgressService:
     @pytest.mark.asyncio
     async def test_get_assessment_progress_returns_latest_attempt(self, db):
         """get_assessment_progress should return latest assessment attempt stats."""
-        from datetime import datetime, timedelta
+        from datetime import timedelta
 
         from app.models.models import Assessment, AssessmentAttempt
         from app.services.progress_service import get_assessment_progress
@@ -419,7 +421,6 @@ class TestAssessmentProgressService:
     @pytest.mark.asyncio
     async def test_get_assessment_progress_includes_recommended_level(self, db):
         """get_assessment_progress should include recommended_level from UserLevel."""
-        from datetime import datetime
 
         from app.models.models import Assessment, AssessmentAttempt, UserLevel
         from app.services.progress_service import get_assessment_progress
@@ -459,7 +460,98 @@ class TestAssessmentProgressService:
         assert result.recommended_level == "B1"
 
 
+@pytest.fixture
+async def async_client():
+    """Create an async test client."""
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        yield client
+
+
 class TestProgressEndpoint:
     """Test GET /progress/summary endpoint."""
 
-    pass  # Tests to be added in A1
+    @pytest.mark.asyncio
+    async def test_progress_summary_returns_200_with_valid_language(
+        self, async_client: AsyncClient, db: AsyncSession
+    ):
+        """GET /progress/summary should return 200 with valid language."""
+        response = await async_client.get("/progress/summary?language=es")
+        assert response.status_code == 200
+        data = response.json()
+        assert data["language"] == "es"
+        assert "vocabulary" in data
+        assert "grammar" in data
+        assert "assessment" in data
+
+    @pytest.mark.asyncio
+    async def test_progress_summary_empty_stats(self, async_client: AsyncClient, db: AsyncSession):
+        """GET /progress/summary should return zeros when no progress exists."""
+        response = await async_client.get("/progress/summary?language=fr")
+        assert response.status_code == 200
+        data = response.json()
+
+        # Vocabulary should be empty
+        assert data["vocabulary"]["completed"] == 0
+        assert data["vocabulary"]["in_progress"] == 0
+        assert data["vocabulary"]["total"] == 0
+        assert data["vocabulary"]["last_activity"] is None
+
+        # Grammar should be empty
+        assert data["grammar"]["completed"] == 0
+        assert data["grammar"]["in_progress"] == 0
+        assert data["grammar"]["total"] == 0
+
+        # Assessment should be empty
+        assert data["assessment"]["latest_score"] is None
+        assert data["assessment"]["recommended_level"] is None
+
+    @pytest.mark.asyncio
+    async def test_progress_summary_with_data(self, async_client: AsyncClient, db: AsyncSession):
+        """GET /progress/summary should return populated stats when data exists."""
+        from app.models.models import Lesson, LessonProgress
+
+        # Create vocabulary lesson with progress
+        lesson = Lesson(
+            language="es",
+            lesson_type="vocabulary",
+            title="Test Vocab",
+            difficulty_level="A1",
+            order_index=0,
+        )
+        db.add(lesson)
+        await db.flush()
+
+        progress = LessonProgress(
+            lesson_id=lesson.id,
+            language="es",
+            status="completed",
+            completion_percentage=100.0,
+        )
+        db.add(progress)
+        await db.commit()
+
+        response = await async_client.get("/progress/summary?language=es")
+        assert response.status_code == 200
+        data = response.json()
+
+        assert data["vocabulary"]["completed"] == 1
+        assert data["vocabulary"]["total"] == 1
+
+    @pytest.mark.asyncio
+    async def test_progress_summary_requires_language(
+        self, async_client: AsyncClient, db: AsyncSession
+    ):
+        """GET /progress/summary should return 422 without language parameter."""
+        response = await async_client.get("/progress/summary")
+        assert response.status_code == 422
+
+    @pytest.mark.asyncio
+    async def test_progress_summary_validates_language(
+        self, async_client: AsyncClient, db: AsyncSession
+    ):
+        """GET /progress/summary should validate language is supported."""
+        response = await async_client.get("/progress/summary?language=xyz")
+        assert response.status_code == 400
+        data = response.json()
+        assert "language" in data["detail"].lower()
