@@ -264,6 +264,200 @@ class TestProgressService:
         # Should be close to the time we set (within a few seconds)
         assert abs((result.last_activity - now).total_seconds()) < 5
 
+    @pytest.mark.asyncio
+    async def test_get_grammar_progress_returns_stats(self, db):
+        """get_grammar_progress should return grammar lesson stats."""
+        from app.models.models import Lesson, LessonProgress
+        from app.services.progress_service import get_grammar_progress
+
+        # Create grammar lessons
+        lesson1 = Lesson(
+            language="es",
+            lesson_type="grammar",
+            title="Grammar 1",
+            difficulty_level="A1",
+            order_index=0,
+        )
+        lesson2 = Lesson(
+            language="es",
+            lesson_type="grammar",
+            title="Grammar 2",
+            difficulty_level="A1",
+            order_index=1,
+        )
+        db.add_all([lesson1, lesson2])
+        await db.flush()
+
+        # Create progress - both completed
+        progress1 = LessonProgress(
+            lesson_id=lesson1.id,
+            language="es",
+            status="completed",
+            completion_percentage=100.0,
+        )
+        progress2 = LessonProgress(
+            lesson_id=lesson2.id,
+            language="es",
+            status="completed",
+            completion_percentage=100.0,
+        )
+        db.add_all([progress1, progress2])
+        await db.commit()
+
+        result = await get_grammar_progress(db, "es")
+
+        assert result.completed == 2
+        assert result.in_progress == 0
+        assert result.total == 2
+
+    @pytest.mark.asyncio
+    async def test_get_grammar_progress_with_no_data(self, db):
+        """get_grammar_progress should return zeros when no data exists."""
+        from app.services.progress_service import get_grammar_progress
+
+        result = await get_grammar_progress(db, "fr")
+
+        assert result.completed == 0
+        assert result.in_progress == 0
+        assert result.total == 0
+        assert result.last_activity is None
+
+    @pytest.mark.asyncio
+    async def test_get_grammar_progress_last_activity(self, db):
+        """get_grammar_progress should return most recent activity timestamp."""
+        from datetime import datetime
+
+        from app.models.models import Lesson, LessonProgress
+        from app.services.progress_service import get_grammar_progress
+
+        # Create grammar lesson
+        lesson = Lesson(
+            language="es",
+            lesson_type="grammar",
+            title="Grammar 1",
+            difficulty_level="A1",
+            order_index=0,
+        )
+        db.add(lesson)
+        await db.flush()
+
+        # Create progress with known timestamp
+        now = datetime.utcnow()
+        progress = LessonProgress(
+            lesson_id=lesson.id,
+            language="es",
+            status="completed",
+            completion_percentage=100.0,
+            last_accessed_at=now,
+        )
+        db.add(progress)
+        await db.commit()
+
+        result = await get_grammar_progress(db, "es")
+
+        assert result.last_activity is not None
+
+
+class TestAssessmentProgressService:
+    """Test assessment progress service functions."""
+
+    @pytest.mark.asyncio
+    async def test_get_assessment_progress_returns_latest_attempt(self, db):
+        """get_assessment_progress should return latest assessment attempt stats."""
+        from datetime import datetime, timedelta
+
+        from app.models.models import Assessment, AssessmentAttempt
+        from app.services.progress_service import get_assessment_progress
+
+        # Create assessment
+        assessment = Assessment(
+            language="es",
+            assessment_type="cefr_placement",
+            title="Placement Test",
+            difficulty_level="A1",
+        )
+        db.add(assessment)
+        await db.flush()
+
+        # Create two attempts - second one is more recent and should be returned
+        older_attempt = AssessmentAttempt(
+            assessment_id=assessment.id,
+            language="es",
+            score=60.0,
+            total_questions=10,
+            correct_answers=6,
+            completed_at=datetime.utcnow() - timedelta(days=1),
+        )
+        newer_attempt = AssessmentAttempt(
+            assessment_id=assessment.id,
+            language="es",
+            score=80.0,
+            total_questions=10,
+            correct_answers=8,
+            completed_at=datetime.utcnow(),
+        )
+        db.add_all([older_attempt, newer_attempt])
+        await db.commit()
+
+        result = await get_assessment_progress(db, "es")
+
+        assert result.latest_score == 80.0
+        assert result.last_attempt is not None
+
+    @pytest.mark.asyncio
+    async def test_get_assessment_progress_with_no_attempts(self, db):
+        """get_assessment_progress should return None values when no attempts exist."""
+        from app.services.progress_service import get_assessment_progress
+
+        result = await get_assessment_progress(db, "es")
+
+        assert result.latest_score is None
+        assert result.recommended_level is None
+        assert result.skill_scores is None
+        assert result.last_attempt is None
+
+    @pytest.mark.asyncio
+    async def test_get_assessment_progress_includes_recommended_level(self, db):
+        """get_assessment_progress should include recommended_level from UserLevel."""
+        from datetime import datetime
+
+        from app.models.models import Assessment, AssessmentAttempt, UserLevel
+        from app.services.progress_service import get_assessment_progress
+
+        # Create assessment and attempt
+        assessment = Assessment(
+            language="es",
+            assessment_type="cefr_placement",
+            title="Placement Test",
+            difficulty_level="A1",
+        )
+        db.add(assessment)
+        await db.flush()
+
+        attempt = AssessmentAttempt(
+            assessment_id=assessment.id,
+            language="es",
+            score=75.0,
+            total_questions=10,
+            correct_answers=7,
+            completed_at=datetime.utcnow(),
+        )
+        db.add(attempt)
+
+        # Create user level with recommended CEFR level
+        user_level = UserLevel(
+            language="es",
+            cefr_level="B1",
+            proficiency_score=75.0,
+        )
+        db.add(user_level)
+        await db.commit()
+
+        result = await get_assessment_progress(db, "es")
+
+        assert result.latest_score == 75.0
+        assert result.recommended_level == "B1"
+
 
 class TestProgressEndpoint:
     """Test GET /progress/summary endpoint."""

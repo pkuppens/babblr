@@ -9,8 +9,8 @@ import logging
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.models import Lesson, LessonProgress
-from app.models.schemas import GrammarProgress, VocabularyProgress
+from app.models.models import AssessmentAttempt, Lesson, LessonProgress, UserLevel
+from app.models.schemas import AssessmentProgress, GrammarProgress, VocabularyProgress
 
 logger = logging.getLogger(__name__)
 
@@ -156,4 +156,49 @@ async def get_grammar_progress(
         in_progress=in_progress,
         total=total,
         last_activity=last_activity,
+    )
+
+
+async def get_assessment_progress(
+    db: AsyncSession,
+    language: str,
+) -> AssessmentProgress:
+    """
+    Get assessment progress stats for a language.
+
+    Args:
+        db: Database session
+        language: Target language code
+
+    Returns:
+        AssessmentProgress with latest_score, recommended_level, and last_attempt
+    """
+    # Get most recent assessment attempt for this language
+    latest_attempt_result = await db.execute(
+        select(AssessmentAttempt)
+        .where(AssessmentAttempt.language == language)
+        .order_by(AssessmentAttempt.completed_at.desc())
+        .limit(1)
+    )
+    latest_attempt = latest_attempt_result.scalar_one_or_none()
+
+    # Get user level for recommended CEFR level
+    user_level_result = await db.execute(select(UserLevel).where(UserLevel.language == language))
+    user_level = user_level_result.scalar_one_or_none()
+
+    # Extract data from results
+    latest_score = latest_attempt.score if latest_attempt else None
+    last_attempt = latest_attempt.completed_at if latest_attempt else None
+    recommended_level = user_level.cefr_level if user_level else None
+
+    logger.debug(
+        f"Assessment progress for {language}: score={latest_score}, "
+        f"level={recommended_level}, last_attempt={last_attempt}"
+    )
+
+    return AssessmentProgress(
+        latest_score=latest_score,
+        recommended_level=recommended_level,
+        skill_scores=None,  # Skill breakdown to be added when assessment feature is enhanced
+        last_attempt=last_attempt,
     )
