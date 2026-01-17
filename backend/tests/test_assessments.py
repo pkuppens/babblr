@@ -323,3 +323,277 @@ class TestAssessmentSeedService:
                 options = json.loads(question.options)
                 assert len(options) >= 2
                 assert question.correct_answer in options
+
+
+class TestListAssessmentsEndpoint:
+    """Test GET /assessments endpoint."""
+
+    def test_list_assessments_returns_empty_for_no_assessments(self, client):
+        """Should return empty list when no assessments exist."""
+        response = client.get("/assessments?language=es")
+        assert response.status_code == 200
+        assert response.json() == []
+
+    @pytest.mark.asyncio
+    async def test_list_assessments_returns_assessments_for_language(self, client, db):
+        """Should return assessments for specified language."""
+        from app.services.assessment_seed import seed_assessment_data
+
+        await seed_assessment_data(db, language="es")
+
+        response = client.get("/assessments?language=es")
+        assert response.status_code == 200
+
+        data = response.json()
+        assert len(data) >= 1
+        assert data[0]["language"] == "es"
+        assert "skill_categories" in data[0]
+        assert "question_count" in data[0]
+
+    def test_list_assessments_requires_language(self, client):
+        """Should require language parameter."""
+        response = client.get("/assessments")
+        assert response.status_code == 422  # Validation error
+
+    def test_list_assessments_validates_language(self, client):
+        """Should validate language code."""
+        response = client.get("/assessments?language=invalid")
+        assert response.status_code == 400
+
+
+class TestGetAssessmentEndpoint:
+    """Test GET /assessments/{id} endpoint."""
+
+    @pytest.mark.asyncio
+    async def test_get_assessment_returns_details(self, client, db):
+        """Should return assessment with questions."""
+        from app.services.assessment_seed import get_seeded_assessment, seed_assessment_data
+
+        await seed_assessment_data(db, language="es")
+        assessment = await get_seeded_assessment(db, language="es")
+
+        response = client.get(f"/assessments/{assessment.id}")
+        assert response.status_code == 200
+
+        data = response.json()
+        assert data["id"] == assessment.id
+        assert data["title"] is not None
+        assert "questions" in data
+        assert len(data["questions"]) > 0
+
+    @pytest.mark.asyncio
+    async def test_get_assessment_questions_ordered(self, client, db):
+        """Questions should be ordered by order_index."""
+        from app.services.assessment_seed import get_seeded_assessment, seed_assessment_data
+
+        await seed_assessment_data(db, language="es")
+        assessment = await get_seeded_assessment(db, language="es")
+
+        response = client.get(f"/assessments/{assessment.id}")
+        data = response.json()
+
+        order_indices = [q["order_index"] for q in data["questions"]]
+        assert order_indices == sorted(order_indices)
+
+    @pytest.mark.asyncio
+    async def test_get_assessment_excludes_correct_answers(self, client, db):
+        """Should NOT include correct_answer in questions."""
+        from app.services.assessment_seed import get_seeded_assessment, seed_assessment_data
+
+        await seed_assessment_data(db, language="es")
+        assessment = await get_seeded_assessment(db, language="es")
+
+        response = client.get(f"/assessments/{assessment.id}")
+        data = response.json()
+
+        for question in data["questions"]:
+            assert "correct_answer" not in question
+
+    def test_get_assessment_not_found(self, client):
+        """Should return 404 for non-existent assessment."""
+        response = client.get("/assessments/99999")
+        assert response.status_code == 404
+        assert "not found" in response.json()["detail"].lower()
+
+
+class TestSubmitAttemptEndpoint:
+    """Test POST /assessments/{id}/attempts endpoint."""
+
+    @pytest.mark.asyncio
+    async def test_submit_attempt_returns_results(self, client, db):
+        """Should score answers and return results."""
+        from app.services.assessment_seed import get_seeded_assessment, seed_assessment_data
+
+        await seed_assessment_data(db, language="es")
+        assessment = await get_seeded_assessment(db, language="es")
+
+        # Get correct answers for some questions
+        correct_answers = {str(q.id): q.correct_answer for q in assessment.assessment_questions[:5]}
+
+        response = client.post(
+            f"/assessments/{assessment.id}/attempts", json={"answers": correct_answers}
+        )
+
+        assert response.status_code == 200
+        data = response.json()
+
+        assert "score" in data
+        assert "recommended_level" in data
+        assert "skill_scores" in data
+        assert data["correct_answers"] >= 5  # At least our correct ones
+
+    @pytest.mark.asyncio
+    async def test_submit_attempt_calculates_skill_breakdown(self, client, db):
+        """Should return per-skill score breakdown."""
+        from app.services.assessment_seed import get_seeded_assessment, seed_assessment_data
+
+        await seed_assessment_data(db, language="es")
+        assessment = await get_seeded_assessment(db, language="es")
+
+        response = client.post(
+            f"/assessments/{assessment.id}/attempts",
+            json={"answers": {}},  # All wrong
+        )
+
+        data = response.json()
+        skill_scores = data["skill_scores"]
+
+        # Should have at least grammar and vocabulary
+        skill_names = [s["skill"] for s in skill_scores]
+        assert "grammar" in skill_names or "vocabulary" in skill_names
+
+    @pytest.mark.asyncio
+    async def test_submit_attempt_returns_practice_recommendations(self, client, db):
+        """Should include practice recommendations."""
+        from app.services.assessment_seed import get_seeded_assessment, seed_assessment_data
+
+        await seed_assessment_data(db, language="es")
+        assessment = await get_seeded_assessment(db, language="es")
+
+        response = client.post(
+            f"/assessments/{assessment.id}/attempts",
+            json={"answers": {}},  # All wrong - should trigger recommendations
+        )
+
+        data = response.json()
+        assert "practice_recommendations" in data
+        assert isinstance(data["practice_recommendations"], list)
+
+    @pytest.mark.asyncio
+    async def test_submit_attempt_validates_question_ids(self, client, db):
+        """Should reject invalid question IDs."""
+        from app.services.assessment_seed import get_seeded_assessment, seed_assessment_data
+
+        await seed_assessment_data(db, language="es")
+        assessment = await get_seeded_assessment(db, language="es")
+
+        response = client.post(
+            f"/assessments/{assessment.id}/attempts", json={"answers": {"99999": "invalid"}}
+        )
+
+        assert response.status_code == 400
+        assert "invalid question" in response.json()["detail"].lower()
+
+    def test_submit_attempt_not_found(self, client):
+        """Should return 404 for non-existent assessment."""
+        response = client.post("/assessments/99999/attempts", json={"answers": {}})
+        assert response.status_code == 404
+
+
+class TestListAttemptsEndpoint:
+    """Test GET /assessments/attempts endpoint."""
+
+    @pytest.mark.asyncio
+    async def test_list_attempts_returns_history(self, client, db):
+        """Should return user's attempt history."""
+        from app.services.assessment_seed import get_seeded_assessment, seed_assessment_data
+
+        await seed_assessment_data(db, language="es")
+        assessment = await get_seeded_assessment(db, language="es")
+
+        # Submit two attempts
+        for _ in range(2):
+            client.post(f"/assessments/{assessment.id}/attempts", json={"answers": {}})
+
+        response = client.get("/assessments/attempts?language=es")
+        assert response.status_code == 200
+
+        data = response.json()
+        assert len(data) == 2
+        assert all(a["language"] == "es" for a in data)
+
+    @pytest.mark.asyncio
+    async def test_list_attempts_includes_assessment_title(self, client, db):
+        """Should include assessment title in response."""
+        from app.services.assessment_seed import get_seeded_assessment, seed_assessment_data
+
+        await seed_assessment_data(db, language="es")
+        assessment = await get_seeded_assessment(db, language="es")
+
+        client.post(f"/assessments/{assessment.id}/attempts", json={"answers": {}})
+
+        response = client.get("/assessments/attempts?language=es")
+        data = response.json()
+
+        assert data[0]["assessment_title"] is not None
+
+
+class TestUserLevelEndpoints:
+    """Test user level endpoints."""
+
+    def test_update_level_creates_new_record(self, client):
+        """Should create new level record if none exists."""
+        response = client.put(
+            "/user-levels/es", json={"cefr_level": "B1", "proficiency_score": 72.0}
+        )
+
+        assert response.status_code == 200
+        data = response.json()
+        assert data["language"] == "es"
+        assert data["cefr_level"] == "B1"
+        assert data["proficiency_score"] == 72.0
+
+    def test_update_level_updates_existing(self, client):
+        """Should update existing level record."""
+        # Create initial level
+        client.put("/user-levels/es", json={"cefr_level": "A1", "proficiency_score": 30.0})
+
+        # Update
+        response = client.put(
+            "/user-levels/es", json={"cefr_level": "B1", "proficiency_score": 72.0}
+        )
+
+        assert response.status_code == 200
+        data = response.json()
+        assert data["cefr_level"] == "B1"
+        assert data["proficiency_score"] == 72.0
+
+    def test_update_level_validates_cefr(self, client):
+        """Should validate CEFR level."""
+        response = client.put(
+            "/user-levels/es", json={"cefr_level": "X1", "proficiency_score": 50.0}
+        )
+
+        assert response.status_code == 400
+        assert "invalid" in response.json()["detail"].lower()
+
+    def test_update_level_validates_score_range(self, client):
+        """Should validate proficiency score range."""
+        response = client.put(
+            "/user-levels/es", json={"cefr_level": "B1", "proficiency_score": 150.0}
+        )
+
+        assert response.status_code == 422  # Pydantic validation
+
+    def test_get_user_level(self, client):
+        """Should return user level for language."""
+        client.put("/user-levels/es", json={"cefr_level": "B1", "proficiency_score": 72.0})
+
+        response = client.get("/user-levels/es")
+        assert response.status_code == 200
+        assert response.json()["cefr_level"] == "B1"
+
+    def test_get_user_level_not_found(self, client):
+        """Should return 404 if no level exists."""
+        response = client.get("/user-levels/xx")
+        assert response.status_code == 404

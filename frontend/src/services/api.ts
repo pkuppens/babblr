@@ -6,6 +6,11 @@ import type {
   ChatResponse,
   TranscriptionResponse,
   TopicsData,
+  Assessment,
+  AssessmentDetail,
+  AttemptResult,
+  AttemptSummary,
+  UserLevel,
 } from '../types';
 
 const API_BASE_URL = 'http://localhost:8000';
@@ -350,6 +355,82 @@ export const grammarService = {
       const params = new URLSearchParams({ language });
       if (level) params.append('level', level);
       const response = await api.get(`/grammar/recaps?${params.toString()}`);
+      return response.data;
+    } catch (error) {
+      handleError(error);
+      throw error;
+    }
+  },
+};
+
+export const assessmentService = {
+  async listAssessments(language: string): Promise<Assessment[]> {
+    try {
+      const response = await api.get(`/assessments?language=${language}`);
+      return response.data;
+    } catch (error) {
+      handleError(error);
+      throw error;
+    }
+  },
+
+  async getAssessment(assessmentId: number): Promise<AssessmentDetail> {
+    try {
+      const response = await api.get(`/assessments/${assessmentId}`);
+      return response.data;
+    } catch (error) {
+      handleError(error);
+      throw error;
+    }
+  },
+
+  async submitAttempt(
+    assessmentId: number,
+    answers: Record<string, string>
+  ): Promise<AttemptResult> {
+    try {
+      const response = await api.post(`/assessments/${assessmentId}/attempts`, {
+        answers,
+      });
+      return response.data;
+    } catch (error) {
+      handleError(error);
+      throw error;
+    }
+  },
+
+  async listAttempts(language: string, limit?: number): Promise<AttemptSummary[]> {
+    try {
+      const params = new URLSearchParams({ language });
+      if (limit) params.append('limit', limit.toString());
+      const response = await api.get(`/assessments/attempts?${params.toString()}`);
+      return response.data;
+    } catch (error) {
+      handleError(error);
+      throw error;
+    }
+  },
+
+  async getUserLevel(language: string): Promise<UserLevel> {
+    try {
+      const response = await api.get(`/user-levels/${language}`);
+      return response.data;
+    } catch (error) {
+      handleError(error);
+      throw error;
+    }
+  },
+
+  async updateUserLevel(
+    language: string,
+    cefrLevel: string,
+    proficiencyScore: number
+  ): Promise<UserLevel> {
+    try {
+      const response = await api.put(`/user-levels/${language}`, {
+        cefr_level: cefrLevel,
+        proficiency_score: proficiencyScore,
+      });
       return response.data;
     } catch (error) {
       handleError(error);
