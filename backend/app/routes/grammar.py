@@ -10,6 +10,10 @@ from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database.db import get_db
+from app.grammar.models import GrammarLesson
+from app.grammar.schemas import ExerciseResult, SubmitExerciseRequest
+from app.grammar.service import parse_exercise_from_item, validate_exercise_answer
+from app.models.cefr import CEFRLevel
 from app.models.models import GrammarRule, Lesson, LessonItem, LessonProgress
 from app.models.schemas import (
     LessonProgressCreate,
@@ -23,10 +27,14 @@ router = APIRouter(prefix="/grammar", tags=["grammar"])
 
 
 def calculate_next_review_date(mastery_score: Optional[float], last_reviewed: datetime) -> datetime:
-    """Calculate next review date based on mastery score (adaptive spacing).
+    """Calculate next review date based on mastery score (simple spaced repetition).
 
     Higher mastery = longer intervals between reviews.
-    This implements spaced repetition with adaptive pacing.
+    Simple algorithm:
+    - mastery >= 0.9: 14 days (2 weeks)
+    - mastery >= 0.7: 7 days (1 week)
+    - mastery >= 0.5: 3 days
+    - mastery < 0.5: 1 day (daily)
 
     Args:
         mastery_score: Mastery score from 0.0 to 1.0 (None if not set)
@@ -38,16 +46,15 @@ def calculate_next_review_date(mastery_score: Optional[float], last_reviewed: da
     if mastery_score is None:
         mastery_score = 0.5  # Default for new lessons
 
-    # Base intervals (in days) based on mastery
-    # Low mastery (0.0-0.5): 1 day
-    # Medium mastery (0.5-0.8): 3 days
-    # High mastery (0.8-1.0): 7 days
-    if mastery_score < 0.5:
-        interval_days = 1
-    elif mastery_score < 0.8:
-        interval_days = 3
+    # Simple intervals based on mastery
+    if mastery_score >= 0.9:
+        interval_days = 14  # 2 weeks
+    elif mastery_score >= 0.7:
+        interval_days = 7  # 1 week
+    elif mastery_score >= 0.5:
+        interval_days = 3  # 3 days
     else:
-        interval_days = 7
+        interval_days = 1  # Daily
 
     return last_reviewed + timedelta(days=interval_days)
 
@@ -138,15 +145,14 @@ async def list_lessons(
         raise HTTPException(status_code=500, detail=f"Failed to list lessons: {str(e)}")
 
 
-@router.get("/lessons/{lesson_id}", response_model=dict)
+@router.get("/lessons/{lesson_id}", response_model=GrammarLesson)
 async def get_lesson(
     lesson_id: int,
     db: AsyncSession = Depends(get_db),
 ):
     """Get a specific grammar lesson with all its content.
 
-    Returns the lesson metadata along with grammar rules, examples (with audio URLs),
-    practice exercises, and test questions.
+    Returns the lesson with explanation, examples, and exercises in GrammarLesson format.
     """
     try:
         # Get lesson
@@ -164,13 +170,22 @@ async def get_lesson(
         if not lesson.is_active:  # type: ignore[comparison-overlap]
             raise HTTPException(status_code=404, detail=f"Lesson {lesson_id} is not active")
 
-        # Get grammar rules
+        # Get grammar rules for explanation
         rules_result = await db.execute(
             select(GrammarRule).where(GrammarRule.lesson_id == lesson_id)
         )
         rules = rules_result.scalars().all()
 
-        # Get lesson items (examples, exercises, etc.)
+        # Build explanation from rules
+        explanation_parts = []
+        for rule in rules:
+            if rule.description:  # type: ignore[truthy-function]
+                explanation_parts.append(rule.description)
+        explanation = "\n\n".join(explanation_parts) or (
+            lesson.description or ""  # type: ignore[assignment]
+        )
+
+        # Get lesson items (examples, exercises)
         items_result = await db.execute(
             select(LessonItem)
             .where(LessonItem.lesson_id == lesson_id)
@@ -185,70 +200,137 @@ async def get_lesson(
             if item.item_type == "example":  # type: ignore[comparison-overlap]
                 try:
                     example_data = json.loads(str(item.content))  # type: ignore[arg-type]
-                    # Ensure audio URL is present (generate if needed)
-                    if "audio_url" not in example_data and "text" in example_data:
-                        text = example_data["text"]
-                        audio_url = f"/tts/synthesize?text={text}&language={lesson.language}"
-                        example_data["audio_url"] = audio_url
-                    examples.append(example_data)
+                    # Extract text for examples list
+                    if "text" in example_data:
+                        examples.append(example_data["text"])
+                    elif isinstance(example_data, str):
+                        examples.append(example_data)
                 except (json.JSONDecodeError, KeyError):
                     # If content is not JSON, treat as plain text
-                    examples.append({"text": item.content})
+                    examples.append(str(item.content))
             elif item.item_type == "exercise":  # type: ignore[comparison-overlap]
-                try:
-                    exercise_data = json.loads(str(item.content))  # type: ignore[arg-type]
-                    exercises.append(exercise_data)
-                except json.JSONDecodeError:
-                    exercises.append({"content": item.content})
+                exercise = parse_exercise_from_item(item)
+                if exercise:
+                    exercises.append(exercise)
 
-        # Build response
-        lesson_data = {
-            "id": lesson.id,
-            "language": lesson.language,
-            "lesson_type": lesson.lesson_type,
-            "title": lesson.title,
-            "description": lesson.description,
-            "difficulty_level": lesson.difficulty_level,
-            "order_index": lesson.order_index,
-            "is_active": lesson.is_active,
-            "created_at": lesson.created_at,
-            "rules": [
-                {
-                    "id": rule.id,
-                    "title": rule.title,
-                    "description": rule.description,
-                    "examples": json.loads(str(rule.examples)) if rule.examples else [],  # type: ignore[arg-type]
-                    "difficulty_level": rule.difficulty_level,
-                }
-                for rule in rules
-            ],
-            "examples": examples,
-            "exercises": exercises,
-            "items": [
-                {
-                    "id": item.id,
-                    "item_type": item.item_type,
-                    "content": item.content,
-                    "item_metadata": item.item_metadata,
-                    "order_index": item.order_index,
-                    "created_at": item.created_at,
-                }
-                for item in items
-            ],
-        }
+        # Get CEFR level
+        try:
+            level = CEFRLevel(lesson.difficulty_level)  # type: ignore[arg-type]
+        except ValueError:
+            level = CEFRLevel.A1  # Default fallback
+
+        grammar_lesson = GrammarLesson(
+            id=str(lesson.id),  # type: ignore[attr-defined]
+            title=lesson.title,  # type: ignore[attr-defined]
+            language=lesson.language,  # type: ignore[attr-defined]
+            level=level,
+            explanation=explanation,
+            examples=examples,
+            exercises=exercises,
+            topic_id=lesson.topic_id,  # type: ignore[attr-defined]
+        )
 
         logger.info(
             f"Retrieved grammar lesson {lesson_id} with {len(rules)} rules, "
             f"{len(examples)} examples, {len(exercises)} exercises"
         )
 
-        return lesson_data
+        return grammar_lesson
 
     except HTTPException:
         raise
     except Exception as e:
         logger.error(f"Error getting grammar lesson {lesson_id}: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Failed to get lesson: {str(e)}")
+
+
+@router.post("/exercises/{exercise_id}/submit", response_model=ExerciseResult)
+async def submit_exercise(
+    exercise_id: int,
+    request: SubmitExerciseRequest,
+    user_id: Optional[str] = Query(None, description="User ID for progress tracking"),
+    db: AsyncSession = Depends(get_db),
+):
+    """Submit an exercise answer and get feedback.
+
+    Validates the answer and updates user progress if user_id is provided.
+    """
+    try:
+        # Get exercise from lesson items
+        result = await db.execute(
+            select(LessonItem).where(
+                LessonItem.id == exercise_id, LessonItem.item_type == "exercise"
+            )
+        )
+        item = result.scalar_one_or_none()
+
+        if not item:
+            raise HTTPException(status_code=404, detail=f"Exercise {exercise_id} not found")
+
+        # Parse exercise
+        exercise = parse_exercise_from_item(item)
+        if not exercise:
+            raise HTTPException(
+                status_code=400, detail=f"Exercise {exercise_id} could not be parsed"
+            )
+
+        # Validate answer
+        is_correct = validate_exercise_answer(exercise, request.answer)
+
+        # Update progress if user_id provided
+        if user_id:
+            # Get lesson
+            lesson_result = await db.execute(select(Lesson).where(Lesson.id == item.lesson_id))
+            lesson = lesson_result.scalar_one_or_none()
+
+            if lesson:
+                # Get or create progress
+                progress_result = await db.execute(
+                    select(LessonProgress).where(
+                        LessonProgress.lesson_id == lesson.id,  # type: ignore[attr-defined]
+                        LessonProgress.language == lesson.language,  # type: ignore[attr-defined]
+                    )
+                )
+                progress = progress_result.scalar_one_or_none()
+
+                now = datetime.utcnow()
+                mastery_delta = 0.05 if is_correct else -0.02
+
+                if progress:
+                    # Update existing progress
+                    current_mastery = progress.mastery_score or 0.0  # type: ignore[attr-defined]
+                    new_mastery = max(0.0, min(1.0, current_mastery + mastery_delta))
+                    progress.mastery_score = new_mastery  # type: ignore[assignment]
+                    progress.last_accessed_at = now  # type: ignore[assignment]
+                else:
+                    # Create new progress
+                    new_progress = LessonProgress(
+                        lesson_id=lesson.id,  # type: ignore[attr-defined]
+                        language=lesson.language,  # type: ignore[attr-defined]
+                        status="in_progress",
+                        completion_percentage=0.0,
+                        mastery_score=max(0.0, min(1.0, mastery_delta)),
+                        started_at=now,
+                        last_accessed_at=now,
+                    )
+                    db.add(new_progress)
+                    progress = new_progress
+
+                await db.commit()
+
+        # Build response
+        return ExerciseResult(
+            is_correct=is_correct,
+            correct_answer=exercise.correct_answer,
+            explanation=exercise.explanation if not is_correct else "¡Correcto!",
+            mastery_delta=0.05 if is_correct else -0.02,
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error submitting exercise {exercise_id}: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Failed to submit exercise: {str(e)}")
 
 
 @router.post("/progress", response_model=LessonProgressResponse)

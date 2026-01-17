@@ -196,7 +196,12 @@ function App() {
           />
         );
       case 'assessments':
-        return <AssessmentsScreen />;
+        return (
+          <AssessmentsScreen
+            selectedLanguage={selectedLanguage}
+            selectedDifficulty={selectedDifficulty}
+          />
+        );
       case 'configuration':
         return <ConfigurationScreen isOpen={showSettings} onClose={handleCloseSettings} />;
       default:

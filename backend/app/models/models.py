@@ -44,19 +44,29 @@ class Message(Base):
 
 
 class Lesson(Base):
-    """Model for storing structured lesson content for vocabulary and grammar."""
+    """Model for storing structured lesson content for vocabulary, grammar, and listening."""
 
     __tablename__ = "lessons"
 
     id = Column(Integer, primary_key=True, index=True)
     language = Column(String(50), nullable=False)
-    lesson_type = Column(String(50), nullable=False)  # 'vocabulary' or 'grammar'
+    lesson_type = Column(String(50), nullable=False)  # 'vocabulary', 'grammar', 'listening'
     title = Column(String(200), nullable=False)
-    description = Column(Text, nullable=True)
+    oneliner = Column(String(500), nullable=True)  # Brief one-sentence description for lesson cards
+    description = Column(Text, nullable=True)  # Detailed description
+    tutor_prompt = Column(Text, nullable=True)  # Extensive LLM prompt for content generation
+    subject = Column(
+        String(100), nullable=True
+    )  # Subject/topic identifier (e.g., "present_ar_verbs", "shopping")
+    topic_id = Column(String(100), nullable=True)  # Link to vocabulary topic if applicable
     difficulty_level = Column(String(20), nullable=False, default="A1")
     order_index = Column(Integer, nullable=False, default=0)
     is_active = Column(Boolean, nullable=False, default=True)
     created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    last_accessed_at = Column(
+        DateTime, nullable=True
+    )  # For gamification streaks and recap decisions
 
     # Relationships
     lesson_items = relationship("LessonItem", back_populates="lesson", cascade="all, delete-orphan")
@@ -161,6 +171,9 @@ class AssessmentQuestion(Base):
     question_type = Column(
         String(50), nullable=False
     )  # 'multiple_choice', 'fill_blank', 'translation', 'grammar'
+    skill_category = Column(
+        String(50), nullable=False, default="grammar"
+    )  # 'grammar', 'vocabulary', 'listening' - for skill-based scoring
     question_text = Column(Text, nullable=False)
     correct_answer = Column(Text, nullable=False)
     options = Column(Text, nullable=True)  # JSON array for multiple choice
@@ -186,6 +199,12 @@ class AssessmentAttempt(Base):
     started_at = Column(DateTime, default=datetime.utcnow)
     completed_at = Column(DateTime, nullable=True)
     answers_json = Column(Text, nullable=True)  # JSON object
+    recommended_level = Column(
+        String(20), nullable=True
+    )  # Recommended CEFR level based on assessment (A1-C2)
+    skill_scores_json = Column(
+        Text, nullable=True
+    )  # JSON array of {skill, score, total, correct} for skill breakdown
 
     # Relationships
     assessment = relationship("Assessment", back_populates="assessment_attempts")

@@ -692,13 +692,14 @@ Stores assessment tests for proficiency evaluation.
 
 #### assessment_questions
 
-Stores questions within an assessment.
+Stores questions within an assessment. Each question is tagged with a skill category for per-skill score breakdowns.
 
 | Column | Type | Constraints | Description |
 |--------|------|-------------|-------------|
 | `id` | INTEGER | PRIMARY KEY, AUTOINCREMENT | Unique question identifier |
 | `assessment_id` | INTEGER | NOT NULL, FOREIGN KEY | Reference to parent assessment |
 | `question_type` | VARCHAR(50) | NOT NULL | Type: 'multiple_choice', 'fill_blank', 'translation', 'grammar' |
+| `skill_category` | VARCHAR(50) | NOT NULL, DEFAULT 'grammar' | Skill being tested: 'grammar', 'vocabulary', 'listening' |
 | `question_text` | TEXT | NOT NULL | Question text |
 | `correct_answer` | TEXT | NOT NULL | Correct answer |
 | `options` | TEXT | NULL | Answer options (JSON array for multiple choice) |
@@ -711,20 +712,23 @@ Stores questions within an assessment.
 
 **Validation Rules**:
 - `question_type` must be one of: 'multiple_choice', 'fill_blank', 'translation', 'grammar'
+- `skill_category` must be one of: 'grammar', 'vocabulary', 'listening'
 - `question_text` and `correct_answer` cannot be empty
 - `options` must be valid JSON array when provided (required for multiple_choice)
 - `points` must be > 0
 
 #### assessment_attempts
 
-Stores user attempts at assessments.
+Stores user attempts at assessments, including per-skill score breakdowns and CEFR level recommendations.
 
 | Column | Type | Constraints | Description |
 |--------|------|-------------|-------------|
 | `id` | INTEGER | PRIMARY KEY, AUTOINCREMENT | Unique attempt identifier |
 | `assessment_id` | INTEGER | NOT NULL, FOREIGN KEY | Reference to assessment |
 | `language` | VARCHAR(50) | NOT NULL | Target language code |
-| `score` | FLOAT | NOT NULL | Score percentage (0.0-100.0) |
+| `score` | FLOAT | NOT NULL | Overall score percentage (0.0-100.0) |
+| `recommended_level` | VARCHAR(20) | NULL | Recommended CEFR level based on score (A1-C2) |
+| `skill_scores_json` | TEXT | NULL | Per-skill score breakdown (JSON, see format below) |
 | `total_questions` | INTEGER | NOT NULL | Total number of questions |
 | `correct_answers` | INTEGER | NOT NULL | Number of correct answers |
 | `started_at` | DATETIME | NOT NULL, DEFAULT UTC_NOW | When attempt started |
@@ -736,10 +740,30 @@ Stores user attempts at assessments.
 
 **Validation Rules**:
 - `score` must be between 0.0 and 100.0
+- `recommended_level` must be valid CEFR level (A1-C2) when provided
+- `skill_scores_json` must be valid JSON when provided (see format below)
 - `correct_answers` must be <= `total_questions`
 - `total_questions` must be > 0
 - `answers_json` must be valid JSON when provided
 - `completed_at` must be >= `started_at` when set
+
+**skill_scores_json Format**:
+```json
+[
+  {"skill": "grammar", "score": 80.0, "total": 10, "correct": 8},
+  {"skill": "vocabulary", "score": 70.0, "total": 10, "correct": 7},
+  {"skill": "listening", "score": 60.0, "total": 5, "correct": 3}
+]
+```
+
+**CEFR Level Recommendation Algorithm**:
+The `recommended_level` is calculated from the overall `score` using these thresholds:
+- 91-100%: C2 (Proficient)
+- 81-90%: C1 (Advanced)
+- 61-80%: B2 (Upper Intermediate)
+- 41-60%: B1 (Intermediate)
+- 21-40%: A2 (Elementary)
+- 0-20%: A1 (Beginner)
 
 #### user_levels
 
