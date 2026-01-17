@@ -169,7 +169,100 @@ class TestProgressSummarySchemas:
 class TestProgressService:
     """Test progress service functions."""
 
-    pass  # Tests to be added in S1-S3
+    @pytest.mark.asyncio
+    async def test_get_vocabulary_progress_returns_stats(self, db):
+        """get_vocabulary_progress should return vocabulary lesson stats."""
+        from app.models.models import Lesson, LessonProgress
+        from app.services.progress_service import get_vocabulary_progress
+
+        # Create vocabulary lessons
+        lesson1 = Lesson(
+            language="es",
+            lesson_type="vocabulary",
+            title="Lesson 1",
+            difficulty_level="A1",
+            order_index=0,
+        )
+        lesson2 = Lesson(
+            language="es",
+            lesson_type="vocabulary",
+            title="Lesson 2",
+            difficulty_level="A1",
+            order_index=1,
+        )
+        db.add_all([lesson1, lesson2])
+        await db.flush()
+
+        # Create progress - one completed, one in progress
+        progress1 = LessonProgress(
+            lesson_id=lesson1.id,
+            language="es",
+            status="completed",
+            completion_percentage=100.0,
+        )
+        progress2 = LessonProgress(
+            lesson_id=lesson2.id,
+            language="es",
+            status="in_progress",
+            completion_percentage=50.0,
+        )
+        db.add_all([progress1, progress2])
+        await db.commit()
+
+        result = await get_vocabulary_progress(db, "es")
+
+        assert result.completed == 1
+        assert result.in_progress == 1
+        assert result.total == 2
+
+    @pytest.mark.asyncio
+    async def test_get_vocabulary_progress_with_no_data(self, db):
+        """get_vocabulary_progress should return zeros when no data exists."""
+        from app.services.progress_service import get_vocabulary_progress
+
+        result = await get_vocabulary_progress(db, "es")
+
+        assert result.completed == 0
+        assert result.in_progress == 0
+        assert result.total == 0
+        assert result.last_activity is None
+
+    @pytest.mark.asyncio
+    async def test_get_vocabulary_progress_last_activity(self, db):
+        """get_vocabulary_progress should return most recent activity timestamp."""
+        from datetime import datetime, timedelta
+
+        from app.models.models import Lesson, LessonProgress
+        from app.services.progress_service import get_vocabulary_progress
+
+        # Create vocabulary lesson
+        lesson = Lesson(
+            language="es",
+            lesson_type="vocabulary",
+            title="Lesson 1",
+            difficulty_level="A1",
+            order_index=0,
+        )
+        db.add(lesson)
+        await db.flush()
+
+        # Create progress with known timestamp
+        now = datetime.utcnow()
+        progress = LessonProgress(
+            lesson_id=lesson.id,
+            language="es",
+            status="in_progress",
+            completion_percentage=50.0,
+            last_accessed_at=now,
+        )
+        db.add(progress)
+        await db.commit()
+
+        result = await get_vocabulary_progress(db, "es")
+
+        assert result.last_activity is not None
+        # Should be close to the time we set (within a few seconds)
+        assert abs((result.last_activity - now).total_seconds()) < 5
 
 
 class TestProgressEndpoint:
