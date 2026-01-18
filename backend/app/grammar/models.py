@@ -29,7 +29,20 @@ class Exercise(BaseModel):
     )
     explanation: str = Field(..., description="Feedback explanation shown after answer submission")
 
-    model_config = {"json_schema_extra": {"examples": []}}
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "id": "ex1",
+                    "type": "multiple_choice",
+                    "question": "Which verb form is correct? Yo ___ español.",
+                    "options": ["hablo", "hablas", "habla", "hablan"],
+                    "correct_answer": 0,
+                    "explanation": "'Hablo' is the first person singular (yo) form of hablar.",
+                }
+            ]
+        }
+    }
 
 
 class GrammarLesson(BaseModel):
@@ -48,7 +61,22 @@ class GrammarLesson(BaseModel):
         None, description="Link to vocabulary topic if grammar uses topic vocabulary"
     )
 
-    model_config = {"json_schema_extra": {"examples": []}}
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "id": "lesson1",
+                    "title": "Present Tense -AR Verbs",
+                    "language": "es",
+                    "level": "A1",
+                    "explanation": "Spanish -AR verbs follow a regular conjugation pattern...",
+                    "examples": ["Yo hablo español.", "Ella trabaja mucho."],
+                    "exercises": [],
+                    "topic_id": None,
+                }
+            ]
+        }
+    }
 
 
 class LessonProgress(BaseModel):
@@ -70,7 +98,20 @@ class LessonProgress(BaseModel):
         None, description="Scheduled next review date for spaced repetition"
     )
 
-    model_config = {"json_schema_extra": {"examples": []}}
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "user_id": "user123",
+                    "lesson_id": "lesson1",
+                    "completed": True,
+                    "mastery_score": 0.85,
+                    "last_reviewed": "2025-01-15T10:00:00Z",
+                    "next_review": "2025-01-22T10:00:00Z",
+                }
+            ]
+        }
+    }
 
 
 class TopicVocabularyProgress(BaseModel):
@@ -84,4 +125,15 @@ class TopicVocabularyProgress(BaseModel):
         description="Dictionary mapping vocabulary words to mastery scores (0.0-1.0)",
     )
 
-    model_config = {"json_schema_extra": {"examples": []}}
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "user_id": "user123",
+                    "topic_id": "greetings",
+                    "language": "es",
+                    "vocabulary_mastery": {"hola": 0.95, "adios": 0.8, "gracias": 0.7},
+                }
+            ]
+        }
+    }

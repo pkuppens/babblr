@@ -16,6 +16,7 @@ Usage:
 """
 
 import logging
+import re
 import sqlite3
 import sys
 from pathlib import Path
@@ -24,6 +25,12 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from app.config import settings
+
+# Valid SQL identifier pattern (alphanumeric and underscores only)
+VALID_SQL_IDENTIFIER = re.compile(r"^[a-zA-Z_][a-zA-Z0-9_]*$")
+# Valid SQL types (restricted allowlist), in this case, a single migration script, it is
+# sufficient, in a more generic case, we'd check more extensively, e.g. on VARCHAR(n) via prefixes.
+VALID_SQL_TYPES = {"VARCHAR(500)", "VARCHAR(100)", "TEXT", "DATETIME", "INTEGER", "REAL"}
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -72,8 +79,16 @@ def migrate_add_lesson_fields():
         ]
 
         for field_name, field_type in fields_to_add:
+            # Validate field name and type to prevent SQL injection
+            # (defensive, even though values come from hardcoded list)
+            if not VALID_SQL_IDENTIFIER.match(field_name):
+                raise ValueError(f"Invalid field name: {field_name}")
+            if field_type not in VALID_SQL_TYPES:
+                raise ValueError(f"Invalid field type: {field_type}")
+
             if field_name not in columns:
                 logger.info(f"Adding {field_name} column to lessons table...")
+                # Safe to use f-string here after validation
                 cursor.execute(f"ALTER TABLE lessons ADD COLUMN {field_name} {field_type}")
                 logger.info(f"Successfully added {field_name} column.")
             else:
