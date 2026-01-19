@@ -25,6 +25,16 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/grammar", tags=["grammar"])
 
+# Language-specific success messages for correct answers
+SUCCESS_MESSAGES = {
+    "es": "¡Correcto!",
+    "en": "Correct!",
+    "it": "Corretto!",
+    "fr": "Correct !",
+    "de": "Richtig!",
+    "nl": "Correct!",
+}
+
 
 def calculate_next_review_date(mastery_score: Optional[float], last_reviewed: datetime) -> datetime:
     """Calculate next review date based on mastery score (simple spaced repetition).
@@ -277,52 +287,54 @@ async def submit_exercise(
         # Validate answer
         is_correct = validate_exercise_answer(exercise, request.answer)
 
+        # Get lesson to determine language for feedback message
+        lesson_result = await db.execute(select(Lesson).where(Lesson.id == item.lesson_id))
+        lesson = lesson_result.scalar_one_or_none()
+
+        # Get language-aware success message
+        lesson_language: str = str(lesson.language) if lesson else "en"
+        success_message = SUCCESS_MESSAGES.get(lesson_language, SUCCESS_MESSAGES["en"])
+
         # Update progress if user_id provided
-        if user_id:
-            # Get lesson
-            lesson_result = await db.execute(select(Lesson).where(Lesson.id == item.lesson_id))
-            lesson = lesson_result.scalar_one_or_none()
-
-            if lesson:
-                # Get or create progress
-                progress_result = await db.execute(
-                    select(LessonProgress).where(
-                        LessonProgress.lesson_id == lesson.id,  # type: ignore[attr-defined]
-                        LessonProgress.language == lesson.language,  # type: ignore[attr-defined]
-                    )
+        if user_id and lesson:
+            # Get or create progress
+            progress_result = await db.execute(
+                select(LessonProgress).where(
+                    LessonProgress.lesson_id == lesson.id,  # type: ignore[attr-defined]
+                    LessonProgress.language == lesson.language,  # type: ignore[attr-defined]
                 )
-                progress = progress_result.scalar_one_or_none()
+            )
+            progress = progress_result.scalar_one_or_none()
 
-                now = datetime.utcnow()
-                mastery_delta = 0.05 if is_correct else -0.02
+            now = datetime.utcnow()
+            mastery_delta = 0.05 if is_correct else -0.02
 
-                if progress:
-                    # Update existing progress
-                    current_mastery = progress.mastery_score or 0.0  # type: ignore[attr-defined]
-                    new_mastery = max(0.0, min(1.0, current_mastery + mastery_delta))
-                    progress.mastery_score = new_mastery  # type: ignore[assignment]
-                    progress.last_accessed_at = now  # type: ignore[assignment]
-                else:
-                    # Create new progress
-                    new_progress = LessonProgress(
-                        lesson_id=lesson.id,  # type: ignore[attr-defined]
-                        language=lesson.language,  # type: ignore[attr-defined]
-                        status="in_progress",
-                        completion_percentage=0.0,
-                        mastery_score=max(0.0, min(1.0, mastery_delta)),
-                        started_at=now,
-                        last_accessed_at=now,
-                    )
-                    db.add(new_progress)
-                    progress = new_progress
+            if progress:
+                # Update existing progress
+                current_mastery = progress.mastery_score or 0.0  # type: ignore[attr-defined]
+                new_mastery = max(0.0, min(1.0, current_mastery + mastery_delta))
+                progress.mastery_score = new_mastery  # type: ignore[assignment]
+                progress.last_accessed_at = now  # type: ignore[assignment]
+            else:
+                # Create new progress
+                new_progress = LessonProgress(
+                    lesson_id=lesson.id,  # type: ignore[attr-defined]
+                    language=lesson.language,  # type: ignore[attr-defined]
+                    status="in_progress",
+                    completion_percentage=0.0,
+                    mastery_score=max(0.0, min(1.0, mastery_delta)),
+                    started_at=now,
+                    last_accessed_at=now,
+                )
+                db.add(new_progress)
 
-                await db.commit()
+            await db.commit()
 
         # Build response
         return ExerciseResult(
             is_correct=is_correct,
             correct_answer=exercise.correct_answer,
-            explanation=exercise.explanation if not is_correct else "¡Correcto!",
+            explanation=exercise.explanation if not is_correct else success_message,
             mastery_delta=0.05 if is_correct else -0.02,
         )
 

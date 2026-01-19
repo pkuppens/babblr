@@ -13,6 +13,10 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: './src/test/setup.ts',
     css: true,
+    // Use different port for test server to avoid conflicts with dev server (5173)
+    server: {
+      port: 15173,
+    },
     exclude: [
       '**/node_modules/**',
       '**/dist/**',

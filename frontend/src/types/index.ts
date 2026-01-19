@@ -107,6 +107,16 @@ export interface SkillScore {
   correct: number;
 }
 
+export interface QuestionAnswer {
+  question_id: number;
+  question_text: string;
+  skill_category: string;
+  user_answer: string;
+  correct_answer: string;
+  is_correct: boolean;
+  options?: string[];
+}
+
 export interface AttemptResult {
   id: number;
   assessment_id: number;
@@ -119,6 +129,7 @@ export interface AttemptResult {
   started_at: string;
   completed_at: string;
   practice_recommendations: string[];
+  question_answers?: QuestionAnswer[];
 }
 
 export interface AttemptSummary {

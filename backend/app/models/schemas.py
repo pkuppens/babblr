@@ -343,6 +343,18 @@ class AttemptCreate(BaseModel):
     answers: Dict[str, str] = Field(..., description="Question ID to selected answer mapping")
 
 
+class QuestionAnswer(BaseModel):
+    """Schema for a question answer in review."""
+
+    question_id: int
+    question_text: str
+    skill_category: str
+    user_answer: str
+    correct_answer: str
+    is_correct: bool
+    options: Optional[List[str]] = None
+
+
 class AttemptResultResponse(BaseModel):
     """Schema for assessment attempt result with skill breakdown."""
 
@@ -358,6 +370,9 @@ class AttemptResultResponse(BaseModel):
     completed_at: Optional[datetime]
     practice_recommendations: List[str] = Field(
         default_factory=list, description="Suggested areas to practice"
+    )
+    question_answers: Optional[List[QuestionAnswer]] = Field(
+        default=None, description="Question-by-question answers for review"
     )
 
     model_config = ConfigDict(from_attributes=True)
@@ -375,3 +390,50 @@ class AttemptSummary(BaseModel):
     completed_at: Optional[datetime]
 
     model_config = ConfigDict(from_attributes=True)
+
+
+# ============================================================================
+# Progress Dashboard Schemas
+# ============================================================================
+
+
+class VocabularyProgress(BaseModel):
+    """Schema for vocabulary lesson progress stats."""
+
+    completed: int = Field(..., ge=0, description="Number of completed lessons")
+    in_progress: int = Field(..., ge=0, description="Number of in-progress lessons")
+    total: int = Field(..., ge=0, description="Total available lessons")
+    last_activity: Optional[datetime] = Field(None, description="Most recent activity timestamp")
+
+
+class GrammarProgress(BaseModel):
+    """Schema for grammar lesson progress stats."""
+
+    completed: int = Field(..., ge=0, description="Number of completed lessons")
+    in_progress: int = Field(..., ge=0, description="Number of in-progress lessons")
+    total: int = Field(..., ge=0, description="Total available lessons")
+    last_activity: Optional[datetime] = Field(None, description="Most recent activity timestamp")
+
+
+class AssessmentProgress(BaseModel):
+    """Schema for assessment progress stats."""
+
+    latest_score: Optional[float] = Field(
+        None, ge=0.0, le=100.0, description="Score from most recent assessment"
+    )
+    recommended_level: Optional[str] = Field(
+        None, description="Recommended CEFR level from assessment"
+    )
+    skill_scores: Optional[List[SkillScore]] = Field(
+        None, description="Per-skill breakdown from latest assessment"
+    )
+    last_attempt: Optional[datetime] = Field(None, description="When the last assessment was taken")
+
+
+class ProgressSummary(BaseModel):
+    """Schema for complete progress summary response."""
+
+    language: str = Field(..., description="Target language code")
+    vocabulary: VocabularyProgress = Field(..., description="Vocabulary lesson progress")
+    grammar: GrammarProgress = Field(..., description="Grammar lesson progress")
+    assessment: AssessmentProgress = Field(..., description="Assessment progress")

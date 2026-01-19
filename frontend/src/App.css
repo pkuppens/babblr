@@ -53,6 +53,15 @@ body {
   align-items: center;
 }
 
+.app-header-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  position: absolute;
+  top: 1.5rem;
+  right: 2rem;
+}
+
 .settings-button-header {
   position: absolute;
   top: 1.5rem;

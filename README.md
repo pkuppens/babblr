@@ -25,12 +25,18 @@ Interact with the AI tutor through voice or text, receive corrections, and track
 
 ![Conversation Screen](docs/screenshots/conversation-screen.svg)
 
+### Assessment Screen
+Take CEFR placement tests to determine your proficiency level and get personalized recommendations:
+
+![Assessment Screen](docs/screenshots/assessment-screen.svg)
+
 **Key UI Features:**
 - **Language Selection**: Choose from Spanish 🇪🇸, Italian 🇮🇹, German 🇩🇪, French 🇫🇷, or Dutch 🇳🇱
 - **Voice Input**: Green microphone button for speech-to-text
 - **Real-time Corrections**: Yellow panel shows grammar and vocabulary corrections
 - **Natural Chat Interface**: Conversational bubbles with timestamps
 - **Audio Playback**: Automatic text-to-speech for AI responses
+- **CEFR Assessments**: Placement tests with skill breakdown and level recommendations
 
 For a detailed visual walkthrough and UI specifications, see the [Visual Guide](VISUAL_GUIDE.md).
 

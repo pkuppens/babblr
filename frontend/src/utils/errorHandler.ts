@@ -31,8 +31,48 @@ export interface ErrorDetails {
 
 type RecordLike = Record<string, unknown>;
 
+// Global callback for setting persistent backend error state
+let persistentErrorSetter:
+  | ((error: { message: string; code: string; technicalDetails?: string; action?: string }) => void)
+  | null = null;
+
+/**
+ * Register a callback to set persistent backend error state.
+ * This allows the error handler to update persistent error indicators.
+ */
+export function registerPersistentErrorSetter(
+  setter: (error: {
+    message: string;
+    code: string;
+    technicalDetails?: string;
+    action?: string;
+  }) => void
+) {
+  persistentErrorSetter = setter;
+}
+
+/**
+ * Unregister the persistent error setter (for cleanup).
+ */
+export function unregisterPersistentErrorSetter() {
+  persistentErrorSetter = null;
+}
+
 function isRecordLike(value: unknown): value is RecordLike {
   return typeof value === 'object' && value !== null;
+}
+
+/**
+ * Determine if an error should trigger persistent error state.
+ * Only backend connection/availability errors should be persistent.
+ */
+function shouldPersistError(code: string, status?: number): boolean {
+  return (
+    code === 'BACKEND_NOT_RUNNING' ||
+    code === 'NETWORK_ERROR' ||
+    code === 'DATABASE_ERROR' ||
+    (status === 503 && code === 'SERVICE_UNAVAILABLE')
+  );
 }
 
 export const handleError = (error: unknown): ErrorDetails => {
@@ -118,10 +158,23 @@ export const handleError = (error: unknown): ErrorDetails => {
 
     // Improve message based on known failure modes if backend didn't provide a good one.
     if (!error.response) {
-      message = 'Network error. Cannot reach the server.';
-      code = 'NETWORK_ERROR';
-      retry = true;
-      technical_details = technical_details ?? 'Server might be down or network connection lost';
+      // Check if it's a connection error (backend not running)
+      if (error.code === 'ECONNREFUSED' || error.message?.includes('ECONNREFUSED')) {
+        message = 'Cannot connect to backend server. The backend may not be running.';
+        code = 'BACKEND_NOT_RUNNING';
+        retry = true;
+        action =
+          'Please start the backend server:\n' +
+          '1. Open a terminal in the backend directory\n' +
+          '2. Run: ./run-backend.sh (or run-backend.bat on Windows)\n' +
+          '3. Wait for "Application startup complete" message';
+        technical_details = 'Connection refused - backend server is not running or not accessible';
+      } else {
+        message = 'Network error. Cannot reach the server.';
+        code = 'NETWORK_ERROR';
+        retry = true;
+        technical_details = technical_details ?? 'Server might be down or network connection lost';
+      }
     }
 
     // Override with specific error messages based on status
@@ -162,6 +215,28 @@ export const handleError = (error: unknown): ErrorDetails => {
           action ??
           "Install FFmpeg and ensure 'ffmpeg' and 'ffprobe' are available in PATH, then restart the backend.";
       }
+      // Database initialization errors
+      else if (
+        typeof technical_details === 'string' &&
+        (technical_details.toLowerCase().includes('database') ||
+          technical_details.toLowerCase().includes('migration') ||
+          technical_details.toLowerCase().includes('schema') ||
+          technical_details.toLowerCase().includes('column') ||
+          technical_details.toLowerCase().includes('table'))
+      ) {
+        code = 'DATABASE_ERROR';
+        message =
+          message === error.message
+            ? 'Database initialization failed. The backend cannot start.'
+            : message;
+        action =
+          action ??
+          'This usually means:\n' +
+            '1. Database file is corrupted or locked\n' +
+            '2. Missing database migrations\n' +
+            '3. Permission issues with the database file\n\n' +
+            'Try: Delete the database file and restart the backend (it will be recreated automatically)';
+      }
     }
   }
 
@@ -186,6 +261,16 @@ export const handleError = (error: unknown): ErrorDetails => {
       maxWidth: '600px',
     },
   });
+
+  // Set persistent error state for backend connection issues
+  if (persistentErrorSetter && shouldPersistError(code, status)) {
+    persistentErrorSetter({
+      message,
+      code,
+      technicalDetails: technical_details,
+      action,
+    });
+  }
 
   return { message, code, retry, action, technical_details, status };
 };

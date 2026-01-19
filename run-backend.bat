@@ -79,9 +79,14 @@ if %errorlevel% equ 0 (
         REM Read host/port from env or use defaults matching config.py
         if not defined BABBLR_API_HOST set "BABBLR_API_HOST=127.0.0.1"
         if not defined BABBLR_API_PORT set "BABBLR_API_PORT=8000"
-        uv run uvicorn app.main:app --reload --host %BABBLR_API_HOST% --port %BABBLR_API_PORT%
+        REM Force polling mode on Windows for reliable file watching
+        set "WATCHFILES_FORCE_POLLING=true"
+        REM Explicitly specify reload directories to watch
+        echo [DEBUG] Running in development mode with restart on file changes...
+        uv run uvicorn app.main:app --reload --reload-dir app --host %BABBLR_API_HOST% --port %BABBLR_API_PORT%
     ) else (
         REM Production mode: use the entry point (no reload)
+        echo [DEBUG] Running in production mode with no restart on file changes...
         uv run babblr-backend
     )
 ) else (
@@ -100,7 +105,10 @@ if %errorlevel% equ 0 (
         REM Dev mode: use uvicorn CLI directly for reliable reload
         if not defined BABBLR_API_HOST set "BABBLR_API_HOST=127.0.0.1"
         if not defined BABBLR_API_PORT set "BABBLR_API_PORT=8000"
-        python -m uvicorn app.main:app --reload --host %BABBLR_API_HOST% --port %BABBLR_API_PORT%
+        REM Force polling mode on Windows for reliable file watching
+        set "WATCHFILES_FORCE_POLLING=true"
+        REM Explicitly specify reload directories to watch
+        python -m uvicorn app.main:app --reload --reload-dir app --host %BABBLR_API_HOST% --port %BABBLR_API_PORT%
     ) else (
         REM Production mode
         cd app

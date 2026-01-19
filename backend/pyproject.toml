@@ -95,11 +95,17 @@ target-version = "py312"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "N", "W"]
-ignore = ["E501"]
+ignore = ["E501", "E402"]
+# E402 (module-import-not-at-top-of-file) is ignored to allow logger initialization
+# between imports. This is a common pattern where logging setup (e.g.,
+# logging.basicConfig() or logger = logging.getLogger(__name__)) needs to happen
+# after some imports but before others, especially when configuring logging early.
 
 [tool.ruff.lint.isort]
 # Ensure 'app' is always recognized as first-party regardless of working directory
 known-first-party = ["app"]
+# Allow logger initialization between import groups by treating it as a separator
+split-on-trailing-comma = true
 
 [tool.pyright]
 pythonVersion = "3.12"

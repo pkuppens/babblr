@@ -20,7 +20,7 @@
   display: flex;
   gap: 0.5rem;
   padding: 0.5rem 1rem;
-  background: var(--bg-secondary);
+  background: var(--surface);
   border-radius: 8px;
   font-size: 0.9rem;
 }
@@ -46,7 +46,7 @@
 }
 
 .loading-message {
-  background: var(--bg-secondary);
+  background: var(--surface);
   color: var(--text-secondary);
 }
 
@@ -62,12 +62,14 @@
 }
 
 .assessment-card {
-  background: var(--bg-secondary);
+  background: var(--surface);
   border-radius: 12px;
   padding: 1.25rem;
   cursor: pointer;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
-  border: 1px solid var(--border-color);
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+  border: 1px solid var(--border);
 }
 
 .assessment-card:hover {
@@ -119,27 +121,34 @@
 .skill-tag {
   font-size: 0.75rem;
   padding: 0.25rem 0.5rem;
-  background: var(--accent-light);
-  color: var(--accent);
+  background: rgba(74, 144, 226, 0.1);
+  color: var(--primary-color);
   border-radius: 4px;
   text-transform: capitalize;
 }
 
 .start-button {
   width: 100%;
-  padding: 0.75rem;
-  background: var(--accent);
+  padding: 1rem 2rem;
+  margin-top: 1rem;
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
   color: white;
   border: none;
   border-radius: 8px;
-  font-size: 1rem;
+  font-size: 1.2rem;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.15s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+  position: relative;
+  z-index: 1;
+  box-shadow: 0 4px 12px var(--shadow);
 }
 
 .start-button:hover {
-  background: var(--accent-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px var(--shadow);
 }
 
 /* Quiz View */
@@ -154,7 +163,7 @@
   gap: 0.5rem;
   padding: 0.5rem 1rem;
   background: transparent;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border);
   border-radius: 6px;
   color: var(--text-secondary);
   cursor: pointer;
@@ -163,7 +172,7 @@
 }
 
 .back-button:hover {
-  background: var(--bg-secondary);
+  background: var(--surface);
   color: var(--text-primary);
 }
 
@@ -181,19 +190,19 @@
 
 .progress-bar-bg {
   height: 8px;
-  background: var(--bg-secondary);
+  background: var(--surface);
   border-radius: 4px;
   overflow: hidden;
 }
 
 .progress-bar-fill {
   height: 100%;
-  background: var(--accent);
+  background: var(--primary-color);
   transition: width 0.3s ease;
 }
 
 .quiz-question {
-  background: var(--bg-secondary);
+  background: var(--surface);
   border-radius: 12px;
   padding: 1.5rem;
   margin-bottom: 1.5rem;
@@ -202,8 +211,8 @@
 .question-skill {
   font-size: 0.75rem;
   padding: 0.25rem 0.5rem;
-  background: var(--accent-light);
-  color: var(--accent);
+  background: rgba(74, 144, 226, 0.1);
+  color: var(--primary-color);
   border-radius: 4px;
   text-transform: capitalize;
   display: inline-block;
@@ -224,33 +233,37 @@
 }
 
 .answer-option {
-  display: flex;
-  align-items: center;
-  padding: 1rem;
-  background: var(--bg-primary);
-  border: 2px solid var(--border-color);
+  width: 100%;
+  padding: 1rem 1.25rem;
+  background: var(--background);
+  border: 2px solid var(--border);
   border-radius: 8px;
   cursor: pointer;
-  transition: border-color 0.15s ease, background 0.15s ease;
+  text-align: left;
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  transition: all 0.2s ease;
+  user-select: none;
 }
 
 .answer-option:hover {
-  border-color: var(--accent);
-  background: var(--accent-light);
+  border-color: var(--primary-color);
+  background: white;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px var(--shadow);
 }
 
 .answer-option.selected {
-  border-color: var(--accent);
-  background: var(--accent-light);
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+  color: white;
+  box-shadow: 0 2px 8px var(--shadow);
 }
 
-.answer-option input {
-  display: none;
-}
-
-.answer-label {
-  font-size: 1rem;
-  color: var(--text-primary);
+.answer-option.selected:hover {
+  background: var(--primary-hover);
+  border-color: var(--primary-hover);
 }
 
 .quiz-navigation {
@@ -269,21 +282,21 @@
 }
 
 .nav-button.secondary {
-  background: var(--bg-secondary);
+  background: var(--surface);
   color: var(--text-primary);
 }
 
 .nav-button.secondary:hover {
-  background: var(--bg-tertiary);
+  background: var(--background);
 }
 
 .nav-button.primary {
-  background: var(--accent);
+  background: var(--primary-color);
   color: white;
 }
 
 .nav-button.primary:hover {
-  background: var(--accent-hover);
+  background: var(--primary-hover);
 }
 
 .nav-button:disabled {
@@ -315,7 +328,7 @@
 .score-display {
   text-align: center;
   padding: 2rem;
-  background: var(--bg-secondary);
+  background: var(--surface);
   border-radius: 16px;
   margin-bottom: 2rem;
 }
@@ -324,8 +337,8 @@
   width: 150px;
   height: 150px;
   border-radius: 50%;
-  background: var(--accent-light);
-  border: 4px solid var(--accent);
+  background: rgba(74, 144, 226, 0.1);
+  border: 4px solid var(--primary-color);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -336,7 +349,7 @@
 .score-value {
   font-size: 2.5rem;
   font-weight: 700;
-  color: var(--accent);
+  color: var(--primary-color);
 }
 
 .score-label {
@@ -354,7 +367,7 @@
 
 .recommended-level .level {
   font-weight: 700;
-  color: var(--accent);
+  color: var(--primary-color);
   font-size: 1.5rem;
 }
 
@@ -376,7 +389,7 @@
 }
 
 .skill-score-item {
-  background: var(--bg-secondary);
+  background: var(--surface);
   border-radius: 8px;
   padding: 1rem;
 }
@@ -395,19 +408,19 @@
 
 .skill-score-value {
   font-weight: 600;
-  color: var(--accent);
+  color: var(--primary-color);
 }
 
 .skill-bar-bg {
   height: 8px;
-  background: var(--bg-tertiary);
+  background: var(--background);
   border-radius: 4px;
   overflow: hidden;
 }
 
 .skill-bar-fill {
   height: 100%;
-  background: var(--accent);
+  background: var(--primary-color);
   transition: width 0.5s ease;
 }
 
@@ -452,10 +465,20 @@
   gap: 1rem;
 }
 
+.results-secondary-actions {
+  display: flex;
+  gap: 1rem;
+  width: 100%;
+}
+
+.results-secondary-actions .retake-button {
+  flex: 1;
+}
+
 .apply-button {
   width: 100%;
   padding: 1rem;
-  background: var(--accent);
+  background: var(--primary-color);
   color: white;
   border: none;
   border-radius: 8px;
@@ -466,23 +489,47 @@
 }
 
 .apply-button:hover {
-  background: var(--accent-hover);
+  background: var(--primary-hover);
 }
 
 .retake-button {
-  width: 100%;
   padding: 1rem;
   background: transparent;
   color: var(--text-secondary);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border);
   border-radius: 8px;
   font-size: 1rem;
   cursor: pointer;
-  transition: background 0.15s ease, color 0.15s ease;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+.results-actions > .retake-button {
+  width: 100%;
 }
 
 .retake-button:hover {
-  background: var(--bg-secondary);
+  background: var(--surface);
+  color: var(--text-primary);
+}
+
+.done-button {
+  flex: 1;
+  padding: 1rem;
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+.done-button:hover {
+  background: var(--surface);
   color: var(--text-primary);
 }
 
@@ -490,7 +537,7 @@
 .attempt-history {
   margin-top: 2rem;
   padding-top: 2rem;
-  border-top: 1px solid var(--border-color);
+  border-top: 1px solid var(--border);
 }
 
 .attempt-history h3 {
@@ -510,8 +557,9 @@
   justify-content: space-between;
   align-items: center;
   padding: 1rem;
-  background: var(--bg-secondary);
+  background: var(--surface);
   border-radius: 8px;
+  gap: 1rem;
 }
 
 .attempt-info {
@@ -544,11 +592,48 @@
 
 .attempt-level {
   padding: 0.25rem 0.5rem;
-  background: var(--accent-light);
-  color: var(--accent);
+  background: rgba(74, 144, 226, 0.1);
+  color: var(--primary-color);
   border-radius: 4px;
   font-weight: 600;
   font-size: 0.9rem;
+}
+
+.attempt-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.attempt-action-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.4rem 0.75rem;
+  font-size: 0.85rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--background);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.attempt-action-button:hover {
+  background: var(--surface);
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+}
+
+.attempt-action-button.danger {
+  color: #dc2626;
+  border-color: #fecaca;
+}
+
+.attempt-action-button.danger:hover {
+  background: #fef2f2;
+  border-color: #dc2626;
+  color: #dc2626;
 }
 
 /* Confirm Dialog */
@@ -566,7 +651,7 @@
 }
 
 .confirm-dialog {
-  background: var(--bg-primary);
+  background: var(--surface);
   border-radius: 12px;
   padding: 1.5rem;
   max-width: 400px;
@@ -595,19 +680,19 @@
 .confirm-cancel {
   padding: 0.5rem 1rem;
   background: transparent;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border);
   border-radius: 6px;
   cursor: pointer;
   color: var(--text-secondary);
 }
 
 .confirm-cancel:hover {
-  background: var(--bg-secondary);
+  background: var(--surface);
 }
 
 .confirm-confirm {
   padding: 0.5rem 1rem;
-  background: var(--accent);
+  background: var(--primary-color);
   color: white;
   border: none;
   border-radius: 6px;
@@ -615,7 +700,7 @@
 }
 
 .confirm-confirm:hover {
-  background: var(--accent-hover);
+  background: var(--primary-hover);
 }
 
 /* Empty state */
@@ -635,4 +720,133 @@
   color: #166534;
   border-radius: 8px;
   margin-bottom: 1rem;
+}
+
+/* Review View */
+.review-view {
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.question-review-list {
+  margin-bottom: 2rem;
+}
+
+.question-review-list h3 {
+  font-size: 1.1rem;
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+}
+
+.question-review-item {
+  background: var(--surface);
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+  border: 1px solid var(--border);
+}
+
+.question-review-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.question-number {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.question-status {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.question-status.correct {
+  color: #28a745;
+}
+
+.question-status.incorrect {
+  color: #dc3545;
+}
+
+.question-review-skill {
+  margin-bottom: 0.75rem;
+}
+
+.question-review-text {
+  font-size: 1rem;
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+  line-height: 1.5;
+}
+
+.question-review-options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  padding: 0.75rem;
+  background: var(--background);
+  border-radius: 6px;
+}
+
+.review-option {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+}
+
+.review-option.correct-option {
+  color: #28a745;
+  font-weight: 600;
+}
+
+.review-option.incorrect-selected {
+  color: #dc3545;
+  text-decoration: line-through;
+}
+
+.question-review-answers {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.answer-review {
+  padding: 0.75rem;
+  border-radius: 6px;
+  border: 2px solid;
+}
+
+.answer-review.correct {
+  background: #dcfce7;
+  border-color: #28a745;
+}
+
+.answer-review.incorrect {
+  background: #fef2f2;
+  border-color: #dc3545;
+}
+
+.answer-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.answer-value {
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  display: block;
 }

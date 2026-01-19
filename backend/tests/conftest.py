@@ -8,6 +8,7 @@ from typing import AsyncGenerator
 
 import pytest
 from fastapi.testclient import TestClient
+from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 
@@ -22,6 +23,18 @@ from app.main import app
 def client() -> TestClient:
     """Create a test client for the FastAPI app."""
     return TestClient(app)
+
+
+@pytest.fixture
+async def async_client() -> AsyncGenerator[AsyncClient, None]:
+    """Create an async test client for the FastAPI app.
+
+    Use this fixture for async tests that need to make HTTP requests
+    to the FastAPI app.
+    """
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        yield client
 
 
 @pytest.fixture

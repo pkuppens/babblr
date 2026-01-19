@@ -1,0 +1,104 @@
+.backend-error-indicator {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  margin-left: 1rem;
+  cursor: help;
+}
+
+.backend-error-icon {
+  font-size: 1.5rem;
+  animation: pulse 2s ease-in-out infinite;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+.backend-error-tooltip {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  right: 0;
+  background: #fff;
+  color: #2c3e50;
+  padding: 1rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  min-width: 300px;
+  max-width: 500px;
+  z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px);
+  transition:
+    opacity 0.2s ease,
+    visibility 0.2s ease,
+    transform 0.2s ease;
+  pointer-events: none;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.backend-error-indicator:hover .backend-error-tooltip {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.backend-error-tooltip-header {
+  font-weight: 600;
+  font-size: 1rem;
+  color: #e74c3c;
+  margin-bottom: 0.5rem;
+  border-bottom: 1px solid #e1e8ed;
+  padding-bottom: 0.5rem;
+}
+
+.backend-error-tooltip-message {
+  margin-bottom: 0.75rem;
+  color: #2c3e50;
+}
+
+.backend-error-tooltip-action {
+  margin-bottom: 0.75rem;
+  padding: 0.5rem;
+  background: #fff3cd;
+  border-left: 3px solid #ffc107;
+  border-radius: 4px;
+}
+
+.backend-error-tooltip-action strong {
+  color: #856404;
+}
+
+.backend-error-tooltip-technical {
+  margin-bottom: 0.75rem;
+  padding: 0.5rem;
+  background: #f8f9fa;
+  border-left: 3px solid #6c757d;
+  border-radius: 4px;
+  font-family: 'Courier New', monospace;
+  font-size: 0.8rem;
+  word-break: break-word;
+}
+
+.backend-error-tooltip-technical strong {
+  color: #495057;
+}
+
+.backend-error-tooltip-footer {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid #e1e8ed;
+  font-size: 0.8rem;
+  color: #7f8c8d;
+  font-style: italic;
+}
