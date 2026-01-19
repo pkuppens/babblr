@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import TabBar from './components/TabBar';
 import UserDisplay from './components/UserDisplay';
 import Settings from './components/Settings';
+import BackendErrorIndicator from './components/BackendErrorIndicator';
 import HomeScreen from './screens/HomeScreen';
 import VocabularyScreen from './screens/VocabularyScreen';
 import GrammarScreen from './screens/GrammarScreen';
@@ -10,10 +11,26 @@ import AssessmentsScreen from './screens/AssessmentsScreen';
 import ConfigurationScreen from './screens/ConfigurationScreen';
 import { conversationService, chatService } from './services/api';
 import { settingsService, type TimeFormat } from './services/settings';
-import type { Conversation, Language, DifficultyLevel, TabKey } from './types';
+import { useBackendErrorContext } from './contexts/BackendErrorContext';
+import {
+  registerPersistentErrorSetter,
+  unregisterPersistentErrorSetter,
+} from './utils/errorHandler';
+import type { Conversation, Language, DifficultyLevel, TabKey, Topic } from './types';
 import './App.css';
 
 function App() {
+  // Backend error state management
+  const { errorState, setError } = useBackendErrorContext();
+
+  // Register persistent error setter so errorHandler can update error state
+  useEffect(() => {
+    registerPersistentErrorSetter(setError);
+    return () => {
+      unregisterPersistentErrorSetter();
+    };
+  }, [setError]);
+
   // Tab navigation state
   const [activeTab, setActiveTab] = useState<TabKey>('home');
 
@@ -227,7 +244,10 @@ function App() {
           </h1>
         </div>
         <p className="app-subtitle">Learn languages naturally through conversation</p>
-        <UserDisplay username={currentUser.username} isLoggedIn={currentUser.isLoggedIn} />
+        <div className="app-header-right">
+          <BackendErrorIndicator errorState={errorState} />
+          <UserDisplay username={currentUser.username} isLoggedIn={currentUser.isLoggedIn} />
+        </div>
       </header>
 
       <TabBar activeTab={activeTab} onTabChange={handleTabChange} />

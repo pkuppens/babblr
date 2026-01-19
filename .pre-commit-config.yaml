@@ -25,11 +25,13 @@ repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.14.11
     hooks:
-      - id: ruff
-        args: ["--fix", "--config", "backend/pyproject.toml"]
-        files: ^(backend|examples)/
+      # Run format first - abort on failure
       - id: ruff-format
         args: ["--config", "backend/pyproject.toml"]
+        files: ^(backend|examples)/
+      # Run check with --fix - applies fixes then aborts so fixes can be committed
+      - id: ruff
+        args: ["--fix", "--config", "backend/pyproject.toml"]
         files: ^(backend|examples)/
 
   - repo: local
@@ -53,6 +55,7 @@ repos:
   # Frontend formatting/linting (TypeScript/React)
   - repo: local
     hooks:
+      # Run prettier first - abort on failure
       - id: frontend-prettier
         name: frontend-prettier
         entry: bash -lc "npm --prefix frontend run format"
@@ -60,6 +63,7 @@ repos:
         files: ^frontend/src/.*\.(ts|tsx|js|jsx|json|css)$
         pass_filenames: false
 
+      # Run eslint with --fix - applies fixes then aborts so fixes can be committed
       - id: frontend-eslint
         name: frontend-eslint
         entry: bash -lc "npm --prefix frontend run lint:fix"
@@ -67,6 +71,7 @@ repos:
         files: ^frontend/src/.*\.(ts|tsx|js|jsx)$
         pass_filenames: false
 
+      # Run tests only after formatting and linting pass
       - id: frontend-tests
         name: frontend-tests
         entry: bash -lc "npm --prefix frontend test -- --run"

@@ -15,6 +15,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import App from '../App';
+import { BackendErrorProvider } from '../contexts/BackendErrorContext';
 import * as api from '../services/api';
 
 // Mock the API services
@@ -150,7 +151,11 @@ describe('Conversation Flow Integration', () => {
     const user = userEvent.setup();
 
     // 1. Render App starting at Home tab
-    render(<App />);
+    render(
+      <BackendErrorProvider>
+        <App />
+      </BackendErrorProvider>
+    );
 
     // 2. Verify we're on the Home screen
     expect(screen.getByText(/Start a New Conversation/i)).toBeInTheDocument();
@@ -238,7 +243,11 @@ describe('Conversation Flow Integration', () => {
   it('should filter topics by A1 level and show Educación first', async () => {
     const user = userEvent.setup();
 
-    render(<App />);
+    render(
+      <BackendErrorProvider>
+        <App />
+      </BackendErrorProvider>
+    );
 
     // Navigate to topic selector
     const startButton = screen.getByRole('button', { name: /Start Learning/i });
@@ -289,7 +298,11 @@ describe('Conversation Flow Integration', () => {
 
   it('should show Spanish as ES/Español (future enhancement)', async () => {
     // This test documents the expected behavior for future enhancement
-    render(<App />);
+    render(
+      <BackendErrorProvider>
+        <App />
+      </BackendErrorProvider>
+    );
 
     // Currently shows "Spanish", but should show "ES/Español"
     const spanishButton = screen.getByRole('button', { name: /spanish/i });
@@ -301,7 +314,11 @@ describe('Conversation Flow Integration', () => {
 
   it('should show A1 as A1 Principiante (future enhancement)', async () => {
     // This test documents the expected behavior for future enhancement
-    render(<App />);
+    render(
+      <BackendErrorProvider>
+        <App />
+      </BackendErrorProvider>
+    );
 
     // Currently shows "A1", but should show "A1 Principiante" for Spanish
     const a1Button = screen.getByRole('button', { name: /A1/i });

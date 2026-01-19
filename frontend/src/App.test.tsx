@@ -11,6 +11,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import App from './App';
+import { BackendErrorProvider } from './contexts/BackendErrorContext';
 import * as api from './services/api';
 
 // Mock the API services
@@ -106,7 +107,11 @@ describe('App Tab Navigation', () => {
         mockConversation,
       ]);
 
-      render(<App />);
+      render(
+        <BackendErrorProvider>
+          <App />
+        </BackendErrorProvider>
+      );
 
       // Wait for initial load
       await waitFor(() => {
@@ -140,7 +145,11 @@ describe('App Tab Navigation', () => {
       const user = userEvent.setup();
       (api.conversationService.list as unknown as MockedService).mockResolvedValue([]);
 
-      render(<App />);
+      render(
+        <BackendErrorProvider>
+          <App />
+        </BackendErrorProvider>
+      );
 
       await waitFor(() => {
         expect(api.conversationService.list).toHaveBeenCalled();
@@ -178,7 +187,11 @@ describe('App Tab Navigation', () => {
       const user = userEvent.setup();
       (api.conversationService.list as unknown as MockedService).mockResolvedValue([]);
 
-      render(<App />);
+      render(
+        <BackendErrorProvider>
+          <App />
+        </BackendErrorProvider>
+      );
 
       await waitFor(() => {
         expect(api.conversationService.list).toHaveBeenCalled();
@@ -212,7 +225,11 @@ describe('App Tab Navigation', () => {
       );
       (api.chatService.sendMessage as unknown as MockedService).mockResolvedValue({});
 
-      render(<App />);
+      render(
+        <BackendErrorProvider>
+          <App />
+        </BackendErrorProvider>
+      );
 
       await waitFor(() => {
         expect(api.conversationService.list).toHaveBeenCalled();

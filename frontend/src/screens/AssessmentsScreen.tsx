@@ -302,7 +302,11 @@ const AssessmentsScreen: React.FC<AssessmentsScreenProps> = ({
                 {submitting ? 'Submitting...' : 'Submit Assessment'}
               </button>
             ) : (
-              <button className="nav-button primary" onClick={handleNextQuestion} disabled={!hasAnswer}>
+              <button
+                className="nav-button primary"
+                onClick={handleNextQuestion}
+                disabled={!hasAnswer}
+              >
                 Next
                 <ChevronRight size={16} />
               </button>
@@ -333,8 +337,8 @@ const AssessmentsScreen: React.FC<AssessmentsScreenProps> = ({
           <div className="results-header">
             <h2>Assessment Complete!</h2>
             <p className="results-subtitle">
-              Here&apos;s how you performed in the {getLanguageDisplayName(selectedLanguage)} placement
-              test
+              Here&apos;s how you performed in the {getLanguageDisplayName(selectedLanguage)}{' '}
+              placement test
             </p>
           </div>
 
@@ -402,8 +406,8 @@ const AssessmentsScreen: React.FC<AssessmentsScreenProps> = ({
                 <h4>Update Your Level?</h4>
                 <p>
                   This will set your {getLanguageDisplayName(selectedLanguage)} proficiency level to{' '}
-                  <strong>{result.recommended_level}</strong>. Your conversation difficulty and lesson
-                  recommendations will be adjusted accordingly.
+                  <strong>{result.recommended_level}</strong>. Your conversation difficulty and
+                  lesson recommendations will be adjusted accordingly.
                 </p>
                 <div className="confirm-actions">
                   <button
@@ -413,7 +417,11 @@ const AssessmentsScreen: React.FC<AssessmentsScreenProps> = ({
                   >
                     Cancel
                   </button>
-                  <button className="confirm-confirm" onClick={handleApplyLevel} disabled={applyingLevel}>
+                  <button
+                    className="confirm-confirm"
+                    onClick={handleApplyLevel}
+                    disabled={applyingLevel}
+                  >
                     {applyingLevel ? 'Updating...' : 'Apply Level'}
                   </button>
                 </div>
@@ -485,7 +493,10 @@ const AssessmentsScreen: React.FC<AssessmentsScreenProps> = ({
                     </span>
                   ))}
                 </div>
-                <button className="start-button" onClick={() => handleStartAssessment(assessment.id)}>
+                <button
+                  className="start-button"
+                  onClick={() => handleStartAssessment(assessment.id)}
+                >
                   Start Assessment
                 </button>
               </div>

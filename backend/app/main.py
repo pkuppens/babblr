@@ -1,3 +1,4 @@
+import logging
 from contextlib import asynccontextmanager
 from pathlib import Path
 
@@ -7,6 +8,8 @@ from fastapi.responses import FileResponse, RedirectResponse
 
 from app.config import settings
 from app.database.db import AsyncSessionLocal, init_db
+
+logger = logging.getLogger(__name__)
 from app.routes import (
     assessments,
     chat,
@@ -30,11 +33,39 @@ _STATIC_DIR = Path(__file__).resolve().parent / "static"
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Initialize database and seed data on startup."""
-    await init_db()
+    """Initialize database and seed data on startup.
+
+    Handles database initialization, migrations, and data seeding with proper error handling.
+    """
+    try:
+        logger.info("Starting application initialization...")
+        await init_db()
+        logger.info("Database initialization completed successfully")
+    except Exception as e:
+        error_msg = (
+            f"Failed to initialize database during startup: {e}\n"
+            "The application cannot start without a properly initialized database.\n"
+            "Please check the error above and ensure:\n"
+            "1. Database file permissions are correct\n"
+            "2. No other process is using the database\n"
+            "3. The database file is not corrupted"
+        )
+        logger.error(error_msg)
+        raise RuntimeError(error_msg) from e
+
     # Seed assessment data for Spanish (idempotent - safe to call multiple times)
-    async with AsyncSessionLocal() as session:
-        await seed_assessment_data(session, language="es")
+    try:
+        logger.info("Seeding assessment data...")
+        async with AsyncSessionLocal() as session:
+            await seed_assessment_data(session, language="es")
+        logger.info("Assessment data seeding completed successfully")
+    except Exception as e:
+        # Log error but don't fail startup - assessment seeding is not critical
+        logger.warning(
+            f"Failed to seed assessment data (non-critical): {e}\n"
+            "The application will continue, but assessments may not be available."
+        )
+
     yield
 
 

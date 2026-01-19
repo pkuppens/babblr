@@ -328,8 +328,10 @@ class TestAssessmentSeedService:
 class TestListAssessmentsEndpoint:
     """Test GET /assessments endpoint."""
 
-    def test_list_assessments_returns_empty_for_no_assessments(self, client):
+    @pytest.mark.asyncio
+    async def test_list_assessments_returns_empty_for_no_assessments(self, client, db):
         """Should return empty list when no assessments exist."""
+        # Ensure we're using the test database (db fixture overrides get_db)
         response = client.get("/assessments?language=es")
         assert response.status_code == 200
         assert response.json() == []
