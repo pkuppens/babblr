@@ -6,8 +6,20 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, RedirectResponse
 
 from app.config import settings
-from app.database.db import init_db
-from app.routes import chat, conversations, grammar, stt, topics, tts, vocabulary
+from app.database.db import AsyncSessionLocal, init_db
+from app.routes import (
+    assessments,
+    chat,
+    conversations,
+    grammar,
+    lessons,
+    stt,
+    topics,
+    tts,
+    user_levels,
+    vocabulary,
+)
+from app.services.assessment_seed import seed_assessment_data
 from app.services.llm import ProviderFactory
 from app.services.tts_service import tts_service
 from app.services.whisper_service import whisper_service
@@ -17,8 +29,11 @@ _STATIC_DIR = Path(__file__).resolve().parent / "static"
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Initialize database on startup."""
+    """Initialize database and seed data on startup."""
     await init_db()
+    # Seed assessment data for Spanish (idempotent - safe to call multiple times)
+    async with AsyncSessionLocal() as session:
+        await seed_assessment_data(session, language="es")
     yield
 
 
@@ -47,6 +62,9 @@ app.include_router(stt.router)
 app.include_router(topics.router)
 app.include_router(vocabulary.router)
 app.include_router(grammar.router)
+app.include_router(lessons.router)
+app.include_router(assessments.router)
+app.include_router(user_levels.router)
 
 
 @app.get("/favicon.svg", include_in_schema=False)

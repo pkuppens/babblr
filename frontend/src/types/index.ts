@@ -69,3 +69,72 @@ export interface TranscriptionResponse {
   duration: number;
   corrections?: STTCorrection[];
 }
+
+// Assessment types
+export interface Assessment {
+  id: number;
+  language: string;
+  assessment_type: string;
+  title: string;
+  description?: string;
+  difficulty_level: string;
+  duration_minutes: number;
+  skill_categories: string[];
+  is_active: boolean;
+  created_at: string;
+  question_count: number;
+}
+
+export interface AssessmentQuestion {
+  id: number;
+  assessment_id: number;
+  question_type: string;
+  skill_category: string;
+  question_text: string;
+  options?: string[];
+  points: number;
+  order_index: number;
+}
+
+export interface AssessmentDetail extends Assessment {
+  questions: AssessmentQuestion[];
+}
+
+export interface SkillScore {
+  skill: string;
+  score: number;
+  total: number;
+  correct: number;
+}
+
+export interface AttemptResult {
+  id: number;
+  assessment_id: number;
+  language: string;
+  score: number;
+  recommended_level: string;
+  skill_scores: SkillScore[];
+  total_questions: number;
+  correct_answers: number;
+  started_at: string;
+  completed_at: string;
+  practice_recommendations: string[];
+}
+
+export interface AttemptSummary {
+  id: number;
+  assessment_id: number;
+  assessment_title: string;
+  language: string;
+  score: number;
+  recommended_level: string;
+  completed_at: string;
+}
+
+export interface UserLevel {
+  id: number;
+  language: string;
+  cefr_level: string;
+  proficiency_score: number;
+  assessed_at: string;
+}

@@ -240,3 +240,4 @@ audio_files/
 
 # FFmpeg shims (generated for imageio-ffmpeg fallback)
 .ffmpeg-shims/
+tmpclaude*
