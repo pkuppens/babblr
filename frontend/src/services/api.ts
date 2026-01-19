@@ -437,4 +437,23 @@ export const assessmentService = {
       throw error;
     }
   },
+
+  async getAttempt(attemptId: number): Promise<AttemptResult> {
+    try {
+      const response = await api.get(`/assessments/attempts/${attemptId}`);
+      return response.data;
+    } catch (error) {
+      handleError(error);
+      throw error;
+    }
+  },
+
+  async deleteAttempt(attemptId: number): Promise<void> {
+    try {
+      await api.delete(`/assessments/attempts/${attemptId}`);
+    } catch (error) {
+      handleError(error);
+      throw error;
+    }
+  },
 };

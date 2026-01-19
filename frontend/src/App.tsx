@@ -217,6 +217,14 @@ function App() {
           <AssessmentsScreen
             selectedLanguage={selectedLanguage}
             selectedDifficulty={selectedDifficulty}
+            onLevelApplied={(language, level) => {
+              // Update difficulty level when applied from assessment
+              if (language === selectedLanguage) {
+                setSelectedDifficulty(level);
+              }
+            }}
+            timezone={timezone}
+            timeFormat={timeFormat}
           />
         );
       case 'configuration':

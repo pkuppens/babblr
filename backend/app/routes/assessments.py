@@ -18,6 +18,7 @@ from app.models.schemas import (
     AttemptCreate,
     AttemptResultResponse,
     AttemptSummary,
+    QuestionAnswer,
     SkillScore,
 )
 from app.services.language_catalog import find_variant
@@ -74,6 +75,110 @@ async def list_attempts(
         )
 
     return attempts
+
+
+@router.get("/attempts/{attempt_id}", response_model=AttemptResultResponse)
+async def get_attempt(
+    attempt_id: int,
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Get detailed results for a specific assessment attempt.
+
+    Returns full attempt details including skill breakdown, recommendations, and question-by-question answers.
+    """
+    result = await db.execute(select(AssessmentAttempt).where(AssessmentAttempt.id == attempt_id))
+    attempt = result.scalar()
+
+    if not attempt:
+        raise HTTPException(status_code=404, detail="Attempt not found")
+
+    # Parse skill scores from JSON
+    skill_scores_json_value = attempt.skill_scores_json
+    skill_scores_data = (
+        json.loads(skill_scores_json_value) if skill_scores_json_value is not None else []
+    )  # type: ignore[arg-type]
+    skill_scores = [SkillScore(**s) for s in skill_scores_data]
+
+    # Generate practice recommendations from skill scores
+    skill_scores_dict = {
+        s.skill: {"score": s.score, "total": s.total, "correct": s.correct} for s in skill_scores
+    }
+    recommendations = generate_practice_recommendations(skill_scores_dict)
+
+    # Build question answers for review
+    question_answers = []
+    answers_json_value = attempt.answers_json
+    if answers_json_value is not None:
+        user_answers = json.loads(answers_json_value)  # type: ignore[arg-type]
+
+        # Get assessment with questions to access correct answers
+        assessment_result = await db.execute(
+            select(Assessment)
+            .options(selectinload(Assessment.assessment_questions))
+            .where(Assessment.id == attempt.assessment_id)
+        )
+        assessment = assessment_result.scalar()
+
+        if assessment:
+            # Create a map of question ID to question for quick lookup
+            question_map = {str(q.id): q for q in assessment.assessment_questions}
+
+            for question_id_str, user_answer in user_answers.items():
+                question = question_map.get(question_id_str)
+                if question:
+                    is_correct = user_answer == question.correct_answer
+                    options = json.loads(question.options) if question.options else None
+
+                    question_answers.append(
+                        QuestionAnswer(
+                            question_id=question.id,
+                            question_text=question.question_text,
+                            skill_category=question.skill_category,
+                            user_answer=user_answer,
+                            correct_answer=question.correct_answer,
+                            is_correct=is_correct,
+                            options=options,
+                        )
+                    )
+
+    return AttemptResultResponse(
+        id=attempt.id,
+        assessment_id=attempt.assessment_id,
+        language=attempt.language,
+        score=attempt.score,
+        recommended_level=attempt.recommended_level,
+        skill_scores=skill_scores,
+        total_questions=attempt.total_questions,
+        correct_answers=attempt.correct_answers,
+        started_at=attempt.started_at,
+        completed_at=attempt.completed_at,
+        practice_recommendations=recommendations,
+        question_answers=question_answers if question_answers else None,
+    )
+
+
+@router.delete("/attempts/{attempt_id}")
+async def delete_attempt(
+    attempt_id: int,
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Delete an assessment attempt.
+
+    Permanently removes the attempt from the user's history.
+    """
+    result = await db.execute(select(AssessmentAttempt).where(AssessmentAttempt.id == attempt_id))
+    attempt = result.scalar()
+
+    if not attempt:
+        raise HTTPException(status_code=404, detail="Attempt not found")
+
+    await db.delete(attempt)
+    await db.commit()
+
+    logger.info(f"Deleted assessment attempt {attempt_id}")
+    return {"message": "Attempt deleted successfully"}
 
 
 @router.get("", response_model=list[AssessmentListResponse])

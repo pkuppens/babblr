@@ -465,6 +465,16 @@
   gap: 1rem;
 }
 
+.results-secondary-actions {
+  display: flex;
+  gap: 1rem;
+  width: 100%;
+}
+
+.results-secondary-actions .retake-button {
+  flex: 1;
+}
+
 .apply-button {
   width: 100%;
   padding: 1rem;
@@ -483,7 +493,6 @@
 }
 
 .retake-button {
-  width: 100%;
   padding: 1rem;
   background: transparent;
   color: var(--text-secondary);
@@ -496,7 +505,30 @@
     color 0.15s ease;
 }
 
+.results-actions > .retake-button {
+  width: 100%;
+}
+
 .retake-button:hover {
+  background: var(--surface);
+  color: var(--text-primary);
+}
+
+.done-button {
+  flex: 1;
+  padding: 1rem;
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+.done-button:hover {
   background: var(--surface);
   color: var(--text-primary);
 }
@@ -527,6 +559,7 @@
   padding: 1rem;
   background: var(--surface);
   border-radius: 8px;
+  gap: 1rem;
 }
 
 .attempt-info {
@@ -564,6 +597,43 @@
   border-radius: 4px;
   font-weight: 600;
   font-size: 0.9rem;
+}
+
+.attempt-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.attempt-action-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.4rem 0.75rem;
+  font-size: 0.85rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--background);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.attempt-action-button:hover {
+  background: var(--surface);
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+}
+
+.attempt-action-button.danger {
+  color: #dc2626;
+  border-color: #fecaca;
+}
+
+.attempt-action-button.danger:hover {
+  background: #fef2f2;
+  border-color: #dc2626;
+  color: #dc2626;
 }
 
 /* Confirm Dialog */
@@ -650,4 +720,133 @@
   color: #166534;
   border-radius: 8px;
   margin-bottom: 1rem;
+}
+
+/* Review View */
+.review-view {
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.question-review-list {
+  margin-bottom: 2rem;
+}
+
+.question-review-list h3 {
+  font-size: 1.1rem;
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+}
+
+.question-review-item {
+  background: var(--surface);
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+  border: 1px solid var(--border);
+}
+
+.question-review-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.question-number {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.question-status {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.question-status.correct {
+  color: #28a745;
+}
+
+.question-status.incorrect {
+  color: #dc3545;
+}
+
+.question-review-skill {
+  margin-bottom: 0.75rem;
+}
+
+.question-review-text {
+  font-size: 1rem;
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+  line-height: 1.5;
+}
+
+.question-review-options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  padding: 0.75rem;
+  background: var(--background);
+  border-radius: 6px;
+}
+
+.review-option {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+}
+
+.review-option.correct-option {
+  color: #28a745;
+  font-weight: 600;
+}
+
+.review-option.incorrect-selected {
+  color: #dc3545;
+  text-decoration: line-through;
+}
+
+.question-review-answers {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.answer-review {
+  padding: 0.75rem;
+  border-radius: 6px;
+  border: 2px solid;
+}
+
+.answer-review.correct {
+  background: #dcfce7;
+  border-color: #28a745;
+}
+
+.answer-review.incorrect {
+  background: #fef2f2;
+  border-color: #dc3545;
+}
+
+.answer-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.answer-value {
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  display: block;
 }

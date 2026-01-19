@@ -9,8 +9,13 @@ import {
   Award,
   Lightbulb,
   History,
+  Trash2,
+  RotateCcw,
+  Eye,
+  Check,
 } from 'lucide-react';
 import { assessmentService } from '../services/api';
+import { formatDateAndTime } from '../utils/dateTime';
 import type {
   Language,
   DifficultyLevel,
@@ -55,9 +60,12 @@ const getLanguageDisplayName = (language: Language): string => {
 interface AssessmentsScreenProps {
   selectedLanguage: Language;
   selectedDifficulty: DifficultyLevel;
+  onLevelApplied?: (language: Language, level: DifficultyLevel) => void;
+  timezone?: string;
+  timeFormat?: '24h' | '12h';
 }
 
-type ViewState = 'list' | 'quiz' | 'results';
+type ViewState = 'list' | 'quiz' | 'results' | 'review';
 
 /**
  * AssessmentsScreen displays CEFR assessment tests.
@@ -72,6 +80,9 @@ type ViewState = 'list' | 'quiz' | 'results';
 const AssessmentsScreen: React.FC<AssessmentsScreenProps> = ({
   selectedLanguage,
   selectedDifficulty,
+  onLevelApplied,
+  timezone = 'UTC',
+  timeFormat = '24h',
 }) => {
   // View state
   const [viewState, setViewState] = useState<ViewState>('list');
@@ -130,7 +141,12 @@ const AssessmentsScreen: React.FC<AssessmentsScreenProps> = ({
     try {
       setError(null);
       const detail = await assessmentService.getAssessment(assessmentId);
-      setCurrentAssessment(detail);
+      // Randomize question order
+      const shuffledQuestions = [...detail.questions].sort(() => Math.random() - 0.5);
+      setCurrentAssessment({
+        ...detail,
+        questions: shuffledQuestions,
+      });
       setCurrentQuestionIndex(0);
       setAnswers({});
       setResult(null);
@@ -189,6 +205,10 @@ const AssessmentsScreen: React.FC<AssessmentsScreenProps> = ({
         `Your ${getLanguageDisplayName(selectedLanguage)} level has been updated to ${result.recommended_level}!`
       );
       setShowConfirmDialog(false);
+      // Notify parent component to update difficulty level
+      if (onLevelApplied) {
+        onLevelApplied(selectedLanguage, result.recommended_level as DifficultyLevel);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to update level');
       console.error('Error updating level:', err);
@@ -198,6 +218,14 @@ const AssessmentsScreen: React.FC<AssessmentsScreenProps> = ({
   };
 
   const handleRetake = () => {
+    if (currentAssessment) {
+      // Randomize question order again
+      const shuffledQuestions = [...currentAssessment.questions].sort(() => Math.random() - 0.5);
+      setCurrentAssessment({
+        ...currentAssessment,
+        questions: shuffledQuestions,
+      });
+    }
     setResult(null);
     setCurrentQuestionIndex(0);
     setAnswers({});
@@ -214,14 +242,90 @@ const AssessmentsScreen: React.FC<AssessmentsScreenProps> = ({
     setSuccessMessage(null);
   };
 
+  const handleApplyLevelFromAttempt = async (attempt: AttemptSummary) => {
+    try {
+      setError(null);
+      await assessmentService.updateUserLevel(
+        languageCode,
+        attempt.recommended_level,
+        attempt.score
+      );
+      setSuccessMessage(
+        `Your ${getLanguageDisplayName(selectedLanguage)} level has been updated to ${attempt.recommended_level}!`
+      );
+      // Notify parent component to update difficulty level
+      if (onLevelApplied) {
+        onLevelApplied(selectedLanguage, attempt.recommended_level as DifficultyLevel);
+      }
+      loadAttempts(); // Refresh attempt list
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update level');
+      console.error('Error updating level:', err);
+    }
+  };
+
+  const handleDeleteAttempt = async (attemptId: number) => {
+    if (!window.confirm('Delete this assessment attempt?')) return;
+
+    try {
+      setError(null);
+      await assessmentService.deleteAttempt(attemptId);
+      loadAttempts(); // Refresh attempt list
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to delete attempt');
+      console.error('Error deleting attempt:', err);
+    }
+  };
+
+  const handleRetakeFromAttempt = async (attempt: AttemptSummary) => {
+    try {
+      setError(null);
+      const detail = await assessmentService.getAssessment(attempt.assessment_id);
+      // Randomize question order
+      const shuffledQuestions = [...detail.questions].sort(() => Math.random() - 0.5);
+      setCurrentAssessment({
+        ...detail,
+        questions: shuffledQuestions,
+      });
+      setCurrentQuestionIndex(0);
+      setAnswers({});
+      setResult(null);
+      setSuccessMessage(null);
+      setViewState('quiz');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load assessment');
+      console.error('Error loading assessment:', err);
+    }
+  };
+
+  const handleReviewAttempt = async (attempt: AttemptSummary) => {
+    try {
+      setError(null);
+      const attemptDetail = await assessmentService.getAttempt(attempt.id);
+      // Convert AttemptResult to display format
+      setResult({
+        id: attemptDetail.id,
+        assessment_id: attemptDetail.assessment_id,
+        language: attemptDetail.language,
+        score: attemptDetail.score,
+        recommended_level: attemptDetail.recommended_level,
+        skill_scores: attemptDetail.skill_scores,
+        total_questions: attemptDetail.total_questions,
+        correct_answers: attemptDetail.correct_answers,
+        started_at: attemptDetail.started_at,
+        completed_at: attemptDetail.completed_at,
+        practice_recommendations: attemptDetail.practice_recommendations || [],
+        question_answers: attemptDetail.question_answers || [],
+      });
+      setViewState('review');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load attempt details');
+      console.error('Error loading attempt details:', err);
+    }
+  };
+
   const formatDate = (dateString: string): string => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
+    return formatDateAndTime(dateString, timezone, timeFormat);
   };
 
   // Render Quiz View
@@ -389,9 +493,14 @@ const AssessmentsScreen: React.FC<AssessmentsScreenProps> = ({
                 Apply Level {result.recommended_level} to My Profile
               </button>
             )}
-            <button className="retake-button" onClick={handleRetake}>
-              Retake Assessment
-            </button>
+            <div className="results-secondary-actions">
+              <button className="retake-button" onClick={handleRetake}>
+                Retake Assessment
+              </button>
+              <button className="done-button" onClick={handleBackToList}>
+                Done
+              </button>
+            </div>
           </div>
 
           {/* Confirm Dialog */}
@@ -423,6 +532,104 @@ const AssessmentsScreen: React.FC<AssessmentsScreenProps> = ({
               </div>
             </div>
           )}
+        </div>
+      </div>
+    );
+  }
+
+  // Render Review View
+  if (viewState === 'review' && result && result.question_answers) {
+    return (
+      <div className="screen-container">
+        <div className="review-view">
+          <button className="back-button" onClick={handleBackToList}>
+            <ChevronLeft size={16} />
+            Back to Assessments
+          </button>
+
+          <div className="results-header">
+            <h2>Assessment Review</h2>
+            <p className="results-subtitle">
+              Review your answers for the {getLanguageDisplayName(selectedLanguage)} placement test
+            </p>
+          </div>
+
+          <div className="score-display">
+            <div className="score-circle">
+              <span className="score-value">{Math.round(result.score)}%</span>
+              <span className="score-label">Overall Score</span>
+            </div>
+            <div className="recommended-level">
+              <Award size={20} />
+              <span>Recommended Level:</span>
+              <span className="level">{result.recommended_level}</span>
+            </div>
+          </div>
+
+          <div className="question-review-list">
+            <h3>Question Review</h3>
+            {result.question_answers.map((qa, idx) => (
+              <div key={qa.question_id} className="question-review-item">
+                <div className="question-review-header">
+                  <span className="question-number">Question {idx + 1}</span>
+                  <span className={`question-status ${qa.is_correct ? 'correct' : 'incorrect'}`}>
+                    {qa.is_correct ? (
+                      <>
+                        <CheckCircle size={16} />
+                        Correct
+                      </>
+                    ) : (
+                      <>
+                        <AlertCircle size={16} />
+                        Incorrect
+                      </>
+                    )}
+                  </span>
+                </div>
+                <div className="question-review-skill">
+                  <span className="skill-tag">{qa.skill_category}</span>
+                </div>
+                <p className="question-review-text">{qa.question_text}</p>
+                {qa.options && qa.options.length > 0 && (
+                  <div className="question-review-options">
+                    {qa.options.map((option, optIdx) => {
+                      const isUserAnswer = option === qa.user_answer;
+                      const isCorrectAnswer = option === qa.correct_answer;
+                      let optionClass = 'review-option';
+                      if (isCorrectAnswer) optionClass += ' correct-option';
+                      if (isUserAnswer && !qa.is_correct) optionClass += ' incorrect-selected';
+
+                      return (
+                        <div key={optIdx} className={optionClass}>
+                          {isCorrectAnswer && <CheckCircle size={14} />}
+                          {isUserAnswer && !qa.is_correct && <AlertCircle size={14} />}
+                          <span>{option}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+                <div className="question-review-answers">
+                  <div className={`answer-review ${qa.is_correct ? 'correct' : 'incorrect'}`}>
+                    <span className="answer-label">Your answer:</span>
+                    <span className="answer-value">{qa.user_answer}</span>
+                  </div>
+                  {!qa.is_correct && (
+                    <div className="answer-review correct">
+                      <span className="answer-label">Correct answer:</span>
+                      <span className="answer-value">{qa.correct_answer}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="results-actions">
+            <button className="done-button" onClick={handleBackToList}>
+              Done
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -516,6 +723,40 @@ const AssessmentsScreen: React.FC<AssessmentsScreenProps> = ({
                   <div className="attempt-results">
                     <span className="attempt-score">{Math.round(attempt.score)}%</span>
                     <span className="attempt-level">{attempt.recommended_level}</span>
+                  </div>
+                  <div className="attempt-actions">
+                    <button
+                      className="attempt-action-button"
+                      onClick={() => handleApplyLevelFromAttempt(attempt)}
+                      title={`Apply level ${attempt.recommended_level} to profile`}
+                    >
+                      <Check size={14} />
+                      Apply Level
+                    </button>
+                    <button
+                      className="attempt-action-button"
+                      onClick={() => handleReviewAttempt(attempt)}
+                      title="Review assessment results"
+                    >
+                      <Eye size={14} />
+                      Review
+                    </button>
+                    <button
+                      className="attempt-action-button"
+                      onClick={() => handleRetakeFromAttempt(attempt)}
+                      title="Retake this assessment"
+                    >
+                      <RotateCcw size={14} />
+                      Retake
+                    </button>
+                    <button
+                      className="attempt-action-button danger"
+                      onClick={() => handleDeleteAttempt(attempt.id)}
+                      title="Delete this attempt"
+                    >
+                      <Trash2 size={14} />
+                      Delete
+                    </button>
                   </div>
                 </div>
               ))}
