@@ -258,19 +258,14 @@ const AssessmentsScreen: React.FC<AssessmentsScreenProps> = ({
             {question.options && (
               <div className="answer-options">
                 {question.options.map((option, idx) => (
-                  <label
+                  <button
                     key={idx}
+                    type="button"
                     className={`answer-option ${answers[question.id.toString()] === option ? 'selected' : ''}`}
+                    onClick={() => handleSelectAnswer(question.id, option)}
                   >
-                    <input
-                      type="radio"
-                      name={`question-${question.id}`}
-                      value={option}
-                      checked={answers[question.id.toString()] === option}
-                      onChange={() => handleSelectAnswer(question.id, option)}
-                    />
-                    <span className="answer-label">{option}</span>
-                  </label>
+                    {option}
+                  </button>
                 ))}
               </div>
             )}
