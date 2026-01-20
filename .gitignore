@@ -241,3 +241,6 @@ audio_files/
 # FFmpeg shims (generated for imageio-ffmpeg fallback)
 .ffmpeg-shims/
 tmpclaude*
+
+# Databricks generated data (regenerate with generate_synthetic_data.py)
+databricks/data/*.parquet
