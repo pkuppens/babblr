@@ -23,7 +23,7 @@ By completing this tutorial, you will understand:
 
 Before starting, make sure you have:
 
-- [ ] **Python 3.8+** installed locally ([download](https://www.python.org/downloads/))
+- [ ] **Python 3.11+** installed locally ([download](https://www.python.org/downloads/)) - avoid 3.13 for PyTorch/CUDA compatibility
 - [ ] **pandas** and **numpy** packages (`pip install pandas numpy`)
 - [ ] A **web browser** (Chrome, Firefox, or Edge recommended)
 - [ ] Basic familiarity with SQL (SELECT, JOIN, GROUP BY)
@@ -66,31 +66,39 @@ You should see 7 parquet files totaling about 180KB.
 
 ## Part 2: Databricks Account Setup (20 minutes)
 
-### Step 2.1: Create a Free Databricks Account
+### Step 2.1: Create a Databricks Free Edition Account
+
+> **Note**: Databricks Community Edition was [retired January 1, 2026](https://community.databricks.com/t5/announcements/psa-community-edition-retires-at-the-end-of-2025-move-to-free/td-p/141888). Use **Free Edition** instead.
 
 1. Go to [databricks.com/try-databricks](https://www.databricks.com/try-databricks)
 2. Click **"Try Databricks Free"**
-3. Choose **"Community Edition"** (free forever, no credit card)
-4. Fill in your details and verify your email
-5. You'll receive a workspace URL like `https://community.cloud.databricks.com/`
+3. Sign up with email, Google, or Microsoft account (no credit card required)
+4. Verify your email if prompted
+5. You'll receive a workspace URL like `https://adb-xxxxx.azuredatabricks.net/`
 
 **What is a Databricks Workspace?** Think of it as your cloud-based development environment. It's where you'll write code, store data, and run analytics.
 
-### Step 2.2: Start a Compute Cluster
+For more details, see: [Sign up for Free Edition](https://docs.databricks.com/aws/en/getting-started/free-edition)
 
-A **cluster** is a set of cloud computers that run your code. For Community Edition, you get a small free cluster.
+### Step 2.2: Understanding Serverless Compute
 
-1. Log into your workspace
-2. Click **"Compute"** in the left sidebar
-3. Click **"Create Cluster"**
-4. Keep the default settings (they're optimized for free tier)
-5. Click **"Create Cluster"** and wait 3-5 minutes for it to start
+> **Key difference from old Community Edition**: Free Edition uses **serverless compute** - Databricks manages the infrastructure for you. No manual cluster creation needed!
 
-The cluster shows **"Running"** (green dot) when ready.
+**What is Serverless?** Instead of creating and managing your own cluster, Databricks provides on-demand compute that starts in seconds. You just click "Connect" → "Serverless" in your notebook.
 
-**Why do I need a cluster?** Databricks uses Apache Spark to process data. Spark runs on clusters to handle large datasets. Even for small data, you need a cluster to execute code.
+**Benefits:**
+- **Instant start**: No 5-10 minute cluster startup wait
+- **No management**: Databricks handles scaling and maintenance
+- **Cost-efficient**: Only runs when you're actively using it
+
+**Limitations** (see [Free Edition Limitations](https://docs.databricks.com/aws/en/getting-started/free-edition-limitations)):
+- Python and SQL only (no Scala/R)
+- Daily usage quota (resets next day)
+- Some library installation restrictions
 
 ### Step 2.3: Upload the Notebooks
+
+See: [Import notebooks](https://docs.databricks.com/aws/en/notebooks/notebook-export-import)
 
 1. Click **"Workspace"** in the left sidebar
 2. Right-click your username folder > **"Create"** > **"Folder"**
@@ -104,23 +112,25 @@ The cluster shows **"Running"** (green dot) when ready.
 
 ### Step 2.4: Upload the Data Files
 
-For Community Edition, use **Volumes** (recommended):
+See: [Upload to Unity Catalog volume](https://docs.databricks.com/aws/en/ingestion/file-upload/upload-to-volume)
+
+Use **Unity Catalog Volumes** (required for Free Edition):
 
 1. Click **"Catalog"** in the left sidebar
-2. Click **"+"** > **"Add"** > **"Add a volume"**
-3. Create a volume with:
-   - Catalog: `hive_metastore` (or your default)
-   - Schema: Create new schema named `babblr`
-   - Volume name: `bronze`
-4. Click into the volume and use **"Upload"** to add all `.parquet` files from `data/`
+2. Navigate to your catalog (e.g., `main` or create one)
+3. Create a schema: **Create** > **Schema** > name it `babblr`
+4. Click into the schema, then **Create** > **Volume** > name it `bronze`
+5. Click into the volume and use **"Upload"** to add all `.parquet` files from `data/`
 
-**Alternative:** If Volumes aren't available, see the [Troubleshooting](#troubleshooting) section.
+Files will be accessible at `/Volumes/<catalog>/babblr/bronze/`
+
+**Alternative:** If you have issues, see the [Troubleshooting](#troubleshooting) section.
 
 ---
 
 ## Part 3: Run the Tutorial Notebooks (60-90 minutes)
 
-Open each notebook, attach it to your running cluster (dropdown at top), and run the cells in order.
+Open each notebook, click **Connect** → **Serverless** (dropdown at top-right), and run the cells in order.
 
 ### Notebook 1: Bronze Layer (Raw Data)
 
