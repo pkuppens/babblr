@@ -172,29 +172,45 @@ print('All local data checks passed!')
 
 **Account Creation Checklist**:
 
-- [ ] Navigate to [databricks.com/try-databricks](https://www.databricks.com/try-databricks)
+- [ ] Navigate to [databricks.com](https://www.databricks.com/)
 - [ ] Click "Try Databricks Free"
 - [ ] Sign up with email, Google, or Microsoft account
 - [ ] Verify email if required
-- [ ] Workspace URL is accessible (e.g., `https://adb-xxxxx.azuredatabricks.net/`)
+- [ ] Workspace URL is accessible (e.g., `https://dbc-xxxxxxxx-xxxx.cloud.databricks.com/`)
 
 **Workspace Verification**:
 
 - [ ] Can log into Databricks workspace
 - [ ] Workspace loads without errors
 - [ ] Left sidebar shows: Workspace, Catalog, Workflows, Compute, etc.
-- [ ] Unity Catalog is enabled (required for serverless)
+- [ ] Unity Catalog is enabled (it is by default and it is required for serverless)
+
+> **Note**: Unity Catalog is Databricks' modern data governance system. The **Catalog** menu item in the sidebar is the UI for Unity Catalog. Unity Catalog provides a centralized metastore for managing data, tables, and permissions. In Free Edition, Unity Catalog is enabled by default and required for serverless compute. You can verify it's enabled by checking that the Catalog menu is visible in the sidebar, or by running `SELECT CURRENT_METASTORE();` in a notebook (should return a metastore ID, not empty).
 
 **Serverless Compute Verification**:
 
 > **Note**: Free Edition uses [serverless compute](https://docs.databricks.com/aws/en/compute/serverless/notebooks) -
 > you don't create clusters manually. Databricks manages compute for you.
 
-- [ ] Open any notebook
-- [ ] Click **"Connect"** dropdown (top-right of notebook)
-- [ ] **"Serverless"** option is available
+**Steps** (create a new notebook to test serverless compute):
+
+1. Click **Workspace** in the sidebar
+2. Right-click a folder (or create a new folder) → **Create** → **Notebook**
+3. Give it a name (e.g., "test-serverless") and click **Create**
+4. The notebook opens automatically
+5. Click **"Connect"** dropdown (top-right of notebook)
+6. Select **"Serverless"** option
+7. Compute starts within 30 seconds (no 5-10 min cluster startup)
+8. Run a simple test cell: `print("Serverless compute is working!")`
+
+**Checklist**:
+
+- [ ] Can create a new notebook
+- [ ] Notebook opens in the Databricks editor
+- [ ] **"Serverless"** option is available in the Connect dropdown
 - [ ] Can connect to Serverless compute
-- [ ] Compute starts within 30 seconds (no 5-10 min cluster startup)
+- [ ] Compute starts within 30 seconds
+- [ ] Test code cell executes successfully
 
 ### 2.2 File Upload
 
@@ -211,25 +227,40 @@ print('All local data checks passed!')
 - [ ] Can open each notebook in the Databricks editor
 - [ ] Can connect notebooks to **Serverless** compute
 
-**Data Upload via Unity Catalog Volumes** (recommended):
+**Data Upload via Unity Catalog Volumes** (required for medallion architecture):
 
-> **Documentation**: [Work with files in volumes](https://docs.databricks.com/aws/en/volumes/volume-files)
+> **Documentation**: [Work with files in volumes](https://docs.databricks.com/aws/en/volumes/volume-files)  
+> **Free Edition**: This tutorial uses **local file uploads** to Unity Catalog Volumes (not external AWS/S3 volumes). The typical catalog name in Free Edition is `workspace`.  
+> **Best Practice**: Unity Catalog Volumes are required for Spark to access data files. They support large files (up to 5GB per file) and are designed for production data workloads.
 
-- [ ] Click **Catalog** in sidebar
-- [ ] Navigate to or create catalog (e.g., `main` or `hive_metastore`)
-- [ ] Create schema: **Create** → **Schema** → name it `babblr`
-- [ ] Create volume: Click schema → **Create** → **Volume** → name it `bronze`
-- [ ] Click **"Add"** or **"Upload"** in the volume
-- [ ] Upload all 7 parquet files (max 5GB per file)
-- [ ] Files appear in `/Volumes/<catalog>/babblr/bronze/`
+**Steps**:
 
-**Alternative - Data Upload via Notebook UI**:
+1. Click **Catalog** in sidebar
+2. Navigate to or create catalog (typically `workspace` in Free Edition, or `main`/`hive_metastore` if available)
+3. Create schema: Click catalog → **Create** → **Schema** → name it `babblr`
+4. Create volume: Click schema `babblr` → **Create** → **Volume** → name it `bronze`
+5. Click into the `bronze` volume
+6. Click **"Add"** or **"Upload"** button
+7. Upload all 7 parquet files locally (max 5GB per file, but our files are ~150-200KB total):
+   - `conversations.parquet`
+   - `messages.parquet`
+   - `lessons.parquet`
+   - `lesson_progress.parquet`
+   - `assessments.parquet`
+   - `assessment_attempts.parquet`
+   - `user_levels.parquet`
+8. Files appear in `/Volumes/<catalog>/babblr/bronze/` (replace `<catalog>` with your catalog name, typically `/Volumes/workspace/babblr/bronze/` in Free Edition)
 
-- [ ] Open a notebook
-- [ ] Click the **paperclip icon** or **"Upload Data"** button
-- [ ] Upload parquet files
-- [ ] Note the path shown after upload (typically `/tmp/` or workspace path)
-- [ ] Update notebook `BRONZE_PATH` variable to match
+**Checklist**:
+
+- [ ] Catalog exists (typically `workspace` in Free Edition)
+- [ ] Schema `babblr` is created
+- [ ] Volume `bronze` is created
+- [ ] All 7 parquet files are uploaded locally (not external AWS/S3)
+- [ ] Files are visible in the volume
+
+> **Important**: Workspace folders **cannot** be used for Spark data access. Spark cannot read parquet files from Workspace folders due to access restrictions. You **must** use Unity Catalog Volumes (see instructions above).  
+> **Note**: The notebook UI upload typically places files in `/tmp/` which is temporary storage. For persistent medallion architecture, use Unity Catalog Volumes as described above.
 
 ### 2.3 Notebook 01: Bronze Layer
 
@@ -265,6 +296,12 @@ print('All local data checks passed!')
 **Post-conditions**:
 - [ ] All tables exist in `babblr_bronze` database
 - [ ] No error messages in any cell output
+
+**Troubleshooting**:
+
+If you see errors like `IllegalAccessException: Opened file descriptor mount id does not match mount id for path /Workspace/...`:
+- **Cause**: You're trying to access files from Workspace folders, which Spark cannot read directly
+- **Solution**: Use Unity Catalog Volumes instead (see section 2.2). Workspace folders are for notebooks and code, not data files.
 
 ### 2.4 Notebook 02: Silver Layer
 
