@@ -23,7 +23,7 @@ repos:
       - id: gitleaks
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.14.11
+    rev: v0.14.13
     hooks:
       # Run format first - abort on failure
       - id: ruff-format
@@ -107,3 +107,16 @@ repos:
         args: ["--frail", "--use", "remark-validate-links"]
         types: [markdown]
         files: \.md$
+
+  # Clean Jupyter notebooks (remove outputs, execution counts, metadata)
+  - repo: https://github.com/srstevenson/nb-clean
+    rev: 4.0.1
+    hooks:
+      - id: nb-clean
+        args:
+          - --remove-empty-cells
+          - --preserve-cell-metadata
+          - tags
+          - slideshow
+          - --
+        files: \.ipynb$
