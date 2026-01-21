@@ -1,14 +1,20 @@
 # Databricks notebook source
 # MAGIC %md
-# MAGIC # Gold Layer - Analytics & MLflow
+# MAGIC # Gold Layer - Analytics & Clustering
 # MAGIC
-# MAGIC This notebook creates business-ready aggregates and demonstrates MLflow experiment tracking.
+# MAGIC This notebook creates business-ready aggregates and demonstrates K-Means clustering for student segmentation.
 # MAGIC
 # MAGIC **Key Concepts:**
 # MAGIC - Gold layer aggregations
 # MAGIC - Complex SQL analytics
-# MAGIC - MLflow experiment tracking
 # MAGIC - K-Means clustering for student segmentation
+# MAGIC - MLflow experiment tracking (optional, not available in Free Edition)
+# MAGIC
+# MAGIC ---
+# MAGIC
+# MAGIC **Prerequisites:** Run `02_silver_layer` first to create the silver tables.
+# MAGIC
+# MAGIC > **Note**: MLflow is not available in Databricks Free Edition. The clustering model training works without MLflow tracking. If you're using a paid edition, MLflow tracking will be enabled automatically.
 
 # COMMAND ----------
 
@@ -19,8 +25,15 @@
 
 from pyspark.sql import functions as F
 from pyspark.sql.window import Window
-import mlflow
-import mlflow.spark
+
+# Try to import MLflow (not available in Free Edition)
+try:
+    import mlflow
+    import mlflow.spark
+    MLFLOW_AVAILABLE = True
+except ImportError:
+    MLFLOW_AVAILABLE = False
+    print("[INFO] MLflow not available (Free Edition). Clustering will work without MLflow tracking.")
 
 # Configuration
 SILVER_DB = "babblr_silver"
@@ -229,20 +242,22 @@ user_features.show(5)
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ### MLflow Experiment Setup
+# MAGIC ### MLflow Experiment Setup (Optional - Not Available in Free Edition)
 
 # COMMAND ----------
 
-# Set experiment name
-experiment_name = "/Shared/babblr_student_segmentation"
-mlflow.set_experiment(experiment_name)
-
-print(f"MLflow experiment: {experiment_name}")
+# Set experiment name (only if MLflow is available)
+if MLFLOW_AVAILABLE:
+    experiment_name = "/Shared/babblr_student_segmentation"
+    mlflow.set_experiment(experiment_name)
+    print(f"MLflow experiment: {experiment_name}")
+else:
+    print("[INFO] MLflow not available - skipping experiment setup. Clustering will work without tracking.")
 
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ### Train Clustering Model with MLflow Tracking
+# MAGIC ### Train Clustering Model (with Optional MLflow Tracking)
 
 # COMMAND ----------
 
@@ -252,28 +267,55 @@ feature_cols = [
     "total_conversations", "avg_error_rate", "completed_lessons", "avg_mastery"
 ]
 
-# Start MLflow run
-with mlflow.start_run(run_name="student_clustering_v1"):
+# Build pipeline
+k_clusters = 4
+assembler = VectorAssembler(inputCols=feature_cols, outputCol="features_raw")
+scaler = StandardScaler(inputCol="features_raw", outputCol="features", withStd=True, withMean=True)
+kmeans = KMeans(k=k_clusters, seed=42, featuresCol="features", predictionCol="cluster")
 
-    # Log parameters
-    k_clusters = 4
-    mlflow.log_param("k_clusters", k_clusters)
-    mlflow.log_param("features", feature_cols)
-    mlflow.log_param("n_users", user_features.count())
+pipeline = Pipeline(stages=[assembler, scaler, kmeans])
 
-    # Build pipeline
-    assembler = VectorAssembler(inputCols=feature_cols, outputCol="features_raw")
-    scaler = StandardScaler(inputCol="features_raw", outputCol="features", withStd=True, withMean=True)
-    kmeans = KMeans(k=k_clusters, seed=42, featuresCol="features", predictionCol="cluster")
+# Train model (with optional MLflow tracking)
+if MLFLOW_AVAILABLE:
+    # Start MLflow run
+    with mlflow.start_run(run_name="student_clustering_v1"):
+        # Log parameters
+        mlflow.log_param("k_clusters", k_clusters)
+        mlflow.log_param("features", feature_cols)
+        mlflow.log_param("n_users", user_features.count())
 
-    pipeline = Pipeline(stages=[assembler, scaler, kmeans])
+        # Fit model
+        model = pipeline.fit(user_features)
 
-    # Fit model
+        # Get predictions
+        predictions = model.transform(user_features)
+
+        # Calculate cluster metrics
+        cluster_stats = predictions.groupBy("cluster").agg(
+            F.count("*").alias("user_count"),
+            F.round(F.avg("avg_score"), 1).alias("avg_score"),
+            F.round(F.avg("total_conversations"), 1).alias("avg_conversations"),
+            F.round(F.avg("completed_lessons"), 1).alias("avg_completed_lessons")
+        ).orderBy("cluster")
+
+        # Log metrics
+        kmeans_model = model.stages[-1]
+        mlflow.log_metric("inertia", kmeans_model.summary.trainingCost)
+
+        for row in cluster_stats.collect():
+            mlflow.log_metric(f"cluster_{row['cluster']}_size", row["user_count"])
+            mlflow.log_metric(f"cluster_{row['cluster']}_avg_score", row["avg_score"])
+
+        # Log model
+        mlflow.spark.log_model(model, "student_clustering_model")
+
+        print("Model training complete with MLflow tracking!")
+        print(f"Inertia (within-cluster sum of squares): {kmeans_model.summary.trainingCost:.2f}")
+else:
+    # Fit model without MLflow
     model = pipeline.fit(user_features)
-
-    # Get predictions
     predictions = model.transform(user_features)
-
+    
     # Calculate cluster metrics
     cluster_stats = predictions.groupBy("cluster").agg(
         F.count("*").alias("user_count"),
@@ -281,19 +323,9 @@ with mlflow.start_run(run_name="student_clustering_v1"):
         F.round(F.avg("total_conversations"), 1).alias("avg_conversations"),
         F.round(F.avg("completed_lessons"), 1).alias("avg_completed_lessons")
     ).orderBy("cluster")
-
-    # Log metrics
+    
     kmeans_model = model.stages[-1]
-    mlflow.log_metric("inertia", kmeans_model.summary.trainingCost)
-
-    for row in cluster_stats.collect():
-        mlflow.log_metric(f"cluster_{row['cluster']}_size", row["user_count"])
-        mlflow.log_metric(f"cluster_{row['cluster']}_avg_score", row["avg_score"])
-
-    # Log model
-    mlflow.spark.log_model(model, "student_clustering_model")
-
-    print("Model training complete!")
+    print("Model training complete (without MLflow tracking)!")
     print(f"Inertia (within-cluster sum of squares): {kmeans_model.summary.trainingCost:.2f}")
 
 # COMMAND ----------

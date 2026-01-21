@@ -9,6 +9,10 @@
 # MAGIC - JSON parsing with `from_json`
 # MAGIC - Window functions
 # MAGIC - Data quality checks
+# MAGIC
+# MAGIC ---
+# MAGIC
+# MAGIC **Prerequisites:** Run `01_bronze_layer` first to create the bronze tables.
 
 # COMMAND ----------
 
@@ -144,7 +148,7 @@ print(f"Silver messages: {silver_messages.count()} rows")
 # COMMAND ----------
 
 lessons = spark.table(f"{BRONZE_DB}.lessons")
-lesson_progress = spark.table(f"{BRONZE_DB}.lesson_progress")
+lesson_progress = spark.table(f"{BRONZE_DB}.lesson_progress").withColumnRenamed("id", "progress_id")
 
 # Join progress with lesson details
 silver_lesson_progress = (
@@ -154,7 +158,6 @@ silver_lesson_progress = (
         lesson_progress.lesson_id == lessons.id,
         "left"
     )
-    .withColumnRenamed("id", "progress_id")
     .withColumnRenamed("difficulty_level", "lesson_difficulty")
     .withColumn("started_at", F.to_timestamp("started_at"))
     .withColumn("completed_at", F.to_timestamp("completed_at"))
@@ -196,7 +199,7 @@ print(f"Silver lesson progress: {silver_lesson_progress.count()} rows")
 
 # COMMAND ----------
 
-assessment_attempts = spark.table(f"{BRONZE_DB}.assessment_attempts")
+assessment_attempts = spark.table(f"{BRONZE_DB}.assessment_attempts").withColumnRenamed("id", "attempt_id")
 assessments = spark.table(f"{BRONZE_DB}.assessments")
 
 # Define schema for skill scores JSON
@@ -215,7 +218,6 @@ silver_attempts = (
         assessment_attempts.assessment_id == assessments.id,
         "left"
     )
-    .withColumnRenamed("id", "attempt_id")
     .withColumnRenamed("difficulty_level", "assessment_difficulty")
     .withColumn("started_at", F.to_timestamp("started_at"))
     .withColumn("completed_at", F.to_timestamp("completed_at"))

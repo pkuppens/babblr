@@ -8,6 +8,17 @@
 # MAGIC - Delta Lake table creation
 # MAGIC - Schema inference from Parquet
 # MAGIC - DBFS file access
+# MAGIC
+# MAGIC ---
+# MAGIC
+# MAGIC **Prerequisites:**
+# MAGIC - Generated parquet files in `databricks/data/` (run `python generate_synthetic_data.py` locally)
+# MAGIC - Uploaded files to **Unity Catalog Volumes** (required for Spark access in Free Edition):
+# MAGIC   - Create catalog (typically `workspace` in Free Edition) → Schema `babblr` → Volume `bronze`
+# MAGIC   - Upload all 7 parquet files locally to `/Volumes/<catalog>/babblr/bronze/`
+# MAGIC   - **Note**: This tutorial uses local file uploads (not external AWS/S3 volumes)
+# MAGIC
+# MAGIC > **Important**: Workspace folders cannot be accessed directly by Spark for data files. You must use Unity Catalog Volumes for medallion architecture. See the validation guide (section 2.2) for step-by-step instructions.
 
 # COMMAND ----------
 
@@ -17,13 +28,21 @@
 # COMMAND ----------
 
 # Configuration
-# For Free Edition: Use Volumes or upload files directly to workspace
-# Try these paths in order (first available will be used):
-POSSIBLE_PATHS = [
-    "/Volumes/babblr/bronze",  # Volumes (Free Edition compatible)
-    "/FileStore/babblr/bronze",  # DBFS FileStore (may be restricted in Free Edition)
-    "/Workspace/babblr/bronze",  # Workspace files (alternative)
-]
+# IMPORTANT: Unity Catalog Volumes are required for Spark to access data files.
+# Workspace folders cannot be accessed directly by Spark for data files.
+# For Free Edition: Use local file uploads to Unity Catalog Volumes (not external AWS/S3 volumes).
+
+# Common catalog names to try (Free Edition typically uses 'workspace')
+# Replace with your catalog name if different
+COMMON_CATALOGS = ["workspace", "main", "hive_metastore"]
+
+# Build list of possible Volume paths
+POSSIBLE_PATHS = []
+for catalog in COMMON_CATALOGS:
+    POSSIBLE_PATHS.append(f"/Volumes/{catalog}/babblr/bronze")
+
+# Also try DBFS FileStore (may be restricted in Free Edition)
+POSSIBLE_PATHS.append("/FileStore/babblr/bronze")
 
 DATABASE_NAME = "babblr_bronze"
 
@@ -31,22 +50,27 @@ DATABASE_NAME = "babblr_bronze"
 BRONZE_PATH = None
 for path in POSSIBLE_PATHS:
     try:
-        dbutils.fs.ls(path)
-        BRONZE_PATH = path
-        print(f"✓ Found accessible path: {BRONZE_PATH}")
-        break
-    except Exception:
+        files = dbutils.fs.ls(path)
+        if files:  # Check that directory exists and has files
+            BRONZE_PATH = path
+            print(f"[OK] Found accessible path: {BRONZE_PATH}")
+            print(f"     Found {len(files)} file(s) in directory")
+            break
+    except Exception as e:
         continue
 
 if BRONZE_PATH is None:
-    print("⚠ No accessible storage path found. For Free Edition:")
-    print("   1. Upload files using 'Upload Data' in the workspace")
-    print("   2. Or use Volumes: Create a Volume at /Volumes/babblr/bronze")
-    print("   3. Or upload files directly in this notebook using:")
-    print("      dbutils.fs.put('/tmp/your_file.parquet', file_content)")
-    print("\n   Then update BRONZE_PATH above to match your upload location.")
-    BRONZE_PATH = "/tmp/babblr/bronze"  # Fallback to temp location
-    print(f"\n   Using fallback path: {BRONZE_PATH}")
+    print("[ERROR] No accessible storage path found!")
+    print("\n[SOLUTION] You must use Unity Catalog Volumes (local file uploads in Free Edition):")
+    print("   1. Go to Catalog in sidebar")
+    print("   2. Create or select a catalog (typically 'workspace' in Free Edition)")
+    print("   3. Create schema 'babblr'")
+    print("   4. Create volume 'bronze'")
+    print("   5. Upload all 7 parquet files locally to the volume (not external AWS/S3)")
+    print("   6. Files will be at: /Volumes/<catalog>/babblr/bronze/")
+    print("\n   Workspace folders do NOT work for Spark data access.")
+    print("   See VALIDATION.md section 2.2 for detailed steps.")
+    raise FileNotFoundError("No accessible data path found. Please use Unity Catalog Volumes.")
 
 # Create database if not exists
 spark.sql(f"CREATE DATABASE IF NOT EXISTS {DATABASE_NAME}")
@@ -129,27 +153,27 @@ print(f"\nTotal: {total_rows} rows loaded into Delta tables")
 
 # COMMAND ----------
 
-# MAGIC %sql
-# MAGIC -- Show all tables in the bronze database
-# MAGIC SHOW TABLES
+%%sql
+-- Show all tables in the bronze database
+SHOW TABLES
 
 # COMMAND ----------
 
-# MAGIC %sql
-# MAGIC -- Quick preview of conversations table
-# MAGIC SELECT * FROM conversations LIMIT 5
+%%sql
+-- Quick preview of conversations table
+SELECT * FROM conversations LIMIT 5
 
 # COMMAND ----------
 
-# MAGIC %sql
-# MAGIC -- Check data distribution by language
-# MAGIC SELECT
-# MAGIC     language,
-# MAGIC     COUNT(*) as conversation_count,
-# MAGIC     COUNT(DISTINCT user_id) as unique_users
-# MAGIC FROM conversations
-# MAGIC GROUP BY language
-# MAGIC ORDER BY conversation_count DESC
+%%sql
+-- Check data distribution by language
+SELECT
+    language,
+    COUNT(*) as conversation_count,
+    COUNT(DISTINCT user_id) as unique_users
+FROM conversations
+GROUP BY language
+ORDER BY conversation_count DESC
 
 # COMMAND ----------
 
@@ -160,9 +184,9 @@ print(f"\nTotal: {total_rows} rows loaded into Delta tables")
 
 # COMMAND ----------
 
-# MAGIC %sql
-# MAGIC -- View table history (time travel metadata)
-# MAGIC DESCRIBE HISTORY conversations
+%%sql
+-- View table history (time travel metadata)
+DESCRIBE HISTORY conversations
 
 # COMMAND ----------
 
@@ -171,9 +195,9 @@ print(f"\nTotal: {total_rows} rows loaded into Delta tables")
 
 # COMMAND ----------
 
-# MAGIC %sql
-# MAGIC -- View schema of a table
-# MAGIC DESCRIBE TABLE EXTENDED conversations
+%%sql
+-- View schema of a table
+DESCRIBE TABLE EXTENDED conversations
 
 # COMMAND ----------
 
