@@ -50,11 +50,14 @@ See: [Free Edition Limitations](https://docs.databricks.com/aws/en/getting-start
 
 Before starting validation, ensure you have:
 
-- [ ] Python 3.11+ installed locally (3.12 recommended; avoid 3.13)
-- [ ] `pandas` and `numpy` packages installed
+- [ ] Python 3.12 installed locally (the project uses Python 3.12)
+- [ ] [uv](https://docs.astral.sh/uv/) installed (the project's package manager)
+- [ ] Backend dependencies installed: `cd backend && uv sync`
 - [ ] [Databricks Free Edition account](https://www.databricks.com/product/faq/community-edition) created
 - [ ] All files from the `databricks/` folder available
 - [ ] At least 2 hours available for full validation
+
+> **Note**: The `pandas`, `pyarrow`, and `numpy` packages are included in the backend's `pyproject.toml` and will be installed by `uv sync`.
 
 ---
 
@@ -65,55 +68,61 @@ Before starting validation, ensure you have:
 **Goal**: Verify `generate_synthetic_data.py` creates valid data files.
 
 ```bash
-cd databricks
-python generate_synthetic_data.py
+# Run from the backend directory to reuse the uv environment
+cd backend
+uv run python ../databricks/generate_synthetic_data.py --output-dir ../databricks/data
 ```
+
+> **Note**: The data generation dependencies (`pandas`, `pyarrow`) are included in the backend's `pyproject.toml`.
 
 **Checklist**:
 
 - [ ] Script runs without errors
 - [ ] Script prints progress messages
-- [ ] `data/` folder is created (if not exists)
+- [ ] `databricks/data/` folder is created (if not exists)
 - [ ] All 7 parquet files are created:
-  - [ ] `data/conversations.parquet`
-  - [ ] `data/messages.parquet`
-  - [ ] `data/lessons.parquet`
-  - [ ] `data/lesson_progress.parquet`
-  - [ ] `data/assessments.parquet`
-  - [ ] `data/assessment_attempts.parquet`
-  - [ ] `data/user_levels.parquet`
+  - [ ] `databricks/data/conversations.parquet`
+  - [ ] `databricks/data/messages.parquet`
+  - [ ] `databricks/data/lessons.parquet`
+  - [ ] `databricks/data/lesson_progress.parquet`
+  - [ ] `databricks/data/assessments.parquet`
+  - [ ] `databricks/data/assessment_attempts.parquet`
+  - [ ] `databricks/data/user_levels.parquet`
 - [ ] Total file size is approximately 150-200 KB
 - [ ] Running script again with same seed produces identical files
 
-**Data Spot Checks** (run in Python):
+**Data Spot Checks** (run from the backend directory):
 
-```python
+```bash
+cd backend
+uv run python -c "
 import pandas as pd
 
 # Check conversations
-df = pd.read_parquet('data/conversations.parquet')
-print(f"Conversations: {len(df)} rows")
-assert len(df) > 400, "Expected 400+ conversations"
+df = pd.read_parquet('../databricks/data/conversations.parquet')
+print(f'Conversations: {len(df)} rows')
+assert len(df) > 400, 'Expected 400+ conversations'
 assert 'user_id' in df.columns
 assert 'language' in df.columns
-assert df['language'].nunique() == 6, "Expected 6 languages"
+assert df['language'].nunique() == 6, 'Expected 6 languages'
 
 # Check messages
-df = pd.read_parquet('data/messages.parquet')
-print(f"Messages: {len(df)} rows")
-assert len(df) > 2000, "Expected 2000+ messages"
+df = pd.read_parquet('../databricks/data/messages.parquet')
+print(f'Messages: {len(df)} rows')
+assert len(df) > 2000, 'Expected 2000+ messages'
 
 # Check assessments catalog
-df = pd.read_parquet('data/assessments.parquet')
-print(f"Assessments: {len(df)} rows")
-assert len(df) == 144, "Expected 144 assessment definitions"
+df = pd.read_parquet('../databricks/data/assessments.parquet')
+print(f'Assessments: {len(df)} rows')
+assert len(df) == 144, 'Expected 144 assessment definitions'
 
 # Check assessment attempts
-df = pd.read_parquet('data/assessment_attempts.parquet')
-print(f"Assessment attempts: {len(df)} rows")
-assert len(df) > 150, "Expected 150+ attempts"
+df = pd.read_parquet('../databricks/data/assessment_attempts.parquet')
+print(f'Assessment attempts: {len(df)} rows')
+assert len(df) > 150, 'Expected 150+ attempts'
 
-print("All local data checks passed!")
+print('All local data checks passed!')
+"
 ```
 
 - [ ] All assertions pass
@@ -121,7 +130,8 @@ print("All local data checks passed!")
 
 ### 1.2 Notebook File Validation
 
-**Goal**: Verify notebook files are valid JSON and can be opened.
+**Goal**: Verify notebook files are valid JSON, can be opened, and have correct structure.  
+**Note**: This section only validates file structure and syntax. Actual execution testing happens in Part 2 (Databricks Validation), as these notebooks require Databricks runtime and storage.
 
 **Checklist**:
 
@@ -131,7 +141,11 @@ print("All local data checks passed!")
 - [ ] `04_dashboard.ipynb` opens without errors
 - [ ] Each notebook has markdown cells with explanations
 - [ ] Each notebook has code cells with Python/SQL code
+- [ ] Python code syntax is valid (can be checked with a linter or syntax checker)
 - [ ] No `# MAGIC` or `# COMMAND ----------` syntax remains (Databricks format)
+- [ ] Notebooks are ready for import into Databricks (valid JSON structure)
+
+> **Note**: These notebooks are designed to run in Databricks and will not execute successfully locally due to dependencies on Databricks runtime (Spark, Delta Lake, Unity Catalog). Execution validation is performed in Part 2.
 
 ### 1.3 README Validation
 

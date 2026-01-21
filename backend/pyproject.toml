@@ -34,6 +34,9 @@ dependencies = [
     "langchain-core>=0.3.0",
     "langchain-google-genai>=2.0.0",
     "langchain-anthropic>=0.3.0",
+    # Data analysis dependencies (for databricks data generation)
+    "pandas>=2.0.0",
+    "pyarrow>=14.0.0",
 ]
 
 [project.optional-dependencies]
