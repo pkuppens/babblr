@@ -34,9 +34,11 @@
 .back-button {
   background: rgba(255, 255, 255, 0.2);
   color: white;
+  border: none;
   padding: 0.5rem 1rem;
   border-radius: 8px;
   font-weight: 500;
+  cursor: pointer;
 }
 
 .back-button:hover {
