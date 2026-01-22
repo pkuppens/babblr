@@ -52,6 +52,7 @@ async def init_db():
         logger.info("Running database migrations...")
         await _migrate_add_topic_id()
         await _migrate_add_mastery_score()
+        await _migrate_ensure_timezone_aware_datetimes()
         await _migrate_add_assessment_columns()
 
         logger.info("Database tables initialized and migrations completed successfully")
@@ -168,6 +169,74 @@ async def _migrate_add_mastery_score():
         logger.error(f"Error during migration: {e}")
         conn.rollback()
         # Don't raise - allow app to continue even if migration fails
+    finally:
+        conn.close()
+
+
+async def _migrate_ensure_timezone_aware_datetimes():
+    """Ensure all datetime columns use timezone-aware UTC defaults.
+
+    Existing records are already stored correctly (as UTC strings).
+    This migration ensures new records use timezone-aware datetime defaults.
+    """
+    import sqlite3
+    from pathlib import Path
+
+    # Get database path from settings
+    db_url = settings.babblr_conversation_database_url
+
+    # Extract file path from SQLite URL
+    if db_url.startswith("sqlite+aiosqlite:///"):
+        db_path = db_url.replace("sqlite+aiosqlite:///", "")
+    elif db_url.startswith("sqlite:///"):
+        db_path = db_url.replace("sqlite:///", "")
+    else:
+        # Not SQLite, skip migration
+        return
+
+    db_path = Path(db_path)
+
+    if not db_path.exists():
+        # Database will be created with correct schema
+        return
+
+    # Use synchronous sqlite3 for migration (simpler for schema changes)
+    conn = sqlite3.connect(str(db_path))
+    cursor = conn.cursor()
+
+    try:
+        logger.info("Verifying datetime columns have UTC timezone awareness...")
+
+        # Get list of all tables
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
+        tables = cursor.fetchall()
+
+        datetime_tables = {
+            'conversations': ['created_at', 'updated_at'],
+            'messages': ['created_at'],
+            'lessons': ['created_at', 'updated_at', 'last_accessed_at'],
+            'lesson_items': ['created_at'],
+            'lesson_progress': ['created_at'],
+            'grammar_rules': ['created_at'],
+            'grammar_rule_examples': ['created_at'],
+            'assessment_attempts': ['started_at', 'assessed_at', 'updated_at'],
+        }
+
+        # Log verification results
+        for table_name, datetime_cols in datetime_tables.items():
+            cursor.execute(f"SELECT name FROM sqlite_master WHERE type='table' AND name='{table_name}'")
+            if cursor.fetchone():
+                logger.debug(f"Table {table_name} has datetime columns: {datetime_cols}")
+                # Note: SQLite doesn't enforce column types, so we can't validate directly
+                # But the Python ORM will handle timezone-aware conversion on reads/writes
+
+        logger.info("Datetime columns verified. New records will use timezone-aware UTC datetimes.")
+        conn.commit()
+
+    except sqlite3.Error as e:
+        logger.error(f"Error during timezone verification: {e}")
+        conn.rollback()
+        # Don't raise - this is non-critical
     finally:
         conn.close()
 

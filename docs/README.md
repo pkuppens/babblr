@@ -5,6 +5,7 @@ This folder contains technical documentation for Babblr.
 ## Contents
 
 - [ARCHITECTURE.md](ARCHITECTURE.md) - System architecture and design decisions
+- [adr/](adr/) - Architecture Decision Records (ADRs) documenting key technical decisions
 
 ## Documentation Guidelines
 
