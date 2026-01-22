@@ -10,7 +10,8 @@ This document provides a comprehensive smoke test and validation plan for Babblr
 - [4. Speech Services Validation](#4-speech-services-validation)
 - [5. Frontend Validation](#5-frontend-validation)
 - [6. End-to-End Validation](#6-end-to-end-validation)
-- [7. Pending Features](#7-pending-features)
+- [7. Automated E2E Testing (Optional)](#7-automated-e2e-testing-optional)
+- [8. Pending Features](#8-pending-features)
 
 ---
 
@@ -419,7 +420,21 @@ curl http://localhost:8000/tts/speak -X POST \
 
 ## 5. Frontend Validation
 
-### Goal: Verify the Electron/React frontend loads and connects to backend
+### Goal: Verify the Electron/React frontend UI and interaction flows
+
+For comprehensive manual test procedures with explicit expected results for all frontend features, see: **[Frontend and E2E Manual Test Procedures](backend/tests/MANUAL_FRONTEND_TESTS.md)**
+
+This includes 10 detailed test cases covering:
+- Language selection and persistence
+- CEFR level selection
+- Topic selection and description display
+- Conversation flow initiation
+- Message display and speaker identification
+- Voice input functionality
+- Text-to-speech playback
+- Text input and sending
+- Multi-turn conversations
+- Settings persistence
 
 #### 5.1 Start Frontend
 
@@ -471,6 +486,17 @@ Open DevTools (View → Toggle Developer Tools):
 
 ### Goal: Verify complete user flows work correctly
 
+For comprehensive manual test procedures with explicit expected results, see: **[Frontend and E2E Manual Test Procedures](backend/tests/MANUAL_FRONTEND_TESTS.md)**
+
+This includes 7 detailed test cases covering:
+- Complete Spanish A1 conversation flows (5+ message exchanges)
+- Cross-language conversations (French B1)
+- Voice input and TTS throughout conversations
+- Multi-language skill testing
+- CEFR level vocabulary and grammar verification
+- Conversation persistence and history
+- Error handling and recovery
+
 #### 6.1 Basic Conversation Flow
 
 1. **Select Language**: Click "Spanish"
@@ -520,11 +546,86 @@ curl -X POST http://localhost:8000/chat \
 
 ---
 
-## 7. Pending Features
+## 7. Automated E2E Testing (Optional)
+
+### Goal: Automated testing of frontend UI and conversation flows using Playwright
+
+#### 7.1 Playwright E2E Test Suite
+
+Babblr includes a comprehensive Playwright test suite for automated end-to-end testing:
+
+**Location:** `frontend/tests/e2e_conversation.spec.ts`
+
+**Prerequisites:**
+```bash
+npm install --save-dev @playwright/test
+```
+
+**Test Coverage:**
+- Section 5: Frontend UI Validation (10 tests)
+  - Language selection
+  - CEFR level selection
+  - Topic selection
+  - Conversation flow
+  - Message display
+  - Voice input
+  - TTS playback
+  - Text input
+  - Multi-turn conversations
+  - Settings persistence
+
+- Section 6: End-to-End Conversation Testing (7 tests)
+  - Spanish A1 conversations
+  - Cross-language conversations
+  - Voice input and TTS integration
+  - Voice interaction throughout conversations
+  - Multi-language support
+  - CEFR level adaptation
+  - Conversation persistence and history
+  - Error handling
+
+**Running Tests:**
+
+```bash
+# Run all tests
+npx playwright test
+
+# Run in headed mode (see browser)
+npx playwright test --headed
+
+# Run in debug mode
+npx playwright test --debug
+
+# Run specific test file
+npx playwright test e2e_conversation.spec.ts
+
+# Run specific test
+npx playwright test -g "language selection"
+```
+
+**Expected Results:**
+- All tests pass with no errors
+- Browser automation captures UI interactions correctly
+- Message exchanges complete successfully
+
+<details>
+<summary>Troubleshooting: Playwright tests fail</summary>
+
+1. Ensure backend is running: `http://localhost:8000`
+2. Ensure frontend is running: `http://localhost:3000` or `http://localhost:5173`
+3. Check BASE_URL and BACKEND_URL in test file match your setup
+4. Install browsers: `npx playwright install`
+5. Check console for specific error messages
+
+</details>
+
+---
+
+## 8. Pending Features
 
 The following features are tracked in GitHub issues and are not yet implemented. Validation for these will be added when implemented.
 
-### 7.1 LLM Provider Enhancements
+### 8.1 LLM Provider Enhancements
 
 > **Waiting for:** [#11 - Implement swappable LLM provider architecture](https://github.com/pkuppens/babblr/issues/11) (Phase 2-4)
 
@@ -534,7 +635,7 @@ The following features are tracked in GitHub issues and are not yet implemented.
 - [ ] Rate limit handling with exponential backoff
 - [ ] Gemini provider placeholder
 
-### 7.2 System Prompts
+### 8.2 System Prompts
 
 > **Waiting for:** [#12 - Create adaptive system prompts for different CEFR levels](https://github.com/pkuppens/babblr/issues/12)
 
@@ -542,21 +643,21 @@ The following features are tracked in GitHub issues and are not yet implemented.
 - [ ] Prompt builder service
 - [ ] Language-specific examples
 
-### 7.3 TTS Playback
+### 8.3 TTS Playback
 
 > **Waiting for:** [#10 - Implement TTS playback using Web Speech API](https://github.com/pkuppens/babblr/issues/10)
 
 - [ ] Web Speech API integration
 - [ ] Audio playback in frontend
 
-### 7.4 Transcription Correction
+### 8.4 Transcription Correction
 
 > **Waiting for:** [#13 - Use Claude to correct Whisper transcription errors](https://github.com/pkuppens/babblr/issues/13)
 
 - [ ] Transcription correction based on context
 - [ ] Improved accuracy for language learners
 
-### 7.5 User Interface
+### 8.5 User Interface
 
 > **Waiting for:** Multiple frontend issues
 
@@ -566,7 +667,7 @@ The following features are tracked in GitHub issues and are not yet implemented.
 - [#17 - Settings panel](https://github.com/pkuppens/babblr/issues/17)
 - [#18 - Progress dashboard](https://github.com/pkuppens/babblr/issues/18)
 
-### 7.6 Documentation & Templates
+### 8.6 Documentation & Templates
 
 > **Waiting for:** [#19 - Complete documentation](https://github.com/pkuppens/babblr/issues/19), [#20 - GitHub templates](https://github.com/pkuppens/babblr/issues/20)
 

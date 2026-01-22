@@ -18,6 +18,27 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 from app.database.db import Base, get_db
 from app.main import app
 
+# =============================================================================
+# pytest configuration for --production flag
+# =============================================================================
+
+
+def pytest_addoption(parser):
+    """Add --production flag to pytest."""
+    parser.addoption(
+        "--production",
+        action="store_true",
+        default=False,
+        help="Run production tests against actual services and APIs",
+    )
+
+
+def pytest_configure(config):
+    """Register production marker."""
+    config.addinivalue_line(
+        "markers", "production: mark test as production (requires running backends/APIs)"
+    )
+
 
 @pytest.fixture
 def client() -> TestClient:
