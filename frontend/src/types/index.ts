@@ -149,3 +149,54 @@ export interface UserLevel {
   proficiency_score: number;
   assessed_at: string;
 }
+
+// Vocabulary lesson types
+export interface VocabularyLesson {
+  id: number;
+  language: string;
+  lesson_type: string;
+  title: string;
+  oneliner?: string;
+  description?: string;
+  subject?: string;
+  difficulty_level: string;
+  order_index: number;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+  last_accessed_at?: string;
+}
+
+export interface VocabularyLessonDetail extends VocabularyLesson {
+  items: VocabularyItem[];
+}
+
+export interface VocabularyItem {
+  id: number;
+  lesson_id: number;
+  word: string;
+  translation: string;
+  example: string;
+  audio_url?: string;
+  order_index?: number;
+}
+
+export interface VocabularyProgress {
+  id: number;
+  lesson_id: number;
+  language: string;
+  status: 'not_started' | 'in_progress' | 'completed';
+  completion_percentage: number;
+  mastery_score?: number;
+  started_at?: string;
+  completed_at?: string;
+  last_accessed_at: string;
+}
+
+export interface VocabularyProgressCreate {
+  lesson_id: number;
+  language: string;
+  status?: 'not_started' | 'in_progress' | 'completed';
+  completion_percentage?: number;
+  mastery_score?: number;
+}
