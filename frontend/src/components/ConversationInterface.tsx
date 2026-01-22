@@ -46,6 +46,7 @@ const ConversationInterface: React.FC<ConversationInterfaceProps> = ({
   const recordingAudioRef = useRef<HTMLAudioElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationRef = useRef<number | null>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Inline recorder hook - pre-initializes microphone
   const recorder = useInlineRecorder();
@@ -191,6 +192,20 @@ const ConversationInterface: React.FC<ConversationInterfaceProps> = ({
   useEffect(() => {
     loadMessages();
   }, [loadMessages, conversation.updated_at]); // Reload when conversation is updated
+
+  // Auto-resize textarea based on content
+  useEffect(() => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+
+    const resetHeight = () => {
+      textarea.style.height = '0px';
+      const newHeight = Math.min(textarea.scrollHeight, 150);
+      textarea.style.height = newHeight + 'px';
+    };
+
+    resetHeight();
+  }, [inputText]);
 
   useEffect(() => {
     // Load TTS rate per CEFR level.
@@ -432,7 +447,7 @@ const ConversationInterface: React.FC<ConversationInterfaceProps> = ({
   const handleSubmitRecording = useCallback(async () => {
     if (!recorder.state.audioBlob) return;
 
-    console.log('[Conversation] Submitting voice recording');
+    console.log('[Conversation] Processing voice recording');
     setIsLoading(true);
 
     // Store the recording URL for playback in STT correction panel
@@ -462,9 +477,11 @@ const ConversationInterface: React.FC<ConversationInterfaceProps> = ({
         setCorrectedSttText(transcription.text);
       }
 
-      // Clear recording and send message
+      // Populate text input with transcribed text (don't send yet)
+      setInputText(transcription.text);
+
+      // Clear recording
       recorder.clearRecording();
-      await handleSendMessage(transcription.text, true); // fromVoice = true
     } catch (error) {
       console.error('Failed to process voice recording:', error);
       setSttCorrections([]);
@@ -473,7 +490,7 @@ const ConversationInterface: React.FC<ConversationInterfaceProps> = ({
     } finally {
       setIsLoading(false);
     }
-  }, [lastRecordingUrl, conversation.id, conversation.language, handleSendMessage, recorder]);
+  }, [lastRecordingUrl, conversation.id, conversation.language, recorder]);
 
   // Auto-submit recording when it stops (no confirmation needed for voice)
   useEffect(() => {
@@ -725,17 +742,30 @@ const ConversationInterface: React.FC<ConversationInterfaceProps> = ({
               <Mic className="w-5 h-5" />
             </button>
 
-            <input
-              type="text"
+            <textarea
+              ref={textareaRef}
               className="message-input"
               placeholder={uiStrings.placeholder}
               value={inputText}
               onChange={e => setInputText(e.target.value)}
               onKeyDown={e => {
-                // CTRL+Enter, CMD+Enter, or SHIFT+Enter: send message
-                if (e.key === 'Enter' && (e.ctrlKey || e.metaKey || e.shiftKey)) {
+                // Enter (without modifiers): send message
+                if (e.key === 'Enter' && !e.ctrlKey && !e.metaKey && !e.shiftKey) {
                   e.preventDefault();
                   handleSendMessage(inputText);
+                }
+                // Ctrl+Enter or Cmd+Enter: insert newline
+                if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+                  e.preventDefault();
+                  const textarea = e.currentTarget;
+                  const start = textarea.selectionStart;
+                  const end = textarea.selectionEnd;
+                  const newValue = inputText.substring(0, start) + '\n' + inputText.substring(end);
+                  setInputText(newValue);
+                  // Move cursor after the newline
+                  setTimeout(() => {
+                    textarea.selectionStart = textarea.selectionEnd = start + 1;
+                  }, 0);
                 }
               }}
               disabled={isLoading}
