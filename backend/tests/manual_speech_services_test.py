@@ -35,7 +35,6 @@ async def test_stt_with_sample_audio():
     print("SECTION 4.1: STT (Speech-to-Text) - Real Audio Testing")
     print("=" * 70)
 
-
     test_cases = [
         {
             "language": "spanish",

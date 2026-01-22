@@ -1,17 +1,15 @@
-# Section 5-6: Frontend and E2E Manual Test Procedures
+# Frontend and E2E Manual Test Procedures
 
 ## Overview
 
-This document contains detailed, step-by-step manual test procedures for:
-- **Section 5:** Frontend UI Validation
-- **Section 6:** End-to-End Conversation Testing
+This document contains detailed, step-by-step manual test procedures for validating the Babblr frontend UI and end-to-end conversation flows.
 
 Each test includes:
 - Detailed setup steps
 - Specific actions to perform
-- **Explicit expected results** (not just "works")
+- Explicit expected results with clear verification points
 - Success criteria
-- Screenshots/indicators to look for
+- Visual indicators to look for
 
 ---
 
@@ -24,9 +22,9 @@ Each test includes:
 
 ---
 
-## Section 5: Frontend UI Validation
+## Frontend UI Validation
 
-### Test 5.1: Home Screen - Language Selection
+### Test 1: Home Screen - Language Selection
 
 **Objective:** Verify language selection works correctly and persists in the UI
 
@@ -51,7 +49,7 @@ Each test includes:
 
 ---
 
-### Test 5.2: Home Screen - CEFR Level Selection
+### Test 2: Home Screen - CEFR Level Selection
 
 **Objective:** Verify CEFR proficiency level selection works correctly
 
@@ -73,13 +71,13 @@ Each test includes:
 - No validation errors
 - Level persists across navigation
 
-**Test 5.3 (Variation):** Select **"B2"** (upper intermediate)
+**Test 2 (Variation):** Select **"B2"** (upper intermediate)
 - Same expected results but with B2 level
 - Description should indicate intermediate-advanced level
 
 ---
 
-### Test 5.3: Home Screen - Topic Selection
+### Test 3: Home Screen - Topic Selection
 
 **Objective:** Verify topic selection displays correct topics and descriptions
 
@@ -106,7 +104,7 @@ Each test includes:
 
 ---
 
-### Test 5.4: Home Screen - Start Conversation Flow
+### Test 4: Home Screen - Start Conversation Flow
 
 **Objective:** Verify conversation can be started from Home screen
 
@@ -136,12 +134,12 @@ Each test includes:
 
 ---
 
-### Test 5.5: Conversation Screen - Message Display
+### Test 5: Conversation Screen - Message Display
 
 **Objective:** Verify messages display correctly with proper speaker identification
 
 **Steps:**
-1. In active conversation (from Test 5.4)
+1. In active conversation (from Test 4)
 2. Locate the **Message Area** (chat/message display region)
 3. Observe the initial tutor message
 
@@ -160,7 +158,7 @@ Each test includes:
 
 ---
 
-### Test 5.6: Conversation Screen - Voice Input
+### Test 6: Conversation Screen - Voice Input
 
 **Objective:** Verify voice recording and input works (if microphone available)
 
@@ -192,7 +190,7 @@ Each test includes:
 
 ---
 
-### Test 5.7: Conversation Screen - TTS Playback
+### Test 7: Conversation Screen - TTS Playback
 
 **Objective:** Verify text-to-speech playback works
 
@@ -221,7 +219,7 @@ Each test includes:
 
 ---
 
-### Test 5.8: Conversation Screen - Text Input
+### Test 8: Conversation Screen - Text Input
 
 **Objective:** Verify user can type message and send
 
@@ -248,12 +246,12 @@ Each test includes:
 
 ---
 
-### Test 5.9: Conversation Screen - Multi-turn Exchange
+### Test 9: Conversation Screen - Multi-turn Exchange
 
 **Objective:** Verify conversation continues with multiple exchanges
 
 **Steps:**
-1. After sending a message (from Test 5.8)
+1. After sending a message (from Test 8)
 2. Wait 3-5 seconds for tutor to generate response
 3. Observe new tutor message appears
 4. Send another user message: **"¿De dónde eres?"**
@@ -275,7 +273,7 @@ Each test includes:
 
 ---
 
-### Test 5.10: Configuration Screen - Settings Persistence
+### Test 10: Configuration Screen - Settings Persistence
 
 **Objective:** Verify settings can be saved and persist across sessions
 
@@ -305,9 +303,9 @@ Each test includes:
 
 ---
 
-## Section 6: End-to-End Conversation Testing
+## End-to-End Conversation Testing
 
-### Test 6.1: Complete Spanish Conversation Flow
+### Test 11: Complete Spanish Conversation Flow
 
 **Objective:** Verify full conversation in Spanish A1 level works end-to-end
 
@@ -345,7 +343,7 @@ Each test includes:
 
 ---
 
-### Test 6.2: Cross-Language Conversation - French B1
+### Test 12: Cross-Language Conversation - French B1
 
 **Objective:** Verify conversation works with different language and level
 
@@ -383,7 +381,7 @@ Each test includes:
 
 ---
 
-### Test 6.3: Voice Input and TTS in Conversation
+### Test 13: Voice Input and TTS in Conversation
 
 **Objective:** Verify voice interaction throughout a conversation
 
@@ -424,7 +422,7 @@ Each test includes:
 
 ---
 
-### Test 6.4: Multi-language Skill Testing
+### Test 14: Multi-language Skill Testing
 
 **Objective:** Verify conversation quality across multiple languages
 
@@ -456,7 +454,7 @@ Each test includes:
 
 ---
 
-### Test 6.5: CEFR Level Adaptation Verification
+### Test 15: CEFR Level Adaptation Verification
 
 **Objective:** Verify vocabulary and grammar match CEFR levels
 
@@ -507,7 +505,7 @@ Each test includes:
 
 ---
 
-### Test 6.6: Conversation Persistence
+### Test 16: Conversation Persistence
 
 **Objective:** Verify conversation is saved and can be retrieved
 
@@ -542,7 +540,7 @@ Each test includes:
 
 ---
 
-### Test 6.7: Error Handling and Recovery
+### Test 17: Error Handling and Recovery
 
 **Objective:** Verify app handles errors gracefully
 
@@ -588,23 +586,23 @@ Each test includes:
 
 After all tests are complete, verify:
 
-- [ ] Section 5.1 - Language selection works
-- [ ] Section 5.2 - CEFR level selection works
-- [ ] Section 5.3 - Topic selection works
-- [ ] Section 5.4 - Start conversation works
-- [ ] Section 5.5 - Message display is correct
-- [ ] Section 5.6 - Voice input works
-- [ ] Section 5.7 - TTS playback works
-- [ ] Section 5.8 - Text input works
-- [ ] Section 5.9 - Multi-turn exchange works
-- [ ] Section 5.10 - Settings persist
-- [ ] Section 6.1 - Spanish A1 conversation works
-- [ ] Section 6.2 - Cross-language B1 conversation works
-- [ ] Section 6.3 - Voice I/O in conversation works
-- [ ] Section 6.4 - Multiple languages work
-- [ ] Section 6.5 - CEFR levels show different complexity
-- [ ] Section 6.6 - Conversations are saved and persistent
-- [ ] Section 6.7 - Error handling works
+- [ ] Test 1 - Language selection works
+- [ ] Test 2 - CEFR level selection works
+- [ ] Test 3 - Topic selection works
+- [ ] Test 4 - Start conversation works
+- [ ] Test 5 - Message display is correct
+- [ ] Test 6 - Voice input works
+- [ ] Test 7 - TTS playback works
+- [ ] Test 8 - Text input works
+- [ ] Test 9 - Multi-turn exchange works
+- [ ] Test 10 - Settings persist
+- [ ] Test 11 - Spanish A1 conversation works
+- [ ] Test 12 - Cross-language B1 conversation works
+- [ ] Test 13 - Voice I/O in conversation works
+- [ ] Test 14 - Multiple languages work
+- [ ] Test 15 - CEFR levels show different complexity
+- [ ] Test 16 - Conversations are saved and persistent
+- [ ] Test 17 - Error handling works
 
 ## Summary
 
@@ -615,5 +613,3 @@ After all tests are complete, verify:
   - Response time: <5 seconds
   - Voice accuracy: >85%
   - No crashes or data loss
-
-All tests should pass before marking Section 5-6 as complete.
