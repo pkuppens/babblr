@@ -7,7 +7,7 @@ at A1 level to ensure the UI is not empty.
 import asyncio
 import json
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
@@ -482,7 +482,7 @@ async def seed_vocabulary_lessons():
                         difficulty_level=lesson_data["difficulty_level"],
                         order_index=lesson_data["order_index"],
                         is_active=True,
-                        created_at=datetime.utcnow(),
+                        created_at=datetime.now(timezone.utc),
                     )
 
                     session.add(lesson)
@@ -496,7 +496,7 @@ async def seed_vocabulary_lessons():
                             content=item_data["content"],
                             item_metadata=item_data["item_metadata"],
                             order_index=item_data["order_index"],
-                            created_at=datetime.utcnow(),
+                            created_at=datetime.now(timezone.utc),
                         )
                         session.add(item)
                         items_created += 1

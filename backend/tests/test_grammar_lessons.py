@@ -1,6 +1,6 @@
 """Tests for grammar lesson endpoints following TDD approach."""
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 import pytest
 from httpx import ASGITransport, AsyncClient
@@ -309,9 +309,9 @@ async def test_get_grammar_recaps_due_for_review(async_client: AsyncClient, db: 
         language="es",
         status="completed",
         completion_percentage=100.0,
-        started_at=datetime.utcnow() - timedelta(days=5),
-        completed_at=datetime.utcnow() - timedelta(days=5),
-        last_accessed_at=datetime.utcnow() - timedelta(days=5),
+        started_at=datetime.now(timezone.utc) - timedelta(days=5),
+        completed_at=datetime.now(timezone.utc) - timedelta(days=5),
+        last_accessed_at=datetime.now(timezone.utc) - timedelta(days=5),
     )
     db.add(progress)
     await db.commit()
@@ -351,7 +351,7 @@ async def test_get_grammar_recaps_adaptive_scheduling(async_client: AsyncClient,
         language="es",
         status="completed",
         completion_percentage=100.0,
-        last_accessed_at=datetime.utcnow() - timedelta(days=7),
+        last_accessed_at=datetime.now(timezone.utc) - timedelta(days=7),
     )
     # Low mastery lesson reviewed 2 days ago (should be due)
     progress_low = LessonProgress(
@@ -359,7 +359,7 @@ async def test_get_grammar_recaps_adaptive_scheduling(async_client: AsyncClient,
         language="es",
         status="completed",
         completion_percentage=100.0,
-        last_accessed_at=datetime.utcnow() - timedelta(days=2),
+        last_accessed_at=datetime.now(timezone.utc) - timedelta(days=2),
     )
     db.add(progress_high)
     db.add(progress_low)

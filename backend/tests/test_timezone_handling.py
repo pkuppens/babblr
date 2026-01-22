@@ -4,139 +4,128 @@ Tests for timezone-aware datetime handling throughout the application.
 Ensures all timestamps are stored and serialized as timezone-aware UTC datetimes.
 """
 
-import json
 from datetime import datetime, timezone
 
 import pytest
-from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.database.db import AsyncSessionLocal
 from app.models.models import Conversation, Message
 
 
 @pytest.mark.asyncio
-async def test_conversation_created_at_is_timezone_aware():
+async def test_conversation_created_at_is_timezone_aware(db: AsyncSession):
     """Test that conversation created_at is timezone-aware UTC."""
-    async with AsyncSessionLocal() as session:
-        # Create a conversation
-        conv = Conversation(language="es", difficulty_level="A1")
-        session.add(conv)
-        await session.commit()
-        await session.refresh(conv)
+    # Create a conversation
+    conv = Conversation(language="es", difficulty_level="A1")
+    db.add(conv)
+    await db.commit()
+    await db.refresh(conv)
 
-        # Verify created_at is timezone-aware
-        assert conv.created_at is not None
-        assert conv.created_at.tzinfo is not None
-        assert conv.created_at.tzinfo == timezone.utc
+    # Verify created_at is timezone-aware
+    assert conv.created_at is not None
+    assert conv.created_at.tzinfo is not None
+    assert conv.created_at.tzinfo == timezone.utc
 
 
 @pytest.mark.asyncio
-async def test_conversation_updated_at_is_timezone_aware():
+async def test_conversation_updated_at_is_timezone_aware(db: AsyncSession):
     """Test that conversation updated_at is timezone-aware UTC."""
-    async with AsyncSessionLocal() as session:
-        # Create a conversation
-        conv = Conversation(language="es", difficulty_level="A1")
-        session.add(conv)
-        await session.commit()
-        await session.refresh(conv)
+    # Create a conversation
+    conv = Conversation(language="es", difficulty_level="A1")
+    db.add(conv)
+    await db.commit()
+    await db.refresh(conv)
 
-        # Verify updated_at is timezone-aware
-        assert conv.updated_at is not None
-        assert conv.updated_at.tzinfo is not None
-        assert conv.updated_at.tzinfo == timezone.utc
+    # Verify updated_at is timezone-aware
+    assert conv.updated_at is not None
+    assert conv.updated_at.tzinfo is not None
+    assert conv.updated_at.tzinfo == timezone.utc
 
 
 @pytest.mark.asyncio
-async def test_message_created_at_is_timezone_aware():
+async def test_message_created_at_is_timezone_aware(db: AsyncSession):
     """Test that message created_at is timezone-aware UTC."""
-    async with AsyncSessionLocal() as session:
-        # Create a conversation first
-        conv = Conversation(language="es", difficulty_level="A1")
-        session.add(conv)
-        await session.commit()
-        await session.refresh(conv)
+    # Create a conversation first
+    conv = Conversation(language="es", difficulty_level="A1")
+    db.add(conv)
+    await db.commit()
+    await db.refresh(conv)
 
-        # Create a message
-        msg = Message(
-            conversation_id=conv.id, role="user", content="Hola, ¿cómo estás?"
-        )
-        session.add(msg)
-        await session.commit()
-        await session.refresh(msg)
+    # Create a message
+    msg = Message(conversation_id=conv.id, role="user", content="Hola, ¿cómo estás?")
+    db.add(msg)
+    await db.commit()
+    await db.refresh(msg)
 
-        # Verify created_at is timezone-aware
-        assert msg.created_at is not None
-        assert msg.created_at.tzinfo is not None
-        assert msg.created_at.tzinfo == timezone.utc
+    # Verify created_at is timezone-aware
+    assert msg.created_at is not None
+    assert msg.created_at.tzinfo is not None
+    assert msg.created_at.tzinfo == timezone.utc
 
 
 @pytest.mark.asyncio
-async def test_datetime_serialization_includes_timezone():
+async def test_datetime_serialization_includes_timezone(db: AsyncSession):
     """Test that datetime serialization includes timezone information."""
-    async with AsyncSessionLocal() as session:
-        # Create a conversation
-        conv = Conversation(language="es", difficulty_level="A1")
-        session.add(conv)
-        await session.commit()
-        await session.refresh(conv)
+    # Create a conversation
+    conv = Conversation(language="es", difficulty_level="A1")
+    db.add(conv)
+    await db.commit()
+    await db.refresh(conv)
 
-        # Get the created_at as ISO format string
-        iso_string = conv.created_at.isoformat()
+    # Get the created_at as ISO format string
+    iso_string = conv.created_at.isoformat()
 
-        # Verify it includes timezone info (either 'Z' or +HH:MM)
-        assert iso_string.endswith("Z") or (
-            "+" in iso_string or iso_string.count("-") > 2
-        ), f"ISO string missing timezone: {iso_string}"
+    # Verify it includes timezone info (either 'Z' or +HH:MM)
+    assert iso_string.endswith("Z") or ("+" in iso_string or iso_string.count("-") > 2), (
+        f"ISO string missing timezone: {iso_string}"
+    )
 
 
 @pytest.mark.asyncio
-async def test_datetime_roundtrip_preserves_utc():
+async def test_datetime_roundtrip_preserves_utc(db: AsyncSession):
     """Test that datetime values survive database roundtrip as UTC."""
-    async with AsyncSessionLocal() as session:
-        # Create a conversation and record the exact time
-        before = datetime.now(timezone.utc)
-        conv = Conversation(language="es", difficulty_level="A1")
-        session.add(conv)
-        await session.commit()
-        await session.refresh(conv)
-        after = datetime.now(timezone.utc)
+    # Create a conversation and record the exact time
+    before = datetime.now(timezone.utc)
+    conv = Conversation(language="es", difficulty_level="A1")
+    db.add(conv)
+    await db.commit()
+    await db.refresh(conv)
+    after = datetime.now(timezone.utc)
 
-        # Verify created_at is within expected range and timezone-aware
-        assert before <= conv.created_at <= after
-        assert conv.created_at.tzinfo == timezone.utc
+    # Verify created_at is within expected range and timezone-aware
+    assert before <= conv.created_at <= after
+    assert conv.created_at.tzinfo == timezone.utc
 
 
 @pytest.mark.asyncio
-async def test_multiple_datetimes_are_independent():
+async def test_multiple_datetimes_are_independent(db: AsyncSession):
     """Test that multiple datetime fields on same model are independent."""
-    async with AsyncSessionLocal() as session:
-        # Create a conversation
-        conv = Conversation(language="es", difficulty_level="A1")
-        session.add(conv)
-        await session.commit()
-        await session.refresh(conv)
+    # Create a conversation
+    conv = Conversation(language="es", difficulty_level="A1")
+    db.add(conv)
+    await db.commit()
+    await db.refresh(conv)
 
-        # Both should be timezone-aware UTC
-        assert conv.created_at.tzinfo == timezone.utc
-        assert conv.updated_at.tzinfo == timezone.utc
+    # Both should be timezone-aware UTC
+    assert conv.created_at.tzinfo == timezone.utc
+    assert conv.updated_at.tzinfo == timezone.utc
 
-        # They should be equal for a newly created record
-        assert conv.created_at == conv.updated_at
+    # They should be equal for a newly created record
+    assert conv.created_at == conv.updated_at
 
 
 @pytest.mark.asyncio
-async def test_datetime_offset_is_zero():
+async def test_datetime_offset_is_zero(db: AsyncSession):
     """Test that UTC offset is exactly zero (no timezone bias)."""
-    async with AsyncSessionLocal() as session:
-        # Create a conversation
-        conv = Conversation(language="es", difficulty_level="A1")
-        session.add(conv)
-        await session.commit()
-        await session.refresh(conv)
+    # Create a conversation
+    conv = Conversation(language="es", difficulty_level="A1")
+    db.add(conv)
+    await db.commit()
+    await db.refresh(conv)
 
-        # UTC offset should be zero
-        assert conv.created_at.utcoffset().total_seconds() == 0
-        assert conv.updated_at.utcoffset().total_seconds() == 0
+    # UTC offset should be zero
+    assert conv.created_at.utcoffset().total_seconds() == 0
+    assert conv.updated_at.utcoffset().total_seconds() == 0
 
 
 def test_datetime_formats_correctly_for_json():
@@ -153,9 +142,9 @@ def test_datetime_formats_correctly_for_json():
     iso_str = dt.isoformat()
 
     # Should end with 'Z' or have timezone offset
-    assert iso_str.endswith("Z") or (
-        "+" in iso_str or iso_str.count("-") > 2
-    ), f"ISO format missing timezone indicator: {iso_str}"
+    assert iso_str.endswith("Z") or ("+" in iso_str or iso_str.count("-") > 2), (
+        f"ISO format missing timezone indicator: {iso_str}"
+    )
 
     # Parse it back - Python should understand the timezone
     parsed = datetime.fromisoformat(iso_str)
@@ -187,9 +176,7 @@ def test_frontend_datetime_normalization_logic():
     # Frontend should add 'Z' if missing and looks like valid ISO datetime
     import re
 
-    if not naive_iso.endswith("Z") and re.match(
-        r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}", naive_iso
-    ):
+    if not naive_iso.endswith("Z") and re.match(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}", naive_iso):
         normalized = naive_iso + "Z"
     else:
         normalized = naive_iso

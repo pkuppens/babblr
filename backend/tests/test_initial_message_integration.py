@@ -235,10 +235,10 @@ async def test_initial_message_validates_request_body(client: TestClient, db: As
 @pytest.mark.asyncio
 async def test_initial_message_updates_conversation_timestamp(client: TestClient, db: AsyncSession):
     """Test that generating initial message updates conversation timestamp."""
-    from datetime import datetime, timedelta
-
     # Create conversation with old timestamp
-    old_time = datetime.utcnow() - timedelta(hours=1)
+    from datetime import datetime, timedelta, timezone
+
+    old_time = datetime.now(timezone.utc) - timedelta(minutes=5)
     conversation = Conversation(
         language="spanish",
         difficulty_level="A1",

@@ -159,7 +159,7 @@ class TestModels:
         This test verifies that the Lesson model can be created and retrieved,
         confirming the database schema extension is working correctly.
         """
-        from datetime import datetime
+        from datetime import datetime, timezone
 
         from app.models.models import Lesson
 
@@ -172,7 +172,7 @@ class TestModels:
             difficulty_level="A1",
             order_index=1,
             is_active=True,
-            created_at=datetime.utcnow(),
+            created_at=datetime.now(timezone.utc),
         )
 
         # Verify the lesson was created with correct attributes

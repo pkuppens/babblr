@@ -2,7 +2,7 @@
 
 import json
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import func, select
@@ -369,8 +369,8 @@ async def submit_attempt(
         skill_scores_json=json.dumps([s.model_dump() for s in skill_scores]),
         total_questions=scores["overall"]["total"],
         correct_answers=scores["overall"]["correct"],
-        started_at=datetime.utcnow(),
-        completed_at=datetime.utcnow(),
+        started_at=datetime.now(timezone.utc),
+        completed_at=datetime.now(timezone.utc),
         answers_json=json.dumps(attempt_data.answers),
     )
     db.add(attempt)

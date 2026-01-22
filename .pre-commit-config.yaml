@@ -46,7 +46,7 @@ repos:
 
       - id: backend-tests
         name: backend-tests
-        entry: uv run --no-sync --directory backend python -m pytest tests/ -v --tb=short -m 'not integration'
+        entry: uv run --no-sync --directory backend python -m pytest tests/ -v --tb=short -m 'not integration' -n auto
         language: system
         types: [python]
         files: ^backend/

@@ -1,7 +1,7 @@
 """Vocabulary lesson endpoints for structured vocabulary practice."""
 
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -172,7 +172,7 @@ async def create_progress(
         )
         existing = existing_result.scalar_one_or_none()
 
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
 
         if existing:
             # Update existing progress
@@ -270,7 +270,7 @@ async def update_progress(
             )
 
         # Update progress
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         existing.lesson_id = progress.lesson_id  # type: ignore[assignment]
         existing.language = progress.language  # type: ignore[assignment]
         existing.status = progress.status  # type: ignore[assignment]
