@@ -191,7 +191,12 @@ function App() {
           />
         );
       case 'vocabulary':
-        return <VocabularyScreen />;
+        return (
+          <VocabularyScreen
+            selectedLanguage={selectedLanguage}
+            selectedDifficulty={selectedDifficulty}
+          />
+        );
       case 'grammar':
         return (
           <GrammarScreen

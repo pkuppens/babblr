@@ -1,0 +1,41 @@
+.vocabulary-screen {
+  padding: 1.5rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.vocabulary-screen h1 {
+  margin-bottom: 1.5rem;
+  color: var(--text-primary, #333);
+}
+
+.vocabulary-selection-info {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: var(--bg-secondary, #f9f9f9);
+  border-radius: 8px;
+  border: 1px solid var(--border-color, #ddd);
+}
+
+.selection-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.selection-label {
+  font-weight: 600;
+  color: var(--text-secondary, #666);
+  font-size: 0.9rem;
+}
+
+.selection-value {
+  padding: 0.25rem 0.75rem;
+  background: var(--primary-color, #007bff);
+  color: white;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
