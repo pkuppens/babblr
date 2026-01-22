@@ -1,0 +1,261 @@
+.vocabulary-card-container {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.vocabulary-card-header {
+  text-align: center;
+}
+
+.vocabulary-card-title {
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+  margin: 0;
+  font-weight: 500;
+}
+
+/* Flashcard Styles */
+.vocabulary-flashcard {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  cursor: pointer;
+  perspective: 1000px;
+  min-height: 400px;
+}
+
+.flashcard-front,
+.flashcard-back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  padding: 2rem;
+  text-align: center;
+  border-radius: 16px;
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  color: white;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  transition: transform 0.6s;
+}
+
+.flashcard-front {
+  transform: rotateY(0deg);
+}
+
+.flashcard-back {
+  transform: rotateY(180deg);
+  background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
+}
+
+.vocabulary-flashcard.flipped .flashcard-front {
+  transform: rotateY(180deg);
+}
+
+.vocabulary-flashcard.flipped .flashcard-back {
+  transform: rotateY(0deg);
+}
+
+.card-word {
+  font-size: 3rem;
+  font-weight: 700;
+  color: white;
+  margin: 0;
+  word-break: break-word;
+}
+
+.card-translation {
+  font-size: 2rem;
+  font-weight: 600;
+  color: white;
+  margin: 0;
+  word-break: break-word;
+}
+
+.card-example {
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0;
+  line-height: 1.6;
+  max-width: 100%;
+}
+
+.card-hint {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.7);
+  margin: 0;
+  font-style: italic;
+}
+
+.audio-button {
+  background: rgba(255, 255, 255, 0.2);
+  border: 2px solid white;
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  font-size: 1.8rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  color: white;
+}
+
+.audio-button:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(1.1);
+}
+
+.audio-button:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.audio-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.audio-button.playing {
+  animation: pulse 0.6s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 15px rgba(255, 255, 255, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
+  }
+}
+
+.audio-error {
+  background: #ffebee;
+  color: #d32f2f;
+  padding: 1rem;
+  border-radius: 8px;
+  text-align: center;
+  font-size: 0.95rem;
+}
+
+/* Navigation Controls */
+.vocabulary-card-navigation {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.nav-button {
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex: 1;
+}
+
+.nav-button:hover:not(:disabled) {
+  background: var(--primary-color-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.nav-button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.nav-button:disabled {
+  background: var(--border);
+  color: var(--text-secondary);
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.progress-indicator {
+  text-align: center;
+  font-weight: 600;
+  color: var(--text-primary);
+  min-width: 60px;
+}
+
+@media (max-width: 768px) {
+  .vocabulary-card-container {
+    gap: 1.5rem;
+  }
+
+  .flashcard-front,
+  .flashcard-back {
+    min-height: 350px;
+    padding: 1.5rem;
+    gap: 1rem;
+  }
+
+  .card-word,
+  .card-translation {
+    font-size: 2.2rem;
+  }
+
+  .card-example {
+    font-size: 0.95rem;
+  }
+
+  .audio-button {
+    width: 50px;
+    height: 50px;
+    font-size: 1.5rem;
+  }
+
+  .nav-button {
+    padding: 0.6rem 1.2rem;
+    font-size: 0.95rem;
+  }
+
+  .vocabulary-card-navigation {
+    gap: 0.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .flashcard-front,
+  .flashcard-back {
+    min-height: 300px;
+    padding: 1rem;
+  }
+
+  .card-word,
+  .card-translation {
+    font-size: 1.8rem;
+  }
+
+  .card-example {
+    font-size: 0.85rem;
+  }
+
+  .audio-button {
+    width: 45px;
+    height: 45px;
+    font-size: 1.3rem;
+  }
+
+  .nav-button {
+    padding: 0.5rem 0.8rem;
+    font-size: 0.85rem;
+  }
+}

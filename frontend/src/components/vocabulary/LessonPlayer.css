@@ -1,0 +1,205 @@
+.lesson-player {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  width: 100%;
+  padding: 2rem;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.lesson-player-header {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.exit-button {
+  background: transparent;
+  border: none;
+  color: var(--primary-color);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0.5rem 0;
+  text-align: left;
+  transition: all 0.2s ease;
+  width: fit-content;
+}
+
+.exit-button:hover {
+  color: var(--primary-color-dark);
+  transform: translateX(-4px);
+}
+
+.lesson-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.lesson-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.lesson-subtitle {
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.lesson-progress-indicator {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 8px;
+  background: var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.progress-text {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.save-error {
+  background: #ffebee;
+  color: #d32f2f;
+  padding: 1rem;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  border-left: 4px solid #d32f2f;
+}
+
+.saving-indicator {
+  text-align: center;
+  color: var(--primary-color);
+  font-size: 0.9rem;
+  font-weight: 500;
+  animation: fade-in-out 1s ease-in-out infinite;
+}
+
+@keyframes fade-in-out {
+  0%,
+  100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.lesson-complete {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+}
+
+.complete-message {
+  text-align: center;
+  padding: 2rem;
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  color: white;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.complete-message h2 {
+  font-size: 2.5rem;
+  margin: 0 0 1rem 0;
+}
+
+.complete-message p {
+  font-size: 1.1rem;
+  margin: 0 0 1.5rem 0;
+}
+
+.continue-button {
+  background: white;
+  color: var(--primary-color);
+  border: none;
+  border-radius: 8px;
+  padding: 0.75rem 2rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.continue-button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.continue-button:active {
+  transform: scale(0.98);
+}
+
+@media (max-width: 768px) {
+  .lesson-player {
+    padding: 1.5rem 1rem;
+    gap: 1.5rem;
+  }
+
+  .lesson-title {
+    font-size: 1.6rem;
+  }
+
+  .lesson-subtitle {
+    font-size: 1rem;
+  }
+
+  .complete-message h2 {
+    font-size: 2rem;
+  }
+
+  .complete-message p {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .lesson-player {
+    padding: 1rem;
+    gap: 1.5rem;
+  }
+
+  .lesson-title {
+    font-size: 1.4rem;
+  }
+
+  .lesson-subtitle {
+    font-size: 0.95rem;
+  }
+
+  .complete-message {
+    padding: 1.5rem 1rem;
+  }
+
+  .complete-message h2 {
+    font-size: 1.8rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .complete-message p {
+    font-size: 0.95rem;
+    margin-bottom: 1rem;
+  }
+}
