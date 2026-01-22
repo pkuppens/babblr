@@ -37,6 +37,70 @@ const getLanguageDisplayName = (language: Language): string => {
   return mapping[language];
 };
 
+const getVocabularyLabels = (language: Language) => {
+  const labels: Record<
+    Language,
+    {
+      title: string;
+      title_en: string;
+      languageLabel: string;
+      languageLabel_en: string;
+      levelLabel: string;
+      levelLabel_en: string;
+    }
+  > = {
+    spanish: {
+      title: 'Lecciones de vocabulario',
+      title_en: 'Vocabulary Lessons',
+      languageLabel: 'Idioma',
+      languageLabel_en: 'Language',
+      levelLabel: 'Nivel',
+      levelLabel_en: 'Level',
+    },
+    italian: {
+      title: 'Lezioni di vocabolario',
+      title_en: 'Vocabulary Lessons',
+      languageLabel: 'Lingua',
+      languageLabel_en: 'Language',
+      levelLabel: 'Livello',
+      levelLabel_en: 'Level',
+    },
+    german: {
+      title: 'Wortschatzlektionen',
+      title_en: 'Vocabulary Lessons',
+      languageLabel: 'Sprache',
+      languageLabel_en: 'Language',
+      levelLabel: 'Niveau',
+      levelLabel_en: 'Level',
+    },
+    french: {
+      title: 'Leçons de vocabulaire',
+      title_en: 'Vocabulary Lessons',
+      languageLabel: 'Langue',
+      languageLabel_en: 'Language',
+      levelLabel: 'Niveau',
+      levelLabel_en: 'Level',
+    },
+    dutch: {
+      title: 'Woordenschatlessen',
+      title_en: 'Vocabulary Lessons',
+      languageLabel: 'Taal',
+      languageLabel_en: 'Language',
+      levelLabel: 'Niveau',
+      levelLabel_en: 'Level',
+    },
+    english: {
+      title: 'Vocabulary Lessons',
+      title_en: 'Vocabulary Lessons',
+      languageLabel: 'Language',
+      languageLabel_en: 'Language',
+      levelLabel: 'Level',
+      levelLabel_en: 'Level',
+    },
+  };
+  return labels[language];
+};
+
 interface VocabularyScreenProps {
   selectedLanguage: Language;
   selectedDifficulty: DifficultyLevel;
@@ -61,6 +125,7 @@ const VocabularyScreen: React.FC<VocabularyScreenProps> = ({
   const language: Language = selectedLanguage;
   const difficulty: DifficultyLevel = selectedDifficulty;
   const languageCode = languageToCode(language);
+  const labels = getVocabularyLabels(language);
 
   const handleLessonSelect = async (lesson: any) => {
     try {
@@ -97,16 +162,51 @@ const VocabularyScreen: React.FC<VocabularyScreenProps> = ({
   return (
     <div className="screen-container">
       <div className="vocabulary-screen">
-        <h1>Vocabulary Lessons</h1>
+        <h1 className="vocabulary-title">
+          {labels.title}
+          {labels.title_en !== labels.title && (
+            <span
+              className="lesson-help"
+              data-tooltip={labels.title_en}
+              aria-label="English title"
+            >
+              ?
+            </span>
+          )}
+        </h1>
 
         {/* Display current language and level (read-only) */}
         <div className="vocabulary-selection-info">
           <div className="selection-badge">
-            <span className="selection-label">Language:</span>
+            <span className="selection-label">
+              {labels.languageLabel}
+              {labels.languageLabel_en !== labels.languageLabel && (
+                <span
+                  className="lesson-help"
+                  data-tooltip={labels.languageLabel_en}
+                  aria-label="English label"
+                >
+                  ?
+                </span>
+              )}
+              :
+            </span>
             <span className="selection-value">{getLanguageDisplayName(language)}</span>
           </div>
           <div className="selection-badge">
-            <span className="selection-label">Level:</span>
+            <span className="selection-label">
+              {labels.levelLabel}
+              {labels.levelLabel_en !== labels.levelLabel && (
+                <span
+                  className="lesson-help"
+                  data-tooltip={labels.levelLabel_en}
+                  aria-label="English label"
+                >
+                  ?
+                </span>
+              )}
+              :
+            </span>
             <span className="selection-value">{difficulty}</span>
           </div>
         </div>

@@ -45,6 +45,48 @@
   line-height: 1.4;
 }
 
+.lesson-help {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  margin-left: 0.5rem;
+  border-radius: 50%;
+  background: var(--border);
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: help;
+  position: relative;
+}
+
+.lesson-help::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 130%;
+  left: 50%;
+  transform: translate(-50%, -2px);
+  background: #1f1f1f;
+  color: #f5f5f5;
+  padding: 0.4rem 0.6rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  line-height: 1.2;
+  white-space: normal;
+  max-width: 220px;
+  text-align: left;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.05s ease;
+  z-index: 10;
+}
+
+.lesson-help:hover::after,
+.lesson-help:focus::after {
+  opacity: 1;
+}
+
 .lesson-level-badge {
   background: var(--primary-color);
   color: white;

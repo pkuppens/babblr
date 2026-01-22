@@ -56,8 +56,11 @@ class Lesson(Base):
     language = Column(String(50), nullable=False)
     lesson_type = Column(String(50), nullable=False)  # 'vocabulary', 'grammar', 'listening'
     title = Column(String(200), nullable=False)
+    title_en = Column(String(200), nullable=True)  # English title for hover help
     oneliner = Column(String(500), nullable=True)  # Brief one-sentence description for lesson cards
+    oneliner_en = Column(String(500), nullable=True)  # English oneliner for hover help
     description = Column(Text, nullable=True)  # Detailed description
+    description_en = Column(Text, nullable=True)  # English description for hover help
     tutor_prompt = Column(Text, nullable=True)  # Extensive LLM prompt for content generation
     subject = Column(
         String(100), nullable=True

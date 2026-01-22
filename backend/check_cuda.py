@@ -38,19 +38,19 @@ def main() -> None:
     try:
         import torch
 
-        print(f"   ✅ PyTorch version: {torch.__version__}")
+        print(f"   [OK] PyTorch version: {torch.__version__}")
         print(f"   PyTorch location: {torch.__file__}")
 
         # Check if CUDA is available in PyTorch
         print(f"   CUDA available in PyTorch: {torch.cuda.is_available()}")
 
         if torch.cuda.is_available():
-            print(f"   ✅ CUDA version: {torch.version.cuda}")
-            print(f"   ✅ GPU device: {torch.cuda.get_device_name(0)}")
+            print(f"   [OK] CUDA version: {torch.version.cuda}")
+            print(f"   [OK] GPU device: {torch.cuda.get_device_name(0)}")
             vram_gb = torch.cuda.get_device_properties(0).total_memory / 1024**3
-            print(f"   ✅ VRAM: {vram_gb:.1f} GB")
+            print(f"   [OK] VRAM: {vram_gb:.1f} GB")
         else:
-            print("   ❌ CUDA not available in PyTorch")
+            print("   [ERROR] CUDA not available in PyTorch")
             print()
             print("   This usually means:")
             print("   - PyTorch was installed without CUDA support (CPU-only version)")
@@ -59,15 +59,15 @@ def main() -> None:
 
             # Check if it's CPU-only PyTorch
             if "+cpu" in torch.__version__:
-                print("   🔍 Detected: CPU-only PyTorch installation")
-                print("   💡 Solution: Install CUDA-enabled PyTorch (see instructions below)")
+                print("   [INFO] Detected: CPU-only PyTorch installation")
+                print("   [INFO] Solution: Install CUDA-enabled PyTorch (see instructions below)")
             else:
-                print("   🔍 PyTorch version doesn't indicate CPU-only")
-                print("   💡 Check if NVIDIA drivers are installed")
+                print("   [INFO] PyTorch version doesn't indicate CPU-only")
+                print("   [INFO] Check if NVIDIA drivers are installed")
 
     except ImportError:
-        print("   ❌ PyTorch not installed")
-        print("   💡 Install PyTorch first: uv pip install torch")
+        print("   [ERROR] PyTorch not installed")
+        print("   [INFO] Install PyTorch first: uv pip install torch")
 
     print()
 
@@ -76,23 +76,23 @@ def main() -> None:
     try:
         result = subprocess.run(["nvidia-smi"], capture_output=True, text=True, timeout=5)
         if result.returncode == 0:
-            print("   ✅ NVIDIA drivers detected")
+            print("   [OK] NVIDIA drivers detected")
             print("   Output:")
             for line in result.stdout.split("\n")[:5]:
                 if line.strip():
                     print(f"   {line}")
         else:
-            print("   ⚠️  nvidia-smi command failed")
+            print("   [WARNING] nvidia-smi command failed")
             print("   This might mean:")
             print("   - NVIDIA drivers not installed")
             print("   - GPU not available")
     except FileNotFoundError:
-        print("   ⚠️  nvidia-smi not found")
+        print("   [WARNING] nvidia-smi not found")
         print("   This usually means NVIDIA drivers are not installed")
     except subprocess.TimeoutExpired:
-        print("   ⚠️  nvidia-smi timed out")
+        print("   [WARNING] nvidia-smi timed out")
     except Exception as e:
-        print(f"   ⚠️  Error checking drivers: {e}")
+        print(f"   [WARNING] Error checking drivers: {e}")
 
     print()
 

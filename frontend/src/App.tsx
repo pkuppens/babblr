@@ -263,7 +263,7 @@ function App() {
         </div>
       </header>
 
-      <TabBar activeTab={activeTab} onTabChange={handleTabChange} />
+      <TabBar activeTab={activeTab} onTabChange={handleTabChange} language={selectedLanguage} />
 
       <main className="app-main" role="main">
         {renderActiveScreen()}

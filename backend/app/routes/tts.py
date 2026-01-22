@@ -13,9 +13,14 @@ router = APIRouter(prefix="/tts", tags=["text-to-speech"])
 async def synthesize_speech(request: TTSRequest):
     """
     Convert text to speech and return audio file.
+
+    Args:
+        request: TTS request with text, language, and optional speed parameter
     """
     try:
-        audio_path = await tts_service.synthesize_speech(request.text, request.language)
+        audio_path = await tts_service.synthesize_speech(
+            request.text, request.language, request.speed
+        )
 
         if not audio_path or not os.path.exists(audio_path):
             raise HTTPException(

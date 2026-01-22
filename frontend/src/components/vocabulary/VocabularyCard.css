@@ -1,7 +1,7 @@
 .vocabulary-card-container {
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: 1rem;
   width: 100%;
   max-width: 600px;
   margin: 0 auto;
@@ -25,7 +25,7 @@
   aspect-ratio: 4 / 3;
   cursor: pointer;
   perspective: 1000px;
-  min-height: 400px;
+  min-height: 300px;
 }
 
 .flashcard-front,
@@ -38,8 +38,8 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 1.5rem;
-  padding: 2rem;
+  gap: 1rem;
+  padding: 1.5rem;
   text-align: center;
   border-radius: 16px;
   background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
@@ -65,12 +65,90 @@
   transform: rotateY(0deg);
 }
 
+.card-word-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
 .card-word {
   font-size: 3rem;
   font-weight: 700;
   color: white;
   margin: 0;
   word-break: break-word;
+}
+
+.example-hint {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background: rgba(255, 255, 255, 0.25);
+  border: 2px solid rgba(255, 255, 255, 0.6);
+  border-radius: 50%;
+  color: white;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: help;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.example-hint:hover {
+  background: rgba(255, 255, 255, 0.35);
+  border-color: white;
+  transform: scale(1.1);
+}
+
+.example-hint::before {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + 12px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.9);
+  color: white;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 400;
+  line-height: 1.4;
+  white-space: normal;
+  max-width: 300px;
+  min-width: 200px;
+  text-align: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.2s ease;
+  pointer-events: none;
+  z-index: 1000;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.example-hint::after {
+  content: '';
+  position: absolute;
+  bottom: calc(100% + 4px);
+  left: 50%;
+  transform: translateX(-50%);
+  border: 8px solid transparent;
+  border-top-color: rgba(0, 0, 0, 0.9);
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.2s ease;
+  pointer-events: none;
+  z-index: 1000;
+}
+
+.example-hint:hover::before,
+.example-hint:hover::after {
+  opacity: 1;
+  visibility: visible;
 }
 
 .card-translation {
@@ -172,7 +250,8 @@
 }
 
 .nav-button:hover:not(:disabled) {
-  background: var(--primary-color-dark);
+  background: var(--primary-color);
+  filter: brightness(0.85);
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
@@ -216,6 +295,19 @@
     font-size: 0.95rem;
   }
 
+  .example-hint {
+    width: 24px;
+    height: 24px;
+    font-size: 0.9rem;
+  }
+
+  .example-hint::before {
+    max-width: 250px;
+    min-width: 180px;
+    font-size: 0.85rem;
+    padding: 0.6rem 0.9rem;
+  }
+
   .audio-button {
     width: 50px;
     height: 50px;
@@ -246,6 +338,19 @@
 
   .card-example {
     font-size: 0.85rem;
+  }
+
+  .example-hint {
+    width: 22px;
+    height: 22px;
+    font-size: 0.85rem;
+  }
+
+  .example-hint::before {
+    max-width: 220px;
+    min-width: 160px;
+    font-size: 0.8rem;
+    padding: 0.5rem 0.75rem;
   }
 
   .audio-button {

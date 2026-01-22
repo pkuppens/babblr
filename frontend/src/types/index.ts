@@ -156,8 +156,11 @@ export interface VocabularyLesson {
   language: string;
   lesson_type: string;
   title: string;
+  title_en?: string;
   oneliner?: string;
+  oneliner_en?: string;
   description?: string;
+  description_en?: string;
   subject?: string;
   difficulty_level: string;
   order_index: number;

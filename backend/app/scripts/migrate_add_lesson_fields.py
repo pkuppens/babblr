@@ -30,7 +30,15 @@ from app.config import settings
 VALID_SQL_IDENTIFIER = re.compile(r"^[a-zA-Z_][a-zA-Z0-9_]*$")
 # Valid SQL types (restricted allowlist), in this case, a single migration script, it is
 # sufficient, in a more generic case, we'd check more extensively, e.g. on VARCHAR(n) via prefixes.
-VALID_SQL_TYPES = {"VARCHAR(500)", "VARCHAR(100)", "TEXT", "DATETIME", "INTEGER", "REAL"}
+VALID_SQL_TYPES = {
+    "VARCHAR(500)",
+    "VARCHAR(200)",
+    "VARCHAR(100)",
+    "TEXT",
+    "DATETIME",
+    "INTEGER",
+    "REAL",
+}
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -70,10 +78,13 @@ def migrate_add_lesson_fields():
         columns = {row[1]: row for row in cursor.fetchall()}
 
         fields_to_add = [
+            ("title_en", "VARCHAR(200)"),
             ("oneliner", "VARCHAR(500)"),
+            ("oneliner_en", "VARCHAR(500)"),
             ("tutor_prompt", "TEXT"),
             ("subject", "VARCHAR(100)"),
             ("topic_id", "VARCHAR(100)"),
+            ("description_en", "TEXT"),
             ("updated_at", "DATETIME"),
             ("last_accessed_at", "DATETIME"),
         ]

@@ -28,12 +28,36 @@ const LessonCard: React.FC<LessonCardProps> = ({ lesson, progress, onClick }) =>
     <div className="lesson-card">
       <div className="lesson-card-header">
         <div className="lesson-title-section">
-          <h3 className="lesson-title">{lesson.title}</h3>
+          <h3 className="lesson-title">
+            {lesson.title}
+            {lesson.title_en && (
+              <span
+                className="lesson-help"
+                data-tooltip={lesson.title_en}
+                aria-label="English title"
+              >
+                ?
+              </span>
+            )}
+          </h3>
           <span className="lesson-level-badge">{formatLevelLabel(lesson.difficulty_level)}</span>
         </div>
       </div>
 
-      {lesson.oneliner && <p className="lesson-description">{lesson.oneliner}</p>}
+      {lesson.oneliner && (
+        <p className="lesson-description">
+          {lesson.oneliner}
+          {lesson.oneliner_en && (
+            <span
+              className="lesson-help"
+              data-tooltip={lesson.oneliner_en}
+              aria-label="English oneliner"
+            >
+              ?
+            </span>
+          )}
+        </p>
+      )}
 
       <div className="lesson-progress-section">
         <div className="progress-bar-container">

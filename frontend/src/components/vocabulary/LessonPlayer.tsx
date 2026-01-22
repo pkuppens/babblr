@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import type { VocabularyLessonDetail, VocabularyProgressCreate } from '../../types';
 import VocabularyCard from './VocabularyCard';
 import { vocabularyService } from '../../services/vocabularyService';
+import { getUIStrings } from '../../utils/uiTranslations';
 import './LessonPlayer.css';
 
 interface LessonPlayerProps {
@@ -25,10 +26,12 @@ const LessonPlayer: React.FC<LessonPlayerProps> = ({ lesson, onLessonComplete, o
   const [currentItemIndex, setCurrentItemIndex] = useState(0);
   const [isSavingProgress, setIsSavingProgress] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
-  const [completedItems, setCompletedItems] = useState(0);
+  const [completedItemsSet, setCompletedItemsSet] = useState<Set<number>>(new Set());
+  const uiStrings = getUIStrings(lesson.language);
 
   const currentItem = lesson.items[currentItemIndex];
   const totalItems = lesson.items.length;
+  const completedItems = completedItemsSet.size;
   const completionPercentage = (completedItems / totalItems) * 100;
 
   // Auto-save progress when current item changes
@@ -62,13 +65,20 @@ const LessonPlayer: React.FC<LessonPlayerProps> = ({ lesson, onLessonComplete, o
     return () => clearTimeout(debounceTimer);
   }, [currentItemIndex, completedItems, lesson]);
 
+  // Mark item as completed when card is flipped
+  const handleCardFlipped = () => {
+    setCompletedItemsSet(prev => {
+      const newSet = new Set(prev);
+      newSet.add(currentItemIndex);
+      return newSet;
+    });
+  };
+
   const handleNext = () => {
     if (currentItemIndex < totalItems - 1) {
       setCurrentItemIndex(currentItemIndex + 1);
-      setCompletedItems(Math.max(completedItems, currentItemIndex + 2));
-    } else if (currentItemIndex === totalItems - 1) {
-      // Lesson complete
-      setCompletedItems(totalItems);
+    } else if (currentItemIndex === totalItems - 1 && completedItems >= totalItems) {
+      // Lesson complete - only when all items are completed
       onLessonComplete();
     }
   };
@@ -85,13 +95,37 @@ const LessonPlayer: React.FC<LessonPlayerProps> = ({ lesson, onLessonComplete, o
   return (
     <div className="lesson-player">
       <div className="lesson-player-header">
-        <button className="exit-button" onClick={onExit} aria-label="Exit lesson">
-          ← Exit
+        <button className="exit-button" onClick={onExit} aria-label={`${uiStrings.exit} lesson`}>
+          ← {uiStrings.exit}
         </button>
 
         <div className="lesson-info">
-          <h1 className="lesson-title">{lesson.title}</h1>
-          {lesson.oneliner && <p className="lesson-subtitle">{lesson.oneliner}</p>}
+          <h1 className="lesson-title">
+            {lesson.title}
+            {lesson.title_en && (
+              <span
+                className="lesson-help"
+                data-tooltip={lesson.title_en}
+                aria-label="English title"
+              >
+                ?
+              </span>
+            )}
+          </h1>
+          {lesson.oneliner && (
+            <p className="lesson-subtitle">
+              {lesson.oneliner}
+              {lesson.oneliner_en && (
+                <span
+                  className="lesson-help"
+                  data-tooltip={lesson.oneliner_en}
+                  aria-label="English oneliner"
+                >
+                  ?
+                </span>
+              )}
+            </p>
+          )}
         </div>
 
         <div className="lesson-progress-indicator">
@@ -102,7 +136,7 @@ const LessonPlayer: React.FC<LessonPlayerProps> = ({ lesson, onLessonComplete, o
             />
           </div>
           <span className="progress-text">
-            {completedItems} / {totalItems} completed
+            {completedItems} / {totalItems} {uiStrings.completed}
           </span>
         </div>
       </div>
@@ -117,6 +151,8 @@ const LessonPlayer: React.FC<LessonPlayerProps> = ({ lesson, onLessonComplete, o
           language={lesson.language}
           onNext={handleNext}
           onPrevious={handlePrevious}
+          onCardFlipped={handleCardFlipped}
+          isCompleted={completedItemsSet.has(currentItemIndex)}
           canGoNext={canGoNext}
           canGoPrevious={canGoPrevious}
           itemNumber={currentItemIndex + 1}
@@ -127,10 +163,10 @@ const LessonPlayer: React.FC<LessonPlayerProps> = ({ lesson, onLessonComplete, o
       {completedItems >= totalItems && (
         <div className="lesson-complete">
           <div className="complete-message">
-            <h2>🎉 Lesson Complete!</h2>
-            <p>You've completed all {totalItems} vocabulary items.</p>
+            <h2>🎉 {uiStrings.lessonComplete}</h2>
+            <p>{uiStrings.lessonCompleteMessage.replace('{count}', totalItems.toString())}</p>
             <button className="continue-button" onClick={onExit}>
-              Continue
+              {uiStrings.continue}
             </button>
           </div>
         </div>

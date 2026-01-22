@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import type { VocabularyItem } from '../../types';
 import { ttsService } from '../../services/api';
+import { getUIStrings } from '../../utils/uiTranslations';
 import './VocabularyCard.css';
 
 interface VocabularyCardProps {
@@ -8,6 +9,8 @@ interface VocabularyCardProps {
   language: string;
   onNext: () => void;
   onPrevious: () => void;
+  onCardFlipped: () => void;
+  isCompleted: boolean;
   canGoNext: boolean;
   canGoPrevious: boolean;
   itemNumber: number;
@@ -29,6 +32,8 @@ const VocabularyCard: React.FC<VocabularyCardProps> = ({
   language,
   onNext,
   onPrevious,
+  onCardFlipped,
+  isCompleted,
   canGoNext,
   canGoPrevious,
   itemNumber,
@@ -37,6 +42,47 @@ const VocabularyCard: React.FC<VocabularyCardProps> = ({
   const [isFlipped, setIsFlipped] = useState(false);
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
   const [audioError, setAudioError] = useState<string | null>(null);
+  const uiStrings = getUIStrings(language);
+
+  // Reset to covered (front) state when navigating to a different item
+  useEffect(() => {
+    setIsFlipped(false);
+  }, [item.id]);
+
+  const handleFlipCard = () => {
+    const newFlippedState = !isFlipped;
+    setIsFlipped(newFlippedState);
+    
+    // Mark as completed when flipping to show translation (front to back)
+    if (newFlippedState && !isCompleted) {
+      onCardFlipped();
+    }
+  };
+
+  const handleNext = () => {
+    // Reset flip state immediately to prevent flash of next card's solution
+    setIsFlipped(false);
+    
+    // Mark card as completed when clicking Next
+    if (!isCompleted) {
+      onCardFlipped();
+    }
+    
+    // Small delay to ensure flip animation starts before item changes
+    setTimeout(() => {
+      onNext();
+    }, 50);
+  };
+
+  const handlePrevious = () => {
+    // Reset flip state immediately to prevent flash of previous card's solution
+    setIsFlipped(false);
+    
+    // Small delay to ensure flip animation starts before item changes
+    setTimeout(() => {
+      onPrevious();
+    }, 50);
+  };
 
   const handlePlayAudio = async () => {
     if (isPlayingAudio) return;
@@ -45,7 +91,8 @@ const VocabularyCard: React.FC<VocabularyCardProps> = ({
     setAudioError(null);
 
     try {
-      const audioBlob = await ttsService.synthesize(item.word, language);
+      // Use 90% speed for vocabulary exercises (short words/sentences)
+      const audioBlob = await ttsService.synthesize(item.word, language, 0.9);
       const audioUrl = URL.createObjectURL(audioBlob);
       const audio = new Audio(audioUrl);
 
@@ -71,17 +118,28 @@ const VocabularyCard: React.FC<VocabularyCardProps> = ({
     <div className="vocabulary-card-container">
       <div className="vocabulary-card-header">
         <h2 className="vocabulary-card-title">
-          {itemNumber} of {totalItems}
+          {itemNumber} {uiStrings.of} {totalItems}
         </h2>
       </div>
 
       {/* Flashcard */}
       <div
         className={`vocabulary-flashcard ${isFlipped ? 'flipped' : ''}`}
-        onClick={() => setIsFlipped(!isFlipped)}
+        onClick={handleFlipCard}
       >
         <div className="flashcard-front">
-          <div className="card-word">{item.word}</div>
+          <div className="card-word-container">
+            <div className="card-word">{item.word}</div>
+            {item.example && (
+              <div
+                className="example-hint"
+                data-tooltip={`${uiStrings.example}: ${item.example}`}
+                onClick={e => e.stopPropagation()}
+              >
+                ?
+              </div>
+            )}
+          </div>
           <button
             className={`audio-button ${isPlayingAudio ? 'playing' : ''}`}
             onClick={e => {
@@ -93,15 +151,15 @@ const VocabularyCard: React.FC<VocabularyCardProps> = ({
           >
             🔊
           </button>
-          <p className="card-hint">Click to reveal translation</p>
+          <p className="card-hint">{uiStrings.clickToReveal}</p>
         </div>
 
         <div className="flashcard-back">
           <div className="card-translation">{item.translation}</div>
           <p className="card-example">
-            <strong>Example:</strong> {item.example}
+            <strong>{uiStrings.example}:</strong> {item.example}
           </p>
-          <p className="card-hint">Click to show word</p>
+          <p className="card-hint">{uiStrings.clickToShowWord}</p>
         </div>
       </div>
 
@@ -111,11 +169,11 @@ const VocabularyCard: React.FC<VocabularyCardProps> = ({
       <div className="vocabulary-card-navigation">
         <button
           className="nav-button prev-button"
-          onClick={onPrevious}
+          onClick={handlePrevious}
           disabled={!canGoPrevious}
-          aria-label="Previous word"
+          aria-label={`${uiStrings.previous} word`}
         >
-          ← Previous
+          ← {uiStrings.previous}
         </button>
 
         <div className="progress-indicator">
@@ -124,11 +182,11 @@ const VocabularyCard: React.FC<VocabularyCardProps> = ({
 
         <button
           className="nav-button next-button"
-          onClick={onNext}
+          onClick={handleNext}
           disabled={!canGoNext}
-          aria-label="Next word"
+          aria-label={`${uiStrings.next} word`}
         >
-          Next →
+          {uiStrings.next} →
         </button>
       </div>
     </div>

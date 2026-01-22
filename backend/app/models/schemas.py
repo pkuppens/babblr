@@ -108,6 +108,7 @@ class TTSRequest(BaseModel):
 
     text: str
     language: str
+    speed: float = 1.0  # Playback speed multiplier (0.5 to 2.0, default 1.0)
 
 
 # Lesson schemas
@@ -117,10 +118,13 @@ class LessonCreate(BaseModel):
     language: str = Field(..., description="Target language code")
     lesson_type: str = Field(..., description="Type: 'vocabulary', 'grammar', or 'listening'")
     title: str = Field(..., description="Lesson title")
+    title_en: Optional[str] = Field(None, description="English title for hover help")
     oneliner: Optional[str] = Field(
         None, description="Brief one-sentence description for lesson cards"
     )
+    oneliner_en: Optional[str] = Field(None, description="English oneliner for hover help")
     description: Optional[str] = None
+    description_en: Optional[str] = Field(None, description="English description for hover help")
     tutor_prompt: Optional[str] = Field(
         None, description="Extensive LLM prompt for content generation"
     )
@@ -140,8 +144,11 @@ class LessonResponse(BaseModel):
     language: str
     lesson_type: str
     title: str
+    title_en: Optional[str]
     oneliner: Optional[str]
+    oneliner_en: Optional[str]
     description: Optional[str]
+    description_en: Optional[str]
     tutor_prompt: Optional[str]
     subject: Optional[str]
     topic_id: Optional[str]
@@ -160,7 +167,9 @@ class LessonSummary(BaseModel):
 
     id: int
     title: str
+    title_en: Optional[str] = None
     oneliner: Optional[str]
+    oneliner_en: Optional[str] = None
     lesson_type: str
     subject: Optional[str]
     difficulty_level: str
