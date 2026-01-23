@@ -16,6 +16,7 @@ from typing import Any
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 
 from app.config import settings
+from app.services.modular_prompt_builder import get_modular_prompt_builder
 from app.services.prompt_builder import get_prompt_builder
 
 logger = logging.getLogger(__name__)
@@ -23,6 +24,8 @@ logger = logging.getLogger(__name__)
 
 # Prompt templates for the language tutor
 TUTOR_SYSTEM_PROMPT = """You are a friendly and encouraging {language} language tutor. You're having a natural conversation with a {difficulty_level} student.
+
+{roleplay_section}
 
 Guidelines:
 - Respond ONLY in {language} (except for brief clarifications if absolutely needed)
@@ -219,11 +222,12 @@ class ConversationService:
     while supporting multiple LLM providers.
     """
 
-    def __init__(self, provider_name: str | None = None):
+    def __init__(self, provider_name: str | None = None, use_modular_prompts: bool = True):
         """Initialize the conversation service.
 
         Args:
             provider_name: LLM provider to use. Defaults to settings.llm_provider (Ollama).
+            use_modular_prompts: Use new modular prompt builder (True) or legacy (False).
         """
         from app.services.llm.factory import ProviderFactory
 
@@ -231,8 +235,13 @@ class ConversationService:
         self._provider = ProviderFactory.get_provider(self.provider_name)
         self._memory = ConversationMemory(max_token_limit=settings.conversation_max_token_limit)
         self._prompt_builder = get_prompt_builder()
+        self._modular_prompt_builder = get_modular_prompt_builder()
+        self._use_modular_prompts = use_modular_prompts
 
-        logger.info(f"ConversationService initialized with provider: {self.provider_name}")
+        prompt_type = "modular" if use_modular_prompts else "legacy"
+        logger.info(
+            f"ConversationService initialized with provider: {self.provider_name}, prompts: {prompt_type}"
+        )
 
     def _build_system_prompt(
         self,
@@ -241,8 +250,16 @@ class ConversationService:
         topic: str = "general conversation",
         recent_vocab: list[str] | None = None,
         common_mistakes: list[str] | None = None,
+        roleplay_context: str | None = None,
     ) -> str:
         """Build system prompt for the tutor using PromptBuilder.
+
+        Uses the modular prompt builder (when enabled) which composes:
+        1. Base tutor identity
+        2. Language constraints (level-specific, reusable across topics)
+        3. Roleplay context (topic-specific)
+        4. Tutor observer (level-specific correction strategy, reusable)
+        5. Personalization (user-specific)
 
         Args:
             language: Target language.
@@ -250,11 +267,25 @@ class ConversationService:
             topic: Current conversation topic.
             recent_vocab: Recently learned vocabulary.
             common_mistakes: Common mistakes to address.
+            roleplay_context: Optional roleplay context (language-specific persona).
 
         Returns:
             Formatted system prompt.
         """
-        return self._prompt_builder.build_prompt(
+        if self._use_modular_prompts:
+            # Use new modular prompt builder with separated components
+            return self._modular_prompt_builder.build_prompt(
+                language=language,
+                level=difficulty_level,
+                topic=topic,
+                roleplay_context=roleplay_context,
+                native_language=None,  # Will use settings.user_native_language by default
+                recent_vocab=recent_vocab,
+                common_mistakes=common_mistakes,
+            )
+
+        # Legacy prompt builder path
+        base_prompt = self._prompt_builder.build_prompt(
             language=language,
             level=difficulty_level,
             topic=topic,
@@ -263,12 +294,26 @@ class ConversationService:
             common_mistakes=common_mistakes,
         )
 
+        # Inject roleplay context if provided
+        if roleplay_context:
+            # Insert roleplay context after the initial tutor description
+            roleplay_section = f"\n\nRoleplay Context: {roleplay_context}\n"
+            # Find a good insertion point (after first paragraph typically)
+            lines = base_prompt.split("\n")
+            # Insert after first non-empty line or at beginning
+            insert_pos = 1 if len(lines) > 1 else 0
+            lines.insert(insert_pos, roleplay_section)
+            base_prompt = "\n".join(lines)
+
+        return base_prompt
+
     async def generate_initial_message(
         self,
         language: str,
         difficulty_level: str,
         topic: str,
         topic_description: str | None = None,
+        roleplay_context: str | None = None,
     ) -> tuple[str, str]:
         """Generate an initial tutor message to start a conversation based on topic.
 
@@ -277,20 +322,23 @@ class ConversationService:
             difficulty_level: Student's proficiency level.
             topic: Conversation topic name (e.g., "restaurant", "classroom").
             topic_description: Optional description of the topic context.
+            roleplay_context: Optional roleplay context from topics.json (language-specific).
 
         Returns:
             Tuple of (message_in_target_language, translation_in_native_language).
         """
-        # Build system prompt with topic context
+        # Build system prompt with topic context and roleplay
         system_prompt = self._build_system_prompt(
             language=language,
             difficulty_level=difficulty_level,
             topic=topic_description or topic,
+            roleplay_context=roleplay_context,
         )
 
         # Create a prompt for generating the initial message
-        # Build roleplay context based on topic
-        roleplay_context = self._get_roleplay_context(topic, topic_description)
+        # Use provided roleplay context or fallback to default
+        if not roleplay_context:
+            roleplay_context = self._get_roleplay_context(topic, topic_description)
 
         initial_prompt = f"""You are starting a conversation with a {difficulty_level} level student.
 
@@ -410,18 +458,36 @@ Provide ONLY the translation, no explanations, no brackets, just the translation
             return text, []
 
         # Get correction strategy for this level
-        correction_strategy = self._prompt_builder.get_correction_strategy(difficulty_level)
-
-        # Build correction guidance based on strategy
-        ignore_list = []
-        if correction_strategy.get("ignore_punctuation"):
-            ignore_list.append("punctuation errors")
-        if correction_strategy.get("ignore_capitalization"):
-            ignore_list.append("capitalization mistakes")
-        if correction_strategy.get("ignore_diacritics"):
-            ignore_list.append("missing or incorrect diacritical marks (accents)")
-
-        focus_list = correction_strategy.get("focus_on", [])
+        if self._use_modular_prompts:
+            correction_strategy = self._modular_prompt_builder.get_correction_strategy(
+                difficulty_level
+            )
+            # Modular format uses 'ignore' array and 'focus' array
+            ignore_list = []
+            raw_ignore = correction_strategy.get("ignore", [])
+            for item in raw_ignore:
+                if "punctuation" in item:
+                    ignore_list.append("punctuation errors")
+                elif "capitalization" in item:
+                    ignore_list.append("capitalization mistakes")
+                elif "diacritics" in item:
+                    ignore_list.append("missing or incorrect diacritical marks (accents)")
+                elif "word_order" in item.lower() or "minor" in item.lower():
+                    ignore_list.append("minor word order issues")
+                elif "gender" in item.lower():
+                    ignore_list.append("minor gender agreement errors")
+            focus_list = correction_strategy.get("focus", [])
+        else:
+            correction_strategy = self._prompt_builder.get_correction_strategy(difficulty_level)
+            # Legacy format uses individual boolean flags
+            ignore_list = []
+            if correction_strategy.get("ignore_punctuation"):
+                ignore_list.append("punctuation errors")
+            if correction_strategy.get("ignore_capitalization"):
+                ignore_list.append("capitalization mistakes")
+            if correction_strategy.get("ignore_diacritics"):
+                ignore_list.append("missing or incorrect diacritical marks (accents)")
+            focus_list = correction_strategy.get("focus_on", [])
 
         guidance_parts = []
         if ignore_list:
@@ -469,6 +535,7 @@ Provide ONLY the translation, no explanations, no brackets, just the translation
         difficulty_level: str,
         conversation_history: list[dict[str, str]] | None = None,
         topic: str = "general conversation",
+        roleplay_context: str | None = None,
     ) -> str:
         """Generate a conversational response from the AI tutor.
 
@@ -478,6 +545,7 @@ Provide ONLY the translation, no explanations, no brackets, just the translation
             difficulty_level: User's proficiency level.
             conversation_history: Previous messages in the conversation.
             topic: Current conversation topic.
+            roleplay_context: Optional roleplay context (language-specific persona).
 
         Returns:
             Assistant response message.
@@ -491,8 +559,10 @@ Provide ONLY the translation, no explanations, no brackets, just the translation
         if conversation_history:
             self._memory.load_from_history(conversation_history)
 
-        # Build system prompt with topic context
-        system_prompt = self._build_system_prompt(language, difficulty_level, topic=topic)
+        # Build system prompt with topic context and roleplay
+        system_prompt = self._build_system_prompt(
+            language, difficulty_level, topic=topic, roleplay_context=roleplay_context
+        )
 
         # Build messages for the provider
         messages = self._memory.get_messages()

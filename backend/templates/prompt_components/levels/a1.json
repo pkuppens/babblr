@@ -1,0 +1,86 @@
+{
+  "level": "A1",
+  "level_name": "Beginner",
+  "description": "Complete beginner - learning basic words and simple phrases",
+  "playback_speed": 0.75,
+
+  "language_constraints": {
+    "vocabulary": {
+      "target_size": 500,
+      "frequency_band": "top_500",
+      "coverage_target": 0.95,
+      "stretch_target": 0.05,
+      "example_words": {
+        "spanish": ["hola", "gracias", "agua", "comida", "casa", "familia", "bueno", "grande"],
+        "italian": ["ciao", "grazie", "acqua", "cibo", "casa", "famiglia", "buono", "grande"],
+        "german": ["hallo", "danke", "Wasser", "Essen", "Haus", "Familie", "gut", "groß"],
+        "french": ["bonjour", "merci", "eau", "nourriture", "maison", "famille", "bon", "grand"],
+        "dutch": ["hallo", "dank", "water", "eten", "huis", "familie", "goed", "groot"]
+      },
+      "instruction": "Use only the most common 500 words. Keep vocabulary concrete and everyday."
+    },
+    "grammar": {
+      "allowed_tenses": ["present_simple"],
+      "allowed_structures": [
+        "subject_verb",
+        "subject_verb_object",
+        "yes_no_questions",
+        "simple_wh_questions"
+      ],
+      "forbidden": [
+        "subjunctive",
+        "conditional",
+        "past_perfect",
+        "future_perfect",
+        "passive_voice"
+      ],
+      "instruction": "Use present tense exclusively. Simple subject-verb-object structure only."
+    },
+    "sentence_complexity": {
+      "max_words": 10,
+      "max_clauses": 1,
+      "allowed_connectors": ["and", "or", "but"],
+      "instruction": "Keep sentences VERY short (5-10 words maximum). One idea per sentence."
+    },
+    "template": "**Language Boundaries for {level} Level:**\n\n*Vocabulary:*\n- Use only the most common 500 {language} words\n- 95% should be immediately recognizable to a beginner\n- Introduce only 1-2 new words per exchange, with clear context clues\n- Stick to concrete nouns: food, family, colors, numbers, everyday objects\n\n*Grammar:*\n- Present tense ONLY\n- Simple structures: Subject + Verb + Object\n- Yes/No questions: \"Do you like...?\" \"Is this...?\"\n- Simple what/where/how much questions\n\n*Sentences:*\n- Maximum 10 words per sentence\n- One clause only - no complex sentences\n- Connectors limited to: and, or, but"
+  },
+
+  "tutor_observer": {
+    "correction_approach": "very_gentle_with_native_explanations",
+    "max_corrections_per_turn": 1,
+    "ignore": [
+      "punctuation",
+      "capitalization",
+      "diacritics",
+      "minor_word_order"
+    ],
+    "focus": [
+      "basic_verb_conjugation",
+      "core_vocabulary_usage",
+      "gender_agreement_major"
+    ],
+    "delivery": {
+      "pattern": "acknowledge_praise -> show_correct -> use_naturally",
+      "warmth_level": "very_high",
+      "example": {
+        "spanish": "Good try! We say 'Yo tengo hambre' (I have hunger). Yo tengo hambre también! ¿Tienes comida?",
+        "italian": "Bravo! Diciamo 'Io ho fame'. Anch'io ho fame! Hai qualcosa da mangiare?",
+        "german": "Gut gemacht! Wir sagen 'Ich habe Hunger'. Ich habe auch Hunger! Hast du etwas zu essen?",
+        "french": "Bien essayé! On dit 'J'ai faim'. J'ai faim aussi! Tu as quelque chose à manger?",
+        "dutch": "Goed geprobeerd! We zeggen 'Ik heb honger'. Ik heb ook honger! Heb je iets te eten?"
+      }
+    },
+    "encouragement": {
+      "frequency": "every_turn",
+      "phrases": {
+        "spanish": ["¡Muy bien!", "¡Excelente!", "¡Buen intento!", "¡Perfecto!"],
+        "italian": ["Molto bene!", "Eccellente!", "Buon tentativo!", "Perfetto!"],
+        "german": ["Sehr gut!", "Ausgezeichnet!", "Guter Versuch!", "Perfekt!"],
+        "french": ["Très bien!", "Excellent!", "Bonne tentative!", "Parfait!"],
+        "dutch": ["Heel goed!", "Uitstekend!", "Goede poging!", "Perfect!"]
+      }
+    },
+    "native_explanations": "allowed_when_student_confused",
+    "template": "**Error Correction Strategy ({level} Level):**\n\n*What to IGNORE:*\n- Punctuation mistakes\n- Capitalization errors  \n- Missing or incorrect accent marks/diacritics\n- Minor word order issues\n\n*What to FOCUS ON:*\n- Basic verb conjugation (am/is/are, have/has)\n- Core vocabulary usage\n- Major gender agreement errors\n\n*How to Correct (Maximum 1 correction per response):*\n1. Warmly acknowledge their effort: \"Good try!\" \"Well done!\"\n2. Show the correct form simply and clearly\n3. Use it naturally in your next sentence\n4. Never overwhelm - one correction at a time\n\n*Encouragement:*\n- Praise every attempt, even imperfect ones\n- Celebrate small wins enthusiastically\n- Build confidence above all"
+  }
+}

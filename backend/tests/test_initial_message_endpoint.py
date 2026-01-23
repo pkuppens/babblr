@@ -11,9 +11,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.models import Conversation, Message
 
 
+@pytest.mark.integration
 @pytest.mark.asyncio
 async def test_initial_message_endpoint_with_payload(client: TestClient, db: AsyncSession):
-    """Test the initial message endpoint with a real payload."""
+    """Test the initial message endpoint with a real payload.
+
+    This test makes real HTTP requests that require Ollama to be running,
+    so it must be marked as an integration test.
+    """
     # Create a conversation
     conversation = Conversation(
         language="spanish",

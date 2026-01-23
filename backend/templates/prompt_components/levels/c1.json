@@ -1,0 +1,87 @@
+{
+  "level": "C1",
+  "level_name": "Advanced",
+  "description": "Advanced level - can express ideas fluently and spontaneously",
+  "playback_speed": 0.95,
+
+  "language_constraints": {
+    "vocabulary": {
+      "target_size": 8000,
+      "frequency_band": "top_8000",
+      "coverage_target": 0.75,
+      "stretch_target": 0.25,
+      "specialized_vocabulary": true,
+      "literary_vocabulary": true,
+      "example_words": {
+        "spanish": ["escueto", "soslayar", "desglosar", "entrañar", "vislumbrar", "elucidar"],
+        "italian": ["succinto", "eludere", "scomporre", "comportare", "intravedere", "chiarire"],
+        "german": ["knapp", "umgehen", "aufschlüsseln", "beinhalten", "erahnen", "erläutern"],
+        "french": ["succinct", "éluder", "décomposer", "impliquer", "entrevoir", "élucider"],
+        "dutch": ["beknopt", "omzeilen", "uitsplitsen", "impliceren", "ontwaren", "verduidelijken"]
+      },
+      "instruction": "Full advanced vocabulary including literary, academic, and specialized terms."
+    },
+    "grammar": {
+      "allowed_tenses": ["all_tenses", "literary_tenses"],
+      "allowed_structures": [
+        "all_structures",
+        "advanced_subjunctive",
+        "complex_conditionals",
+        "inverted_structures",
+        "emphatic_forms"
+      ],
+      "encourage": [
+        "stylistic_variation",
+        "rhetorical_devices",
+        "discourse_markers"
+      ],
+      "instruction": "Full grammatical mastery expected. Encourage stylistic sophistication."
+    },
+    "sentence_complexity": {
+      "max_words": 30,
+      "max_clauses": 5,
+      "allowed_connectors": ["all_including_literary"],
+      "instruction": "No restrictions. Focus on precision, elegance, and rhetorical effectiveness."
+    },
+    "template": "**Language Boundaries for {level} Level:**\n\n*Vocabulary:*\n- Full advanced vocabulary (~8000+ words)\n- No restrictions - use nuanced, precise language\n- Literary and academic vocabulary welcome\n- Specialized terminology as contextually appropriate\n\n*Grammar:*\n- Complete grammatical mastery expected\n- Literary tenses and structures (if relevant to language)\n- Sophisticated rhetorical patterns\n- Inverted structures and emphatic forms\n\n*Discourse:*\n- Complex argumentation and reasoning\n- Subtle implication and inference\n- Register flexibility (formal/informal/literary)\n- Focus on precision, elegance, and impact"
+  },
+
+  "tutor_observer": {
+    "correction_approach": "refinement_suggestions",
+    "max_corrections_per_turn": 2,
+    "ignore": [
+      "creative_variations",
+      "stylistic_choices"
+    ],
+    "focus": [
+      "semantic_precision",
+      "stylistic_consistency",
+      "register_mastery",
+      "cultural_appropriateness",
+      "rhetorical_effectiveness"
+    ],
+    "delivery": {
+      "pattern": "intellectual_engagement -> refinement_offer -> exploration",
+      "warmth_level": "intellectual_peer",
+      "example": {
+        "spanish": "Fascinante análisis. Una matización: en contextos académicos, 'cabe destacar' resulta más preciso que 'hay que decir'. ¿Cómo ves la evolución de esta tendencia?",
+        "italian": "Analisi affascinante. Una precisazione: in contesti accademici, 'vale la pena notare' risulta più preciso di 'bisogna dire'. Come vedi l'evoluzione di questa tendenza?",
+        "german": "Faszinierende Analyse. Eine Präzisierung: In akademischen Kontexten ist 'es ist anzumerken' präziser als 'man muss sagen'. Wie siehst du die Entwicklung dieser Tendenz?",
+        "french": "Analyse fascinante. Une précision: dans les contextes académiques, 'il convient de noter' est plus précis que 'il faut dire'. Comment vois-tu l'évolution de cette tendance?",
+        "dutch": "Fascinerende analyse. Een nuance: in academische contexten is 'het is vermeldenswaard' preciezer dan 'je moet zeggen'. Hoe zie je de ontwikkeling van deze trend?"
+      }
+    },
+    "encouragement": {
+      "frequency": "exceptional_usage",
+      "phrases": {
+        "spanish": ["Uso impecable", "Expresión brillante", "Matiz exquisito"],
+        "italian": ["Uso impeccabile", "Espressione brillante", "Sfumatura squisita"],
+        "german": ["Tadelloser Gebrauch", "Brillanter Ausdruck", "Exquisite Nuance"],
+        "french": ["Usage impeccable", "Expression brillante", "Nuance exquise"],
+        "dutch": ["Onberispelijk gebruik", "Briljante uitdrukking", "Verfijnde nuance"]
+      }
+    },
+    "native_explanations": "never_unless_requested",
+    "template": "**Error Correction Strategy ({level} Level):**\n\n*What to IGNORE:*\n- Creative variations and stylistic choices\n- Intentional rule-breaking for effect\n\n*What to FOCUS ON:*\n- Semantic precision and exactness\n- Stylistic consistency across discourse\n- Register mastery and appropriateness\n- Cultural and contextual fit\n- Rhetorical effectiveness\n\n*How to Correct (Maximum 2 per response):*\n1. Engage intellectually with their ideas\n2. Offer refinements as suggestions, not corrections\n3. Explore the nuances together\n4. Treat as intellectual exchange between peers\n\n*Approach:*\n- Focus on polish, not fundamentals\n- Discuss language aesthetics and impact\n- Encourage experimentation and voice development"
+  }
+}

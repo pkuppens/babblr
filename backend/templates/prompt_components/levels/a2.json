@@ -1,0 +1,86 @@
+{
+  "level": "A2",
+  "level_name": "Elementary",
+  "description": "Elementary level - can handle simple everyday interactions",
+  "playback_speed": 0.80,
+
+  "language_constraints": {
+    "vocabulary": {
+      "target_size": 1000,
+      "frequency_band": "top_1000",
+      "coverage_target": 0.90,
+      "stretch_target": 0.10,
+      "example_words": {
+        "spanish": ["trabajar", "estudiar", "comprar", "vender", "problema", "solución", "diferente", "mismo"],
+        "italian": ["lavorare", "studiare", "comprare", "vendere", "problema", "soluzione", "diverso", "stesso"],
+        "german": ["arbeiten", "studieren", "kaufen", "verkaufen", "Problem", "Lösung", "anders", "gleich"],
+        "french": ["travailler", "étudier", "acheter", "vendre", "problème", "solution", "différent", "même"],
+        "dutch": ["werken", "studeren", "kopen", "verkopen", "probleem", "oplossing", "anders", "zelfde"]
+      },
+      "instruction": "Use common everyday vocabulary (~1000 words). Gradually introduce new words."
+    },
+    "grammar": {
+      "allowed_tenses": ["present_simple", "past_simple", "near_future"],
+      "allowed_structures": [
+        "subject_verb_object",
+        "compound_sentences_basic",
+        "wh_questions",
+        "comparatives_basic"
+      ],
+      "forbidden": [
+        "subjunctive",
+        "conditional_complex",
+        "past_perfect",
+        "passive_voice_complex"
+      ],
+      "instruction": "Present tense mainly. Introduce simple past for common verbs and near future."
+    },
+    "sentence_complexity": {
+      "max_words": 15,
+      "max_clauses": 2,
+      "allowed_connectors": ["and", "or", "but", "because", "when"],
+      "instruction": "Slightly longer sentences okay (10-15 words). Can use 'because' and 'when'."
+    },
+    "template": "**Language Boundaries for {level} Level:**\n\n*Vocabulary:*\n- Use the most common 1000 {language} words\n- 90% should be recognizable from A1+A2 lessons\n- Introduce 2-3 new words per exchange with context\n- Include action verbs and simple descriptions\n\n*Grammar:*\n- Present tense (primary)\n- Simple past for common verbs (went, ate, saw)\n- Near future (going to...)\n- Simple comparisons (bigger, smaller, more than)\n\n*Sentences:*\n- Up to 15 words per sentence\n- Can connect two simple ideas\n- Use: because, when, and, but, or"
+  },
+
+  "tutor_observer": {
+    "correction_approach": "gentle_with_modeling",
+    "max_corrections_per_turn": 1,
+    "ignore": [
+      "punctuation",
+      "capitalization",
+      "diacritics",
+      "minor_gender_errors"
+    ],
+    "focus": [
+      "verb_tense_usage",
+      "basic_prepositions",
+      "question_formation",
+      "vocabulary_accuracy"
+    ],
+    "delivery": {
+      "pattern": "acknowledge -> model_correct -> continue_conversation",
+      "warmth_level": "high",
+      "example": {
+        "spanish": "¡Entiendo! Normalmente decimos 'Fui al mercado ayer'. ¿Qué compraste en el mercado?",
+        "italian": "Capisco! Di solito diciamo 'Sono andato al mercato ieri'. Cosa hai comprato al mercato?",
+        "german": "Ich verstehe! Normalerweise sagen wir 'Ich bin gestern zum Markt gegangen'. Was hast du auf dem Markt gekauft?",
+        "french": "Je comprends! Normalement on dit 'Je suis allé au marché hier'. Qu'est-ce que tu as acheté au marché?",
+        "dutch": "Ik begrijp het! Normaal zeggen we 'Ik ben gisteren naar de markt gegaan'. Wat heb je op de markt gekocht?"
+      }
+    },
+    "encouragement": {
+      "frequency": "most_turns",
+      "phrases": {
+        "spanish": ["¡Muy bien!", "¡Vas progresando!", "¡Excelente esfuerzo!"],
+        "italian": ["Molto bene!", "Stai migliorando!", "Ottimo sforzo!"],
+        "german": ["Sehr gut!", "Du machst Fortschritte!", "Tolle Bemühung!"],
+        "french": ["Très bien!", "Tu progresses!", "Excellent effort!"],
+        "dutch": ["Heel goed!", "Je maakt vooruitgang!", "Uitstekende inspanning!"]
+      }
+    },
+    "native_explanations": "for_confusion_or_new_concepts",
+    "template": "**Error Correction Strategy ({level} Level):**\n\n*What to IGNORE:*\n- Punctuation and capitalization\n- Accent marks/diacritics\n- Minor gender agreement mistakes\n\n*What to FOCUS ON:*\n- Verb tense appropriateness (present vs past)\n- Basic preposition usage (in, on, at, to)\n- Question formation\n- Core vocabulary accuracy\n\n*How to Correct (Maximum 1 correction per response):*\n1. Acknowledge their communication attempt\n2. Model the correct form naturally\n3. Continue the conversation with a follow-up question\n\n*Encouragement:*\n- Praise progress and effort\n- Note improvements from earlier exchanges\n- Keep motivation high"
+  }
+}

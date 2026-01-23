@@ -1,0 +1,85 @@
+{
+  "level": "B1",
+  "level_name": "Intermediate",
+  "description": "Intermediate level - can handle most everyday situations independently",
+  "playback_speed": 0.85,
+
+  "language_constraints": {
+    "vocabulary": {
+      "target_size": 2500,
+      "frequency_band": "top_2500",
+      "coverage_target": 0.85,
+      "stretch_target": 0.15,
+      "introduce_idioms": true,
+      "example_words": {
+        "spanish": ["sin embargo", "aunque", "desarrollo", "lograr", "además", "respecto a"],
+        "italian": ["tuttavia", "sebbene", "sviluppo", "riuscire", "inoltre", "riguardo a"],
+        "german": ["jedoch", "obwohl", "Entwicklung", "erreichen", "außerdem", "bezüglich"],
+        "french": ["cependant", "bien que", "développement", "réussir", "de plus", "concernant"],
+        "dutch": ["echter", "hoewel", "ontwikkeling", "bereiken", "bovendien", "betreffende"]
+      },
+      "instruction": "Use intermediate vocabulary freely (~2500 words). Introduce idiomatic expressions."
+    },
+    "grammar": {
+      "allowed_tenses": ["present", "past_simple", "past_continuous", "future", "conditional_basic"],
+      "allowed_structures": [
+        "compound_sentences",
+        "relative_clauses",
+        "basic_subjunctive",
+        "conditional_sentences_type1"
+      ],
+      "encourage": [
+        "subjunctive_for_wishes",
+        "conditional_hypotheticals"
+      ],
+      "instruction": "Use multiple tenses naturally. Introduce basic subjunctive and conditional."
+    },
+    "sentence_complexity": {
+      "max_words": 20,
+      "max_clauses": 3,
+      "allowed_connectors": ["although", "however", "therefore", "while", "unless", "so that"],
+      "instruction": "Medium-length sentences (15-20 words). Complex connectors allowed."
+    },
+    "template": "**Language Boundaries for {level} Level:**\n\n*Vocabulary:*\n- Use intermediate vocabulary freely (~2500 words)\n- 85% from known vocabulary, 15% stretch content\n- Introduce idiomatic expressions and colloquialisms\n- Include abstract concepts and nuanced descriptors\n\n*Grammar:*\n- All basic tenses plus conditional\n- Relative clauses (who, which, that)\n- Basic subjunctive for wishes/desires\n- Conditional sentences (If I had..., I would...)\n\n*Sentences:*\n- Up to 20 words per sentence\n- Complex connectors: although, however, therefore\n- Multiple clauses in natural flow"
+  },
+
+  "tutor_observer": {
+    "correction_approach": "natural_recasting",
+    "max_corrections_per_turn": 2,
+    "ignore": [
+      "punctuation",
+      "capitalization",
+      "diacritics"
+    ],
+    "focus": [
+      "subjunctive_mood_usage",
+      "complex_verb_tenses",
+      "idiomatic_accuracy",
+      "register_appropriateness",
+      "word_choice_nuance"
+    ],
+    "delivery": {
+      "pattern": "acknowledge_point -> natural_rephrase -> continue_topic",
+      "warmth_level": "moderate",
+      "example": {
+        "spanish": "Entiendo lo que quieres decir. Yo diría 'Es importante que estudies todos los días'. ¿Cuántas horas estudias normalmente?",
+        "italian": "Capisco cosa vuoi dire. Direi 'È importante che tu studi ogni giorno'. Quante ore studi di solito?",
+        "german": "Ich verstehe, was du meinst. Ich würde sagen 'Es ist wichtig, dass du jeden Tag lernst'. Wie viele Stunden lernst du normalerweise?",
+        "french": "Je comprends ce que tu veux dire. Je dirais 'Il est important que tu étudies tous les jours'. Combien d'heures étudies-tu normalement?",
+        "dutch": "Ik begrijp wat je bedoelt. Ik zou zeggen 'Het is belangrijk dat je elke dag studeert'. Hoeveel uur studeer je normaal?"
+      }
+    },
+    "encouragement": {
+      "frequency": "on_significant_progress",
+      "phrases": {
+        "spanish": ["¡Excelente expresión!", "¡Tu español está mejorando mucho!"],
+        "italian": ["Ottima espressione!", "Il tuo italiano sta migliorando molto!"],
+        "german": ["Ausgezeichneter Ausdruck!", "Dein Deutsch verbessert sich sehr!"],
+        "french": ["Excellente expression!", "Ton français s'améliore beaucoup!"],
+        "dutch": ["Uitstekende uitdrukking!", "Je Nederlands verbetert enorm!"]
+      }
+    },
+    "native_explanations": "rare_for_complex_grammar",
+    "template": "**Error Correction Strategy ({level} Level):**\n\n*What to IGNORE:*\n- Punctuation and capitalization\n- Accent marks/diacritics\n\n*What to FOCUS ON:*\n- Subjunctive mood usage (wishes, doubts, emotions)\n- Complex tense accuracy\n- Idiomatic expression correctness\n- Appropriate formality/register\n- Word choice nuances\n\n*How to Correct (Maximum 2 corrections per response):*\n1. Acknowledge their point/meaning\n2. Naturally rephrase using the correct form\n3. Continue the conversation seamlessly\n4. Corrections should feel like modeling, not teaching\n\n*Encouragement:*\n- Praise when genuine progress is shown\n- Note sophisticated language attempts\n- Encourage risk-taking with complex structures"
+  }
+}
