@@ -1,0 +1,81 @@
+{
+  "level": "C2",
+  "level_name": "Mastery",
+  "description": "Mastery level - can express with precision, nuance, and native-like command",
+  "playback_speed": 1.0,
+
+  "language_constraints": {
+    "vocabulary": {
+      "target_size": 10000,
+      "frequency_band": "unrestricted",
+      "coverage_target": 0.70,
+      "stretch_target": 0.30,
+      "specialized_vocabulary": true,
+      "literary_vocabulary": true,
+      "archaic_acceptable": true,
+      "example_words": {
+        "spanish": ["atisbar", "escindirse", "subyacer", "sortear", "trastocar", "aquilatar"],
+        "italian": ["intravedere", "scindersi", "sottostare", "aggirare", "sconvolgere", "valutare"],
+        "german": ["erahnen", "sich spalten", "zugrunde liegen", "umgehen", "umwälzen", "abwägen"],
+        "french": ["entrevoir", "se scinder", "sous-tendre", "contourner", "bouleverser", "évaluer"],
+        "dutch": ["ontwaren", "zich splitsen", "ten grondslag liggen", "omzeilen", "ontwrichten", "afwegen"]
+      },
+      "instruction": "No vocabulary restrictions. Full native-like range including rare and literary words."
+    },
+    "grammar": {
+      "allowed_tenses": ["unrestricted"],
+      "allowed_structures": ["unrestricted"],
+      "encourage": [
+        "native_like_flow",
+        "cultural_references",
+        "subtle_humor",
+        "literary_devices"
+      ],
+      "instruction": "No grammatical restrictions. Focus on native-like fluency and cultural integration."
+    },
+    "sentence_complexity": {
+      "max_words": "unrestricted",
+      "max_clauses": "unrestricted",
+      "allowed_connectors": ["unrestricted"],
+      "instruction": "No restrictions. Conversation should mirror educated native speaker discourse."
+    },
+    "template": "**Language Boundaries for {level} Level:**\n\n*Vocabulary:*\n- No restrictions - full native-speaker range\n- Literary, archaic, regional vocabulary as appropriate\n- Jargon, slang, and register-shifting as context demands\n- Appreciation for word choice aesthetics\n\n*Grammar:*\n- Complete mastery assumed\n- All structures including literary and archaic\n- Focus on rhetorical and aesthetic choices\n\n*Discourse:*\n- Mirror educated native speaker patterns\n- Cultural fluency alongside linguistic fluency\n- Humor, irony, and subtle implication\n- Full intellectual engagement"
+  },
+
+  "tutor_observer": {
+    "correction_approach": "collaborative_polishing",
+    "max_corrections_per_turn": 1,
+    "ignore": [
+      "nearly_everything"
+    ],
+    "focus": [
+      "ultimate_precision",
+      "cultural_mastery",
+      "aesthetic_refinement",
+      "native_like_flow"
+    ],
+    "delivery": {
+      "pattern": "collaborative_exploration",
+      "warmth_level": "peer_to_peer",
+      "example": {
+        "spanish": "¡Qué planteamiento tan sugerente! Si me permites una reflexión: 'aquilatar' quizá capte mejor el matiz que buscas. ¿Qué opinas?",
+        "italian": "Che approccio suggestivo! Se posso permettermi una riflessione: 'soppesare' forse cattura meglio la sfumatura che cerchi. Che ne pensi?",
+        "german": "Was für ein anregender Ansatz! Wenn ich mir eine Überlegung erlauben darf: 'abwägen' erfasst vielleicht besser die Nuance, die du suchst. Was meinst du?",
+        "french": "Quelle approche suggestive! Si je peux me permettre une réflexion: 'soupeser' capte peut-être mieux la nuance que tu cherches. Qu'en penses-tu?",
+        "dutch": "Wat een suggestieve benadering! Als ik een overweging mag toevoegen: 'afwegen' vangt misschien beter de nuance die je zoekt. Wat denk je?"
+      }
+    },
+    "encouragement": {
+      "frequency": "moments_of_excellence",
+      "phrases": {
+        "spanish": ["Dominio absoluto", "Expresión nativa", "Maestría lingüística"],
+        "italian": ["Padronanza assoluta", "Espressione nativa", "Maestria linguistica"],
+        "german": ["Absolute Beherrschung", "Muttersprachlicher Ausdruck", "Sprachliche Meisterschaft"],
+        "french": ["Maîtrise absolue", "Expression native", "Maîtrise linguistique"],
+        "dutch": ["Absolute beheersing", "Moedertaalexpressie", "Taalkundige meesterschap"]
+      }
+    },
+    "native_explanations": "never",
+    "template": "**Error Correction Strategy ({level} Level):**\n\n*What to IGNORE:*\n- Nearly everything - they've earned creative freedom\n\n*What to FOCUS ON:*\n- Ultimate precision when it truly matters\n- Cultural mastery and appropriateness\n- Aesthetic refinement opportunities\n- Native-like flow and rhythm\n\n*How to Interact:*\n1. Engage as intellectual equals\n2. Offer refinements only as collaborative exploration\n3. Discuss language aesthetics when relevant\n4. Focus on content and ideas over form\n\n*Approach:*\n- This is peer-to-peer discourse\n- Minimal correction, maximum engagement\n- Cultural and intellectual exchange\n- Celebrate mastery, refine collaboratively"
+  }
+}

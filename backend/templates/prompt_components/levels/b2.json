@@ -1,0 +1,87 @@
+{
+  "level": "B2",
+  "level_name": "Upper Intermediate",
+  "description": "Upper intermediate - can interact fluently on a wide range of topics",
+  "playback_speed": 0.90,
+
+  "language_constraints": {
+    "vocabulary": {
+      "target_size": 5000,
+      "frequency_band": "top_5000",
+      "coverage_target": 0.80,
+      "stretch_target": 0.20,
+      "introduce_idioms": true,
+      "specialized_vocabulary": true,
+      "example_words": {
+        "spanish": ["imprescindible", "abrumador", "desempeñar", "aprovechar", "matizar", "plantear"],
+        "italian": ["indispensabile", "travolgente", "svolgere", "approfittare", "sfumare", "porre"],
+        "german": ["unerlässlich", "überwältigend", "ausüben", "nutzen", "nuancieren", "aufwerfen"],
+        "french": ["indispensable", "accablant", "exercer", "profiter", "nuancer", "soulever"],
+        "dutch": ["onmisbaar", "overweldigend", "uitoefenen", "benutten", "nuanceren", "opwerpen"]
+      },
+      "instruction": "Use sophisticated vocabulary freely (~5000 words). Topic-specific terms welcome."
+    },
+    "grammar": {
+      "allowed_tenses": ["all_tenses"],
+      "allowed_structures": [
+        "all_sentence_types",
+        "subjunctive_full",
+        "conditional_all_types",
+        "passive_voice",
+        "reported_speech"
+      ],
+      "encourage": [
+        "subjunctive_nuances",
+        "modal_perfects",
+        "emphatic_structures"
+      ],
+      "instruction": "Full grammatical range. Encourage nuanced subjunctive and sophisticated structures."
+    },
+    "sentence_complexity": {
+      "max_words": 25,
+      "max_clauses": 4,
+      "allowed_connectors": ["all_connectors"],
+      "instruction": "Complex sentences natural. Academic and professional discourse patterns."
+    },
+    "template": "**Language Boundaries for {level} Level:**\n\n*Vocabulary:*\n- Full upper-intermediate vocabulary (~5000 words)\n- 80% known, 20% stretch including specialized terms\n- Idioms, collocations, and figurative language expected\n- Topic-specific and professional vocabulary welcome\n\n*Grammar:*\n- All tenses including perfect aspects\n- Full subjunctive in all contexts\n- All conditional types\n- Passive voice and reported speech\n- Modal verbs with nuanced meanings\n\n*Sentences:*\n- Complex, multi-clause sentences\n- Academic and professional register\n- Rhetorical structures for argumentation"
+  },
+
+  "tutor_observer": {
+    "correction_approach": "peer_style_feedback",
+    "max_corrections_per_turn": 2,
+    "ignore": [
+      "punctuation_minor",
+      "capitalization"
+    ],
+    "focus": [
+      "subtle_grammar_errors",
+      "collocation_accuracy",
+      "register_consistency",
+      "stylistic_choices",
+      "idiom_precision"
+    ],
+    "delivery": {
+      "pattern": "engage_with_content -> subtle_correction -> deepen_discussion",
+      "warmth_level": "collegial",
+      "example": {
+        "spanish": "Interesante perspectiva. En español usaríamos 'hacer hincapié en' en lugar de 'hacer énfasis en'. ¿Podrías desarrollar más esa idea?",
+        "italian": "Prospettiva interessante. In italiano diremmo 'porre l'accento su' invece di 'fare enfasi su'. Potresti sviluppare di più questa idea?",
+        "german": "Interessante Perspektive. Auf Deutsch würden wir 'Wert legen auf' statt 'Betonung machen auf' verwenden. Könntest du diese Idee weiter ausführen?",
+        "french": "Perspective intéressante. En français, on dirait 'mettre l'accent sur' plutôt que 'faire l'emphase sur'. Pourrais-tu développer cette idée?",
+        "dutch": "Interessant perspectief. In het Nederlands zouden we 'de nadruk leggen op' zeggen in plaats van 'emphasis maken op'. Kun je dit idee verder uitwerken?"
+      }
+    },
+    "encouragement": {
+      "frequency": "notable_achievements",
+      "phrases": {
+        "spanish": ["¡Excelente dominio del idioma!", "Expresión muy natural"],
+        "italian": ["Ottima padronanza della lingua!", "Espressione molto naturale"],
+        "german": ["Ausgezeichnete Sprachbeherrschung!", "Sehr natürlicher Ausdruck"],
+        "french": ["Excellente maîtrise de la langue!", "Expression très naturelle"],
+        "dutch": ["Uitstekende taalbeheersing!", "Zeer natuurlijke uitdrukking"]
+      }
+    },
+    "native_explanations": "rarely_for_nuances",
+    "template": "**Error Correction Strategy ({level} Level):**\n\n*What to IGNORE:*\n- Minor punctuation variations\n- Capitalization style differences\n\n*What to FOCUS ON:*\n- Subtle grammatical errors\n- Collocation accuracy (word combinations)\n- Register consistency throughout\n- Stylistic refinements\n- Idiom and expression precision\n\n*How to Correct (Maximum 2 corrections per response):*\n1. Engage with the content of their message first\n2. Offer corrections as alternatives or preferences\n3. Deepen the discussion after correcting\n4. Treat them as near-peers, not students\n\n*Encouragement:*\n- Acknowledge sophisticated language use\n- Engage with their ideas substantively\n- Encourage refinement over basics"
+  }
+}

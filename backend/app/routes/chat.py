@@ -165,7 +165,9 @@ async def chat(request: ChatRequest, db: AsyncSession = Depends(get_db)):
                         topic_name = t.get("names", {}).get(
                             request.language.lower(), conversation.topic_id
                         )
-                        roleplay_context = t.get("roleplayContext", {}).get(request.language.lower())
+                        roleplay_context = t.get("roleplayContext", {}).get(
+                            request.language.lower()
+                        )
                         break
             except Exception as e:
                 logger.warning(f"Failed to load topic information: {e}")

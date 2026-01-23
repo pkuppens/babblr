@@ -196,8 +196,8 @@ async def test_get_lesson_with_items(async_client: AsyncClient, db: AsyncSession
     assert data["id"] == lesson.id
     assert data["title"] == "Test Lesson"
     assert len(data["items"]) == 2
-    assert data["items"][0]["content"] == "Hola"
-    assert data["items"][1]["content"] == "Adiós"
+    assert data["items"][0]["word"] == "Hola"
+    assert data["items"][1]["word"] == "Adiós"
     # Items should be ordered by order_index
     assert data["items"][0]["order_index"] == 1
     assert data["items"][1]["order_index"] == 2
