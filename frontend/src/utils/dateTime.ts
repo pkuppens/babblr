@@ -106,14 +106,21 @@ export function formatDateTime(
 
   try {
     // Ensure the date string is treated as UTC if it doesn't have a timezone indicator
-    // Backend returns UTC timestamps without the "Z" suffix
-    let normalizedDateString = dateString;
-    if (
-      !dateString.endsWith('Z') &&
-      !dateString.includes('+') &&
-      !dateString.includes('-', dateString.indexOf('T') + 1)
-    ) {
-      normalizedDateString = dateString + 'Z';
+    // Backend returns UTC timestamps (now with Z suffix as of timezone-aware datetimes)
+    // But handle both old format (without Z) and new format (with Z) for backwards compatibility
+    let normalizedDateString = dateString.trim();
+
+    // Check if already has timezone indicator (Z or +/-HH:MM)
+    const hasTimezoneIndicator =
+      normalizedDateString.endsWith('Z') ||
+      normalizedDateString.match(/[+-]\d{2}:?\d{2}$/);
+
+    // If no timezone indicator, assume UTC and add Z
+    if (!hasTimezoneIndicator) {
+      // Only add Z if it looks like a valid ISO datetime string
+      if (normalizedDateString.match(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/)) {
+        normalizedDateString = normalizedDateString + 'Z';
+      }
     }
 
     const date = new Date(normalizedDateString);

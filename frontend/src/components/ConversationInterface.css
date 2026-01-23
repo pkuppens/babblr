@@ -34,9 +34,11 @@
 .back-button {
   background: rgba(255, 255, 255, 0.2);
   color: white;
+  border: none;
   padding: 0.5rem 1rem;
   border-radius: 8px;
   font-weight: 500;
+  cursor: pointer;
 }
 
 .back-button:hover {
@@ -250,13 +252,12 @@
 /* Compact Input Container */
 .input-container.compact {
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   gap: 0.5rem;
   padding: 0.75rem 1rem;
   background: var(--surface);
   border-top: 2px solid var(--border);
   min-height: 56px;
-  max-height: 56px;
 }
 
 .mic-button {
@@ -291,6 +292,10 @@
   border: 2px solid var(--border);
   border-radius: 20px;
   background: var(--background);
+  font-family: inherit;
+  resize: none;
+  max-height: 150px;
+  overflow-y: auto;
 }
 
 .input-container.compact .message-input:focus {

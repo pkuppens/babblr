@@ -2,7 +2,7 @@
 
 import json
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -306,7 +306,7 @@ async def submit_exercise(
             )
             progress = progress_result.scalar_one_or_none()
 
-            now = datetime.utcnow()
+            now = datetime.now(timezone.utc)
             mastery_delta = 0.05 if is_correct else -0.02
 
             if progress:
@@ -387,7 +387,7 @@ async def create_progress(
         )
         existing = existing_result.scalar_one_or_none()
 
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
 
         if existing:
             # Update existing progress
@@ -468,7 +468,7 @@ async def get_recaps(
     Higher mastery scores result in longer intervals between reviews.
     """
     try:
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
 
         # Get all completed grammar lessons for this language/level
         query = (

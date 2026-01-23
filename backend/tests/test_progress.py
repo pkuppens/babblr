@@ -9,7 +9,7 @@ This module contains tests for:
 Following TDD approach: tests are written first, then implementation.
 """
 
-from datetime import datetime
+from datetime import datetime, timezone
 
 import pytest
 from httpx import ASGITransport, AsyncClient
@@ -250,7 +250,7 @@ class TestProgressService:
         await db.flush()
 
         # Create progress with known timestamp
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         progress = LessonProgress(
             lesson_id=lesson.id,
             language="es",
@@ -344,7 +344,7 @@ class TestProgressService:
         await db.flush()
 
         # Create progress with known timestamp
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         progress = LessonProgress(
             lesson_id=lesson.id,
             language="es",
@@ -388,7 +388,7 @@ class TestAssessmentProgressService:
             score=60.0,
             total_questions=10,
             correct_answers=6,
-            completed_at=datetime.utcnow() - timedelta(days=1),
+            completed_at=datetime.now(timezone.utc) - timedelta(days=1),
         )
         newer_attempt = AssessmentAttempt(
             assessment_id=assessment.id,
@@ -396,7 +396,7 @@ class TestAssessmentProgressService:
             score=80.0,
             total_questions=10,
             correct_answers=8,
-            completed_at=datetime.utcnow(),
+            completed_at=datetime.now(timezone.utc),
         )
         db.add_all([older_attempt, newer_attempt])
         await db.commit()
@@ -441,7 +441,7 @@ class TestAssessmentProgressService:
             score=75.0,
             total_questions=10,
             correct_answers=7,
-            completed_at=datetime.utcnow(),
+            completed_at=datetime.now(timezone.utc),
         )
         db.add(attempt)
 

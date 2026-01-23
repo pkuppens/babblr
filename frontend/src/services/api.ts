@@ -222,11 +222,11 @@ export const speechService = {
 };
 
 export const ttsService = {
-  async synthesize(text: string, language: string): Promise<Blob> {
+  async synthesize(text: string, language: string, speed: number = 1.0): Promise<Blob> {
     try {
       const response = await api.post(
         '/tts/synthesize',
-        { text, language },
+        { text, language, speed },
         { responseType: 'blob' }
       );
       return response.data;

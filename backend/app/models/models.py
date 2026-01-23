@@ -1,9 +1,9 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
-from sqlalchemy import Boolean, Column, DateTime, Float, ForeignKey, Integer, String, Text
+from sqlalchemy import Boolean, Column, Float, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import relationship
 
-from app.database.db import Base
+from app.database.db import Base, TZDateTime
 
 
 class Conversation(Base):
@@ -19,8 +19,12 @@ class Conversation(Base):
     topic_id = Column(
         String(100), nullable=True
     )  # Topic identifier from topics.json (e.g., "restaurant", "classroom")
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(TZDateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at = Column(
+        TZDateTime,
+        default=lambda: datetime.now(timezone.utc),
+        onupdate=lambda: datetime.now(timezone.utc),
+    )
 
     # Relationships
     messages = relationship("Message", back_populates="conversation", cascade="all, delete-orphan")
@@ -37,7 +41,7 @@ class Message(Base):
     content = Column(Text, nullable=False)
     audio_path = Column(String(255), nullable=True)  # Path to audio file if applicable
     corrections = Column(Text, nullable=True)  # JSON string of corrections
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(TZDateTime, default=lambda: datetime.now(timezone.utc))
 
     # Relationships
     conversation = relationship("Conversation", back_populates="messages")
@@ -52,8 +56,11 @@ class Lesson(Base):
     language = Column(String(50), nullable=False)
     lesson_type = Column(String(50), nullable=False)  # 'vocabulary', 'grammar', 'listening'
     title = Column(String(200), nullable=False)
+    title_en = Column(String(200), nullable=True)  # English title for hover help
     oneliner = Column(String(500), nullable=True)  # Brief one-sentence description for lesson cards
+    oneliner_en = Column(String(500), nullable=True)  # English oneliner for hover help
     description = Column(Text, nullable=True)  # Detailed description
+    description_en = Column(Text, nullable=True)  # English description for hover help
     tutor_prompt = Column(Text, nullable=True)  # Extensive LLM prompt for content generation
     subject = Column(
         String(100), nullable=True
@@ -62,10 +69,14 @@ class Lesson(Base):
     difficulty_level = Column(String(20), nullable=False, default="A1")
     order_index = Column(Integer, nullable=False, default=0)
     is_active = Column(Boolean, nullable=False, default=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(TZDateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at = Column(
+        TZDateTime,
+        default=lambda: datetime.now(timezone.utc),
+        onupdate=lambda: datetime.now(timezone.utc),
+    )
     last_accessed_at = Column(
-        DateTime, nullable=True
+        TZDateTime, nullable=True
     )  # For gamification streaks and recap decisions
 
     # Relationships
@@ -91,7 +102,7 @@ class LessonItem(Base):
         Text, nullable=True
     )  # JSON string (renamed from "metadata" to avoid SQLAlchemy conflict)
     order_index = Column(Integer, nullable=False, default=0)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(TZDateTime, default=lambda: datetime.now(timezone.utc))
 
     # Relationships
     lesson = relationship("Lesson", back_populates="lesson_items")
@@ -110,9 +121,9 @@ class LessonProgress(Base):
     )  # 'not_started', 'in_progress', 'completed'
     completion_percentage = Column(Float, nullable=False, default=0.0)
     mastery_score = Column(Float, nullable=True, default=None)  # 0.0-1.0 for adaptive scheduling
-    started_at = Column(DateTime, nullable=True)
-    completed_at = Column(DateTime, nullable=True)
-    last_accessed_at = Column(DateTime, default=datetime.utcnow)
+    started_at = Column(TZDateTime, nullable=True)
+    completed_at = Column(TZDateTime, nullable=True)
+    last_accessed_at = Column(TZDateTime, default=lambda: datetime.now(timezone.utc))
 
     # Relationships
     lesson = relationship("Lesson", back_populates="lesson_progress")
@@ -129,7 +140,7 @@ class GrammarRule(Base):
     description = Column(Text, nullable=False)
     examples = Column(Text, nullable=True)  # JSON array
     difficulty_level = Column(String(20), nullable=False, default="A1")
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(TZDateTime, default=lambda: datetime.now(timezone.utc))
 
     # Relationships
     lesson = relationship("Lesson", back_populates="grammar_rules")
@@ -150,7 +161,7 @@ class Assessment(Base):
     difficulty_level = Column(String(20), nullable=False)
     duration_minutes = Column(Integer, nullable=True)
     is_active = Column(Boolean, nullable=False, default=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(TZDateTime, default=lambda: datetime.now(timezone.utc))
 
     # Relationships
     assessment_questions = relationship(
@@ -179,7 +190,7 @@ class AssessmentQuestion(Base):
     options = Column(Text, nullable=True)  # JSON array for multiple choice
     points = Column(Integer, nullable=False, default=1)
     order_index = Column(Integer, nullable=False, default=0)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(TZDateTime, default=lambda: datetime.now(timezone.utc))
 
     # Relationships
     assessment = relationship("Assessment", back_populates="assessment_questions")
@@ -196,8 +207,8 @@ class AssessmentAttempt(Base):
     score = Column(Float, nullable=False)  # Percentage 0.0-100.0
     total_questions = Column(Integer, nullable=False)
     correct_answers = Column(Integer, nullable=False)
-    started_at = Column(DateTime, default=datetime.utcnow)
-    completed_at = Column(DateTime, nullable=True)
+    started_at = Column(TZDateTime, default=lambda: datetime.now(timezone.utc))
+    completed_at = Column(TZDateTime, nullable=True)
     answers_json = Column(Text, nullable=True)  # JSON object
     recommended_level = Column(
         String(20), nullable=True
@@ -219,5 +230,9 @@ class UserLevel(Base):
     language = Column(String(50), nullable=False, unique=True)
     cefr_level = Column(String(20), nullable=False, default="A1")
     proficiency_score = Column(Float, nullable=False, default=0.0)  # 0.0-100.0
-    assessed_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    assessed_at = Column(TZDateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at = Column(
+        TZDateTime,
+        default=lambda: datetime.now(timezone.utc),
+        onupdate=lambda: datetime.now(timezone.utc),
+    )

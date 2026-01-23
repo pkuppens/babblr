@@ -1,6 +1,6 @@
 """Unit tests for grammar lesson Pydantic models."""
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 import pytest
 from pydantic import ValidationError
@@ -141,7 +141,7 @@ class TestLessonProgress:
 
     def test_lesson_progress_creation(self):
         """Test creating lesson progress with all fields."""
-        now = datetime.now()
+        now = datetime.now(timezone.utc)
         next_review = now + timedelta(days=7)
         progress = LessonProgress(
             user_id="user123",
@@ -184,7 +184,7 @@ class TestLessonProgress:
 
     def test_lesson_progress_serialization(self):
         """Test that lesson progress can be serialized to JSON."""
-        now = datetime.now()
+        now = datetime.now(timezone.utc)
         progress = LessonProgress(
             user_id="user123",
             lesson_id="lesson1",

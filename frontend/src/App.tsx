@@ -191,7 +191,12 @@ function App() {
           />
         );
       case 'vocabulary':
-        return <VocabularyScreen />;
+        return (
+          <VocabularyScreen
+            selectedLanguage={selectedLanguage}
+            selectedDifficulty={selectedDifficulty}
+          />
+        );
       case 'grammar':
         return (
           <GrammarScreen
@@ -258,7 +263,7 @@ function App() {
         </div>
       </header>
 
-      <TabBar activeTab={activeTab} onTabChange={handleTabChange} />
+      <TabBar activeTab={activeTab} onTabChange={handleTabChange} language={selectedLanguage} />
 
       <main className="app-main" role="main">
         {renderActiveScreen()}

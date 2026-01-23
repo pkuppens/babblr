@@ -162,7 +162,9 @@ class TTSService:
         default_locale = name_map.get(value.lower(), "en-US")
         return self._voice_by_locale.get(default_locale, self._voice_by_locale["en-US"])
 
-    async def synthesize_speech(self, text: str, language: str) -> Optional[str]:
+    async def synthesize_speech(
+        self, text: str, language: str, speed: float = 1.0
+    ) -> Optional[str]:
         """
         Convert text to speech and return file path.
 
@@ -174,6 +176,8 @@ class TTSService:
         Args:
             text: Text to convert to speech
             language: Language code
+            speed: Playback speed multiplier (0.5 to 2.0, default 1.0)
+                   Values < 1.0 slow down, > 1.0 speed up
 
         Returns:
             Path to generated audio file, or None if failed
@@ -186,7 +190,8 @@ class TTSService:
             # For MVP, we'll create a placeholder response
             # In production, integrate with a TTS API
 
-            # Create a unique filename using hash
+            # Create a unique filename using hash.
+            # This ensures cached audio files are reused for identical text.
             text_hash = str(hash(sanitized_text))[-8:]
             output_path = self.output_dir / f"tts_{text_hash}.mp3"
 
@@ -197,8 +202,17 @@ class TTSService:
                 # Otherwise, return None and the frontend can handle it.
                 voice = self.resolve_voice(language)
 
-                # Use edge-tts
-                communicate = edge_tts.Communicate(sanitized_text, voice)
+                # Convert speed multiplier to edge-tts rate percentage.
+                # Edge-tts uses rate as a percentage change from normal speed:
+                # - speed 0.9 (90%) → -10% rate
+                # - speed 1.0 (100%) → +0% rate
+                # - speed 1.1 (110%) → +10% rate
+                # Formula: rate_percentage = (speed - 1.0) * 100
+                rate_percentage = int((speed - 1.0) * 100)
+                rate_str = f"{rate_percentage:+d}%"  # Format with sign: "+10%" or "-10%"
+
+                # Use edge-tts with rate control
+                communicate = edge_tts.Communicate(sanitized_text, voice, rate=rate_str)
 
                 await communicate.save(str(output_path))
 

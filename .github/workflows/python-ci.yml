@@ -113,7 +113,8 @@ jobs:
         working-directory: backend
         run: |
           # Run unit tests (excluding integration tests that require running backend)
-          uv run pytest tests/test_unit.py -v --tb=short
+          # Use -n auto for parallel execution (adapts to available cores)
+          uv run pytest tests/test_unit.py -v --tb=short -n auto
 
   # CI Summary job - aggregates all results
   ci-summary:

@@ -1,7 +1,7 @@
 """User level endpoints for CEFR proficiency tracking."""
 
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
@@ -45,13 +45,13 @@ async def update_user_level(
     if user_level:
         user_level.cefr_level = level_data.cefr_level
         user_level.proficiency_score = level_data.proficiency_score
-        user_level.assessed_at = datetime.utcnow()
+        user_level.assessed_at = datetime.now(timezone.utc)
     else:
         user_level = UserLevel(
             language=language,
             cefr_level=level_data.cefr_level,
             proficiency_score=level_data.proficiency_score,
-            assessed_at=datetime.utcnow(),
+            assessed_at=datetime.now(timezone.utc),
         )
         db.add(user_level)
 

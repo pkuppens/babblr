@@ -1,51 +1,53 @@
 import React from 'react';
 import { Home, BookOpen, FileText, MessageSquare, ClipboardCheck, Settings } from 'lucide-react';
 import type { TabKey } from '../types';
+import { getUIStrings } from '../utils/uiTranslations';
 import './TabBar.css';
 
 interface TabBarProps {
   activeTab: TabKey;
   onTabChange: (tab: TabKey) => void;
+  language?: string;
 }
 
 interface TabConfig {
   key: TabKey;
-  label: string;
+  labelKey: keyof ReturnType<typeof getUIStrings>;
   icon: React.ReactNode;
-  ariaLabel: string;
+  ariaLabelSuffix: string;
 }
 
 const TABS: TabConfig[] = [
-  { key: 'home', label: 'Home', icon: <Home size={20} />, ariaLabel: 'Home tab' },
+  { key: 'home', labelKey: 'home', icon: <Home size={20} />, ariaLabelSuffix: 'tab' },
   {
     key: 'vocabulary',
-    label: 'Vocabulary',
+    labelKey: 'vocabulary',
     icon: <BookOpen size={20} />,
-    ariaLabel: 'Vocabulary lessons tab',
+    ariaLabelSuffix: 'lessons tab',
   },
   {
     key: 'grammar',
-    label: 'Grammar',
+    labelKey: 'grammar',
     icon: <FileText size={20} />,
-    ariaLabel: 'Grammar lessons tab',
+    ariaLabelSuffix: 'lessons tab',
   },
   {
     key: 'conversations',
-    label: 'Conversations',
+    labelKey: 'conversations',
     icon: <MessageSquare size={20} />,
-    ariaLabel: 'Conversations tab',
+    ariaLabelSuffix: 'tab',
   },
   {
     key: 'assessments',
-    label: 'Assessments',
+    labelKey: 'assessments',
     icon: <ClipboardCheck size={20} />,
-    ariaLabel: 'CEFR assessments tab',
+    ariaLabelSuffix: 'tab',
   },
   {
     key: 'configuration',
-    label: 'Configuration',
+    labelKey: 'configuration',
     icon: <Settings size={20} />,
-    ariaLabel: 'Configuration settings tab',
+    ariaLabelSuffix: 'settings tab',
   },
 ];
 
@@ -56,8 +58,10 @@ const TABS: TabConfig[] = [
  * - Keyboard accessible (Arrow keys, Home, End, Enter/Space)
  * - Clear visual indication of active tab
  * - Preserves state when switching tabs
+ * - Displays tabs in target language for immersion
  */
-const TabBar: React.FC<TabBarProps> = ({ activeTab, onTabChange }) => {
+const TabBar: React.FC<TabBarProps> = ({ activeTab, onTabChange, language }) => {
+  const uiStrings = getUIStrings(language || 'english');
   const handleKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>, tabKey: TabKey) => {
     const currentIndex = TABS.findIndex(tab => tab.key === activeTab);
     let newIndex = currentIndex;
@@ -94,20 +98,22 @@ const TabBar: React.FC<TabBarProps> = ({ activeTab, onTabChange }) => {
       <nav className="tab-bar" role="tablist" aria-label="Main navigation">
         {TABS.map(tab => {
           const isActive = tab.key === activeTab;
+          const label = uiStrings[tab.labelKey];
+          const ariaLabel = `${label} ${tab.ariaLabelSuffix}`;
           return (
             <button
               key={tab.key}
               role="tab"
               aria-selected={isActive}
               aria-controls={`tabpanel-${tab.key}`}
-              aria-label={tab.ariaLabel}
+              aria-label={ariaLabel}
               className={`tab-button ${isActive ? 'tab-button-active' : ''}`}
               onClick={() => onTabChange(tab.key)}
               onKeyDown={e => handleKeyDown(e, tab.key)}
               tabIndex={isActive ? 0 : -1}
             >
               <span className="tab-icon">{tab.icon}</span>
-              <span className="tab-label">{tab.label}</span>
+              <span className="tab-label">{label}</span>
             </button>
           );
         })}

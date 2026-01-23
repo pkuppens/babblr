@@ -1,6 +1,5 @@
 import logging
-from datetime import datetime
-from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
+from datetime import datetime, timezone
 
 from fastapi import APIRouter, Body, Depends, HTTPException
 from sqlalchemy import select
@@ -78,18 +77,8 @@ async def generate_initial_message(
         )
         db.add(assistant_message)
 
-        # Update conversation timestamp
-        try:
-            from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
-
-            tz = ZoneInfo(settings.babblr_timezone)
-        except ZoneInfoNotFoundError:
-            logger.warning(
-                f"Invalid/unavailable timezone '{settings.babblr_timezone}'; falling back to UTC."
-            )
-            tz = ZoneInfo("UTC")
-
-        conversation.updated_at = datetime.now(tz).replace(tzinfo=None)  # type: ignore[assignment]
+        # Update conversation timestamp (UTC as per ADR-0001)
+        conversation.updated_at = datetime.now(timezone.utc)
         await db.commit()
         await db.refresh(assistant_message)  # Refresh to get the saved message with ID
 
@@ -214,22 +203,8 @@ async def chat(request: ChatRequest, db: AsyncSession = Depends(get_db)):
         )
         db.add(assistant_message)
 
-        # Update conversation timestamp using configured timezone.
-        #
-        # On Windows, `zoneinfo` needs the `tzdata` package to resolve IANA timezone
-        # names like "Europe/Amsterdam". If not available (or misconfigured), we
-        # fall back to UTC rather than failing the whole chat request.
-        try:
-            tz = ZoneInfo(settings.babblr_timezone)
-        except ZoneInfoNotFoundError:
-            logger.warning(
-                "Invalid/unavailable timezone '%s'; falling back to UTC. "
-                "Tip: on Windows, install the 'tzdata' Python package.",
-                settings.babblr_timezone,
-            )
-            tz = ZoneInfo("UTC")
-
-        conversation.updated_at = datetime.now(tz).replace(tzinfo=None)  # type: ignore[assignment]
+        # Update conversation timestamp (UTC as per ADR-0001)
+        conversation.updated_at = datetime.now(timezone.utc)
 
         await db.commit()
         await db.refresh(assistant_message)  # Refresh to get the saved message with ID

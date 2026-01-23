@@ -1,8 +1,9 @@
 """Vocabulary lesson endpoints for structured vocabulary practice."""
 
+import json
 import logging
-from datetime import datetime
-from typing import List, Optional
+from datetime import datetime, timezone
+from typing import List, Optional, cast
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import select
@@ -95,28 +96,50 @@ async def get_lesson(
         )
         items = items_result.scalars().all()
 
+        # Parse vocabulary items from LessonItem format
+        # The content field contains the word/phrase
+        # The item_metadata field contains JSON with translation, pronunciation, example
+        parsed_items = []
+        for item in items:
+            try:
+                # Parse metadata JSON if present
+                # Cast to help pyright understand these are values, not Column objects
+                metadata_str = cast(Optional[str], item.item_metadata)
+                if metadata_str:
+                    metadata = json.loads(metadata_str)
+                else:
+                    metadata = {}
+                parsed_items.append(
+                    {
+                        "id": item.id,
+                        "lesson_id": lesson_id,
+                        "word": item.content,
+                        "translation": metadata.get("translation", ""),
+                        "example": metadata.get("example", ""),
+                        "pronunciation": metadata.get("pronunciation"),
+                        "order_index": item.order_index,
+                    }
+                )
+            except (json.JSONDecodeError, AttributeError) as e:
+                logger.warning(f"Failed to parse item {item.id} metadata: {e}. Skipping item.")
+                continue
+
         # Build response with lesson and items
         lesson_data = {
             "id": lesson.id,
             "language": lesson.language,
             "lesson_type": lesson.lesson_type,
             "title": lesson.title,
+            "title_en": lesson.title_en,
+            "oneliner": lesson.oneliner,
+            "oneliner_en": lesson.oneliner_en,
             "description": lesson.description,
+            "description_en": lesson.description_en,
             "difficulty_level": lesson.difficulty_level,
             "order_index": lesson.order_index,
             "is_active": lesson.is_active,
             "created_at": lesson.created_at,
-            "items": [
-                {
-                    "id": item.id,
-                    "item_type": item.item_type,
-                    "content": item.content,
-                    "item_metadata": item.item_metadata,
-                    "order_index": item.order_index,
-                    "created_at": item.created_at,
-                }
-                for item in items
-            ],
+            "items": parsed_items,
         }
 
         logger.info(f"Retrieved lesson {lesson_id} with {len(items)} items")
@@ -128,6 +151,103 @@ async def get_lesson(
     except Exception as e:
         logger.error(f"Error getting lesson {lesson_id}: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Failed to get lesson: {str(e)}")
+
+
+@router.get("/lessons/{lesson_id}/progress", response_model=LessonProgressResponse)
+async def get_lesson_progress(
+    lesson_id: int,
+    db: AsyncSession = Depends(get_db),
+):
+    """Return lesson progress or a default not-started record.
+
+    This endpoint returns progress for the given vocabulary lesson. If no progress
+    exists yet, it returns a default "not_started" progress record with 0%
+    completion to avoid 404 responses in the UI.
+
+    Args:
+        lesson_id (int): The lesson ID to look up progress for.
+        db (AsyncSession): Database session dependency.
+
+    Returns:
+        LessonProgressResponse: Existing progress or a default not-started progress.
+
+    Raises:
+        HTTPException: If the lesson does not exist or is not a vocabulary lesson.
+    """
+    try:
+        result = await db.execute(select(Lesson).where(Lesson.id == lesson_id))
+        lesson = result.scalar_one_or_none()
+
+        if not lesson:
+            raise HTTPException(status_code=404, detail=f"Lesson {lesson_id} not found")
+
+        if lesson.lesson_type != "vocabulary":  # type: ignore[comparison-overlap]
+            raise HTTPException(
+                status_code=400, detail=f"Lesson {lesson_id} is not a vocabulary lesson"
+            )
+
+        if not lesson.is_active:  # type: ignore[comparison-overlap]
+            raise HTTPException(status_code=404, detail=f"Lesson {lesson_id} is not active")
+
+        progress_result = await db.execute(
+            select(LessonProgress).where(
+                LessonProgress.lesson_id == lesson_id,
+                LessonProgress.language == lesson.language,
+            )
+        )
+        progress = progress_result.scalar_one_or_none()
+
+        if progress:
+            return progress
+
+        now = datetime.now(timezone.utc)
+        return LessonProgress(
+            id=0,
+            lesson_id=lesson_id,
+            language=lesson.language,
+            status="not_started",
+            completion_percentage=0.0,
+            mastery_score=None,
+            started_at=None,
+            completed_at=None,
+            last_accessed_at=now,
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting progress for lesson {lesson_id}: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Failed to get progress: {str(e)}")
+
+
+@router.post("/lessons/{lesson_id}/progress", response_model=LessonProgressResponse)
+async def create_lesson_progress(
+    lesson_id: int,
+    progress: LessonProgressCreate,
+    db: AsyncSession = Depends(get_db),
+):
+    """Create or update lesson progress for a specific lesson.
+
+    This endpoint mirrors the generic progress endpoint but validates the lesson
+    ID from the path and ensures a consistent URL for the UI.
+
+    Args:
+        lesson_id (int): The lesson ID from the request path.
+        progress (LessonProgressCreate): Progress payload for the lesson.
+        db (AsyncSession): Database session dependency.
+
+    Returns:
+        LessonProgressResponse: The created or updated progress record.
+
+    Raises:
+        HTTPException: If the lesson IDs do not match.
+    """
+    if progress.lesson_id != lesson_id:
+        raise HTTPException(
+            status_code=400,
+            detail=("Lesson ID mismatch. Path lesson_id must match the payload lesson_id."),
+        )
+
+    return await create_progress(progress, db)
 
 
 @router.post("/progress", response_model=LessonProgressResponse)
@@ -172,7 +292,7 @@ async def create_progress(
         )
         existing = existing_result.scalar_one_or_none()
 
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
 
         if existing:
             # Update existing progress
@@ -270,7 +390,7 @@ async def update_progress(
             )
 
         # Update progress
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         existing.lesson_id = progress.lesson_id  # type: ignore[assignment]
         existing.language = progress.language  # type: ignore[assignment]
         existing.status = progress.status  # type: ignore[assignment]
