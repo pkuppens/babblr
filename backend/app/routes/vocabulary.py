@@ -3,7 +3,7 @@
 import json
 import logging
 from datetime import datetime, timezone
-from typing import List, Optional
+from typing import List, Optional, cast
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import select
@@ -102,8 +102,13 @@ async def get_lesson(
         parsed_items = []
         for item in items:
             try:
-                metadata_str = item.item_metadata if item.item_metadata is not None else ""
-                metadata = json.loads(metadata_str) if metadata_str else {}
+                # Parse metadata JSON if present
+                # Cast to help pyright understand these are values, not Column objects
+                metadata_str = cast(Optional[str], item.item_metadata)
+                if metadata_str:
+                    metadata = json.loads(metadata_str)
+                else:
+                    metadata = {}
                 parsed_items.append(
                     {
                         "id": item.id,
