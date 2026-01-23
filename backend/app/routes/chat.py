@@ -60,6 +60,9 @@ async def generate_initial_message(
         topic_name = topic.get("names", {}).get(request.language.lower(), request.topic_id)
         topic_description = topic.get("descriptions", {}).get(request.language.lower(), "")
 
+        # Get roleplay context in the target language
+        roleplay_context = topic.get("roleplayContext", {}).get(request.language.lower())
+
         # Get conversation service
         conversation_service = get_conversation_service()
 
@@ -69,6 +72,7 @@ async def generate_initial_message(
             difficulty_level=request.difficulty_level,
             topic=topic_name,
             topic_description=topic_description,
+            roleplay_context=roleplay_context,
         )
 
         # Save assistant message (only the target language message, not translation)
@@ -146,6 +150,7 @@ async def chat(request: ChatRequest, db: AsyncSession = Depends(get_db)):
 
         # Get topic information if conversation has a topic
         topic_name = "general conversation"
+        roleplay_context = None
         if conversation.topic_id is not None:
             import json
             from pathlib import Path
@@ -160,6 +165,7 @@ async def chat(request: ChatRequest, db: AsyncSession = Depends(get_db)):
                         topic_name = t.get("names", {}).get(
                             request.language.lower(), conversation.topic_id
                         )
+                        roleplay_context = t.get("roleplayContext", {}).get(request.language.lower())
                         break
             except Exception as e:
                 logger.warning(f"Failed to load topic information: {e}")
@@ -187,7 +193,7 @@ async def chat(request: ChatRequest, db: AsyncSession = Depends(get_db)):
             f"(before adding current user message)"
         )
 
-        # Generate AI response with topic context
+        # Generate AI response with topic context and roleplay persona
         # Pass corrected_text as user_message - generate_response will add it to the history
         assistant_response = await conversation_service.generate_response(
             corrected_text if corrections else request.user_message,
@@ -195,6 +201,7 @@ async def chat(request: ChatRequest, db: AsyncSession = Depends(get_db)):
             request.difficulty_level,
             conversation_history,
             topic=topic_name,
+            roleplay_context=roleplay_context,
         )
 
         # Save assistant message
