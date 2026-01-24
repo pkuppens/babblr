@@ -19,6 +19,7 @@ import {
 } from '../utils/dateTime';
 import { maskApiKey } from '../utils/encryption';
 import CredentialManagement from './CredentialManagement';
+import CostCalculator from './CostCalculator';
 import toast from 'react-hot-toast';
 import './Settings.css';
 
@@ -408,6 +409,11 @@ function Settings({ isOpen, onClose, inline = false }: SettingsProps) {
         {/* Secure Credential Management */}
         <div className="settings-section">
           <CredentialManagement />
+        </div>
+
+        {/* Cost Calculator */}
+        <div className="settings-section">
+          <CostCalculator />
         </div>
 
         {/* LLM Provider Selection */}

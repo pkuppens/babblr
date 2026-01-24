@@ -698,3 +698,171 @@
 .credential-info li:last-child {
   margin-bottom: 0;
 }
+
+/* ============================================================================
+ * Cost Calculator Styles
+ * ============================================================================ */
+
+.cost-calculator {
+  width: 100%;
+  padding: 20px;
+  background-color: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+}
+
+.cost-calculator-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.cost-calculator-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.cost-calculator-description {
+  color: #6b7280;
+  font-size: 14px;
+  margin: 0 0 20px 0;
+}
+
+.cost-calculator-inputs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.cost-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cost-input-group label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+}
+
+.cost-select,
+.cost-input {
+  padding: 8px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.cost-select:focus,
+.cost-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.cost-breakdown {
+  background-color: white;
+  padding: 16px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+.cost-breakdown h4 {
+  margin: 0 0 12px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.cost-breakdown-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  font-size: 14px;
+  color: #374151;
+}
+
+.cost-breakdown-row.cost-total {
+  font-weight: 600;
+  font-size: 16px;
+  color: #111827;
+}
+
+.cost-value {
+  font-family: 'Courier New', monospace;
+  color: #6b7280;
+}
+
+.cost-value-total {
+  font-family: 'Courier New', monospace;
+  color: #059669;
+  font-size: 18px;
+}
+
+.cost-breakdown-divider {
+  height: 1px;
+  background-color: #e5e7eb;
+  margin: 8px 0;
+}
+
+.cost-info-box {
+  display: flex;
+  gap: 12px;
+  padding: 12px;
+  background-color: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+.cost-info-box strong {
+  display: block;
+  margin-bottom: 4px;
+  color: #1e40af;
+  font-size: 14px;
+}
+
+.cost-info-box p {
+  margin: 0;
+  color: #1e40af;
+  font-size: 13px;
+}
+
+.cost-pricing-details {
+  background-color: white;
+  padding: 12px;
+  border-radius: 6px;
+  margin-bottom: 12px;
+}
+
+.cost-pricing-details h4 {
+  margin: 0 0 8px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.cost-pricing-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: #6b7280;
+  padding: 4px 0;
+}
+
+.cost-disclaimer {
+  font-size: 12px;
+  color: #6b7280;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.cost-disclaimer strong {
+  color: #374151;
+}
