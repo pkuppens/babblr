@@ -1,3 +1,5 @@
+from typing import Optional
+
 from pydantic import AliasChoices, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -8,20 +10,33 @@ class Settings(BaseSettings):
     # LLM Provider selection (runtime swappable)
     llm_provider: str = "ollama"  # "ollama", "claude", "gemini", "mock"
 
+    # Credential Storage Mode
+    # - "secure": Require credentials from secure storage (Electron safeStorage)
+    # - "env": Use environment variables (.env file)
+    # - "hybrid": Try secure storage first, fall back to env (default for development)
+    credential_mode: str = Field(
+        default="hybrid",
+        validation_alias=AliasChoices("credential_mode", "babblr_credential_mode"),
+    )
+
     # Ollama settings (MVP primary)
     ollama_base_url: str = "http://localhost:11434"
     ollama_model: str = "llama3.2:latest"
 
-    # Claude/Anthropic settings
+    # Claude/Anthropic settings (fallback values from .env)
     anthropic_api_key: str = ""
     anthropic_model: str = Field(
         default="claude-sonnet-4-20250514",
         validation_alias=AliasChoices("anthropic_model", "claude_model"),
     )
 
-    # Google Gemini settings
+    # Google Gemini settings (fallback values from .env)
     google_api_key: str = ""
     gemini_model: str = "gemini-2.0-flash"  # or gemini-1.5-flash-latest, gemini-1.5-pro
+
+    # OpenAI settings (for future BYS support)
+    openai_api_key: str = ""
+    openai_model: str = "gpt-4o-mini"
 
     # Conversation memory settings (Summary Buffer)
     conversation_max_token_limit: int = 2000  # Max tokens before summarizing old messages
@@ -91,3 +106,41 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
+
+
+def get_api_key_for_provider(provider: str) -> Optional[str]:
+    """
+    Get API key for a provider with fallback logic.
+
+    Credential resolution order (based on credential_mode):
+    1. "secure": Only use credentials from credential_store (via /credentials API)
+    2. "env": Only use environment variables
+    3. "hybrid": Try credential_store first, fall back to env
+
+    Args:
+        provider: Provider name ('anthropic', 'google', 'openai', 'ollama')
+
+    Returns:
+        API key if available, None otherwise
+    """
+    from app.routes.credentials import get_api_key
+
+    api_key: Optional[str] = None
+
+    # Try credential store first (except in "env" mode)
+    if settings.credential_mode != "env":
+        api_key = get_api_key(provider)
+        if api_key:
+            return api_key
+
+    # Fall back to environment variables (except in "secure" mode)
+    if settings.credential_mode != "secure":
+        if provider == "anthropic":
+            api_key = settings.anthropic_api_key or None
+        elif provider == "google":
+            api_key = settings.google_api_key or None
+        elif provider == "openai":
+            api_key = settings.openai_api_key or None
+        # Ollama doesn't use API keys
+
+    return api_key

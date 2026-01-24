@@ -7,7 +7,7 @@ and supports runtime switching between providers.
 
 from typing import TYPE_CHECKING
 
-from app.config import settings
+from app.config import get_api_key_for_provider, settings
 from app.services.llm.exceptions import ProviderUnavailableError
 
 if TYPE_CHECKING:
@@ -129,8 +129,9 @@ class ProviderFactory:
         provider_class = cls._providers[name]
 
         # Handle provider-specific initialization
+        # Use get_api_key_for_provider for credential resolution with fallback
         if name == "claude":
-            api_key = getattr(settings, "anthropic_api_key", "")
+            api_key = get_api_key_for_provider("anthropic") or ""
             model = getattr(settings, "anthropic_model", "claude-sonnet-4-20250514")
             return provider_class(api_key=api_key, model=model)
         elif name == "ollama":
@@ -138,7 +139,7 @@ class ProviderFactory:
             model = getattr(settings, "ollama_model", "llama3.2:latest")
             return provider_class(base_url=base_url, model=model)
         elif name == "gemini":
-            api_key = getattr(settings, "google_api_key", "")
+            api_key = get_api_key_for_provider("google") or ""
             model = getattr(settings, "gemini_model", "gemini-2.0-flash")
             return provider_class(api_key=api_key, model=model)
         else:
