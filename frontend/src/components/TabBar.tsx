@@ -1,5 +1,13 @@
 import React from 'react';
-import { Home, BookOpen, FileText, MessageSquare, ClipboardCheck, TrendingUp, Settings } from 'lucide-react';
+import {
+  Home,
+  BookOpen,
+  FileText,
+  MessageSquare,
+  ClipboardCheck,
+  TrendingUp,
+  Settings,
+} from 'lucide-react';
 import type { TabKey } from '../types';
 import { getUIStrings } from '../utils/uiTranslations';
 import './TabBar.css';

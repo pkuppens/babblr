@@ -81,9 +81,7 @@ describe('LessonCard', () => {
       status: 'completed',
       completion_percentage: 100,
     };
-    render(
-      <LessonCard lesson={mockLesson} progress={completedProgress} onClick={onClick} />
-    );
+    render(<LessonCard lesson={mockLesson} progress={completedProgress} onClick={onClick} />);
 
     expect(screen.getByText('Review')).toBeInTheDocument();
   });

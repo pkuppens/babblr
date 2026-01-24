@@ -245,14 +245,14 @@ test.describe("Section 5: Frontend UI Validation", () => {
 
     // EXPECTED RESULT 1: Tutor responds
     let tutorMessages = await page.locator('[data-testid="message-tutor"], .message-tutor, .assistant');
-    let initialCount = await tutorMessages.count();
+    const initialCount = await tutorMessages.count();
 
     // Wait for response (up to 10 seconds)
     await page.waitForTimeout(5000);
 
     // EXPECTED RESULT 2: New tutor message added
     tutorMessages = await page.locator('[data-testid="message-tutor"], .message-tutor, .assistant');
-    let newCount = await tutorMessages.count();
+    const newCount = await tutorMessages.count();
     expect(newCount).toBeGreaterThan(initialCount);
 
     // Send second message

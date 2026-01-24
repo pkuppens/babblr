@@ -149,9 +149,9 @@ describe('LessonPlayer', () => {
       <LessonPlayer lesson={mockLesson} onLessonComplete={onLessonComplete} onExit={onExit} />
     );
 
-    const prevButton = screen.getAllByRole('button').find(
-      btn => btn.getAttribute('aria-label') === 'Previous word'
-    );
+    const prevButton = screen
+      .getAllByRole('button')
+      .find(btn => btn.getAttribute('aria-label') === 'Previous word');
     expect(prevButton).toBeDisabled();
   });
 
