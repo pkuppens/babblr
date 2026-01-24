@@ -5,7 +5,7 @@
  * Helps users understand the cost implications of using different LLM providers.
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Calculator, Info } from 'lucide-react';
 
 type Provider = 'anthropic' | 'google' | 'openai' | 'ollama';
@@ -48,42 +48,42 @@ const PRICING: Record<Provider, ProviderPricing> = {
   google: {
     name: 'Google Gemini',
     models: {
-      'gemini-2.0-flash': {
-        name: 'Gemini 2.0 Flash',
+      'gemini-3-flash': {
+        name: 'Gemini 3 Flash',
         inputCost: 0.0,
         outputCost: 0.0, // Free tier available
         recommended: true,
       },
-      'gemini-1.5-flash': {
-        name: 'Gemini 1.5 Flash',
-        inputCost: 0.075,
-        outputCost: 0.3,
+      'gemini-3-pro': {
+        name: 'Gemini 3 Pro',
+        inputCost: 1.5,
+        outputCost: 6.0,
       },
-      'gemini-1.5-pro': {
-        name: 'Gemini 1.5 Pro',
-        inputCost: 1.25,
-        outputCost: 5.0,
+      'gemini-2.5-flash': {
+        name: 'Gemini 2.5 Flash',
+        inputCost: 0.05,
+        outputCost: 0.2,
       },
     },
   },
   openai: {
     name: 'OpenAI',
     models: {
-      'gpt-4o-mini': {
-        name: 'GPT-4o Mini',
-        inputCost: 0.15,
-        outputCost: 0.6,
+      'gpt-5.2': {
+        name: 'GPT-5.2',
+        inputCost: 2.5,
+        outputCost: 10.0,
         recommended: true,
       },
-      'gpt-4o': {
-        name: 'GPT-4o',
-        inputCost: 5.0,
-        outputCost: 15.0,
+      'gpt-5-mini': {
+        name: 'GPT-5 Mini',
+        inputCost: 0.15,
+        outputCost: 0.6,
       },
-      'o1': {
-        name: 'O1',
-        inputCost: 15.0,
-        outputCost: 60.0,
+      'gpt-5-nano': {
+        name: 'GPT-5 Nano',
+        inputCost: 0.05,
+        outputCost: 0.2,
       },
     },
   },
@@ -106,11 +106,80 @@ const TYPICAL_CONVERSATION = {
   responseTokens: 150, // AI's response
 };
 
-export default function CostCalculator() {
-  const [selectedProvider, setSelectedProvider] = useState<Provider>('anthropic');
-  const [selectedModel, setSelectedModel] = useState<string>('claude-sonnet-4.5');
+interface CostCalculatorProps {
+  selectedProvider?: Provider;
+  selectedModel?: string;
+  onProviderChange?: (provider: Provider) => void;
+  onModelChange?: (model: string) => void;
+}
+
+export default function CostCalculator({
+  selectedProvider: propProvider,
+  selectedModel: propModel,
+  onProviderChange,
+  onModelChange,
+}: CostCalculatorProps = {}) {
+  const [selectedProvider, setSelectedProvider] = useState<Provider>(propProvider || 'anthropic');
+  const [selectedModel, setSelectedModel] = useState<string>(propModel || 'claude-sonnet-4.5');
   const [conversationsPerMonth, setConversationsPerMonth] = useState(100);
   const [turnsPerConversation, setTurnsPerConversation] = useState(10);
+
+  // Map model names from settings format to cost calculator format
+  const mapModelToCostCalculator = (provider: Provider, model: string): string => {
+    if (provider === 'anthropic') {
+      // Check if it's a known model or custom
+      if (
+        model === 'claude-sonnet-4.5' ||
+        model === 'claude-haiku-4.5' ||
+        model === 'claude-opus-4.5'
+      ) {
+        return model;
+      }
+      // For custom models, try to find closest match or use default
+      if (model.includes('sonnet')) return 'claude-sonnet-4.5';
+      if (model.includes('haiku')) return 'claude-haiku-4.5';
+      if (model.includes('opus')) return 'claude-opus-4.5';
+      return 'claude-sonnet-4.5'; // default
+    }
+    if (provider === 'google') {
+      // Check if it's a known model or custom
+      if (model === 'gemini-3-flash' || model === 'gemini-3-pro' || model === 'gemini-2.5-flash') {
+        return model;
+      }
+      // For custom models, try to find closest match
+      if (model.includes('3-pro')) return 'gemini-3-pro';
+      if (model.includes('3-flash')) return 'gemini-3-flash';
+      if (model.includes('2.5')) return 'gemini-2.5-flash';
+      return 'gemini-3-flash'; // default
+    }
+    if (provider === 'openai') {
+      // Check if it's a known model or custom
+      if (model === 'gpt-5.2' || model === 'gpt-5-mini' || model === 'gpt-5-nano') {
+        return model;
+      }
+      // For custom models like gpt-5.2-pro, use closest match
+      if (model.includes('5.2')) return 'gpt-5.2';
+      if (model.includes('5-mini')) return 'gpt-5-mini';
+      if (model.includes('5-nano')) return 'gpt-5-nano';
+      return 'gpt-5.2'; // default
+    }
+    return 'local'; // ollama
+  };
+
+  // Sync with props when they change
+  useEffect(() => {
+    if (propProvider) {
+      setSelectedProvider(propProvider);
+      // Update model when provider changes from props
+      if (propModel) {
+        const mappedModel = mapModelToCostCalculator(propProvider, propModel);
+        setSelectedModel(mappedModel);
+      } else {
+        const firstModel = Object.keys(PRICING[propProvider].models)[0];
+        setSelectedModel(firstModel);
+      }
+    }
+  }, [propProvider, propModel]);
 
   const providerData = PRICING[selectedProvider];
   const modelData = providerData?.models[selectedModel];
@@ -128,11 +197,32 @@ export default function CostCalculator() {
   const totalOutputCost = (outputTokens / 1_000_000) * outputCostPerMillion;
   const totalCost = totalInputCost + totalOutputCost;
 
+  // Map model names from cost calculator format to settings format
+  // Since we're using the same format now, just return as-is
+  const mapModelFromCostCalculator = (provider: Provider, model: string): string => {
+    return model;
+  };
+
   // Update selected model when provider changes
   const handleProviderChange = (provider: Provider) => {
     setSelectedProvider(provider);
     const firstModel = Object.keys(PRICING[provider].models)[0];
     setSelectedModel(firstModel);
+    // Notify parent if callback provided
+    if (onProviderChange) {
+      onProviderChange(provider);
+    }
+    if (onModelChange) {
+      onModelChange(mapModelFromCostCalculator(provider, firstModel));
+    }
+  };
+
+  const handleModelChange = (model: string) => {
+    setSelectedModel(model);
+    // Notify parent if callback provided
+    if (onModelChange) {
+      onModelChange(mapModelFromCostCalculator(selectedProvider, model));
+    }
   };
 
   return (
@@ -169,7 +259,7 @@ export default function CostCalculator() {
           <select
             id="cost-model"
             value={selectedModel}
-            onChange={e => setSelectedModel(e.target.value)}
+            onChange={e => handleModelChange(e.target.value)}
             className="cost-select"
           >
             {Object.entries(providerData.models).map(([key, model]) => (

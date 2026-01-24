@@ -5,10 +5,12 @@ import type { NativeLanguage } from '../types';
 const SETTINGS_KEYS = {
   ANTHROPIC_API_KEY: 'babblr_anthropic_api_key',
   GOOGLE_API_KEY: 'babblr_google_api_key',
+  OPENAI_API_KEY: 'babblr_openai_api_key',
   LLM_PROVIDER: 'babblr_llm_provider',
   OLLAMA_MODEL: 'babblr_ollama_model',
   CLAUDE_MODEL: 'babblr_claude_model',
   GEMINI_MODEL: 'babblr_gemini_model',
+  OPENAI_MODEL: 'babblr_openai_model',
   TIMEZONE: 'babblr_timezone',
   TIME_FORMAT: 'babblr_time_format',
   NATIVE_LANGUAGE: 'babblr_native_language',
@@ -27,33 +29,40 @@ export const AVAILABLE_MODELS = {
     { value: 'qwen2:latest', label: 'Qwen 2' },
   ],
   claude: [
-    { value: 'claude-sonnet-4-20250514', label: 'Claude Sonnet 4 (Latest)' },
-    { value: 'claude-3-5-sonnet-20241022', label: 'Claude 3.5 Sonnet' },
-    { value: 'claude-3-opus-20240229', label: 'Claude 3 Opus' },
-    { value: 'claude-3-haiku-20240307', label: 'Claude 3 Haiku (Fast)' },
+    { value: 'claude-sonnet-4.5', label: 'Claude Sonnet 4.5 (Recommended)' },
+    { value: 'claude-haiku-4.5', label: 'Claude Haiku 4.5 (Fast)' },
+    { value: 'claude-opus-4.5', label: 'Claude Opus 4.5 (Best Quality)' },
   ],
   gemini: [
-    { value: 'gemini-1.5-pro', label: 'Gemini 1.5 Pro (Default)' },
-    { value: 'gemini-1.5-flash', label: 'Gemini 1.5 Flash (Fast)' },
-    { value: 'gemini-pro', label: 'Gemini Pro' },
+    { value: 'gemini-3-flash', label: 'Gemini 3 Flash (Recommended)' },
+    { value: 'gemini-3-pro', label: 'Gemini 3 Pro (Best Quality)' },
+    { value: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash (Fast)' },
+  ],
+  openai: [
+    { value: 'gpt-5.2', label: 'GPT-5.2 (Recommended)' },
+    { value: 'gpt-5-mini', label: 'GPT-5 Mini (Fast)' },
+    { value: 'gpt-5-nano', label: 'GPT-5 Nano (Ultra Fast)' },
   ],
 };
 
 export const DEFAULT_MODELS = {
   ollama: 'llama3.2:latest',
-  claude: 'claude-sonnet-4-20250514',
-  gemini: 'gemini-1.5-pro',
+  claude: 'claude-sonnet-4.5',
+  gemini: 'gemini-3-flash',
+  openai: 'gpt-5.2',
 };
 
-export type LLMProvider = 'ollama' | 'claude' | 'gemini' | 'mock';
+export type LLMProvider = 'ollama' | 'claude' | 'gemini' | 'openai' | 'mock';
 
 export interface AppSettings {
   llmProvider: LLMProvider;
   anthropicApiKey?: string;
   googleApiKey?: string;
+  openaiApiKey?: string;
   ollamaModel: string;
   claudeModel: string;
   geminiModel: string;
+  openaiModel: string;
   timezone: string;
   timeFormat: TimeFormat;
   nativeLanguage: NativeLanguage;
@@ -68,11 +77,15 @@ class SettingsService {
   /**
    * Save API key with encryption
    */
-  async saveApiKey(provider: 'anthropic' | 'google', apiKey: string): Promise<void> {
+  async saveApiKey(provider: 'anthropic' | 'google' | 'openai', apiKey: string): Promise<void> {
     try {
       const encrypted = await encrypt(apiKey);
       const key =
-        provider === 'anthropic' ? SETTINGS_KEYS.ANTHROPIC_API_KEY : SETTINGS_KEYS.GOOGLE_API_KEY;
+        provider === 'anthropic'
+          ? SETTINGS_KEYS.ANTHROPIC_API_KEY
+          : provider === 'google'
+            ? SETTINGS_KEYS.GOOGLE_API_KEY
+            : SETTINGS_KEYS.OPENAI_API_KEY;
       localStorage.setItem(key, encrypted);
     } catch (error) {
       console.error(`Failed to save ${provider} API key:`, error);
@@ -85,10 +98,14 @@ class SettingsService {
   /**
    * Load API key with decryption
    */
-  async loadApiKey(provider: 'anthropic' | 'google'): Promise<string | null> {
+  async loadApiKey(provider: 'anthropic' | 'google' | 'openai'): Promise<string | null> {
     try {
       const key =
-        provider === 'anthropic' ? SETTINGS_KEYS.ANTHROPIC_API_KEY : SETTINGS_KEYS.GOOGLE_API_KEY;
+        provider === 'anthropic'
+          ? SETTINGS_KEYS.ANTHROPIC_API_KEY
+          : provider === 'google'
+            ? SETTINGS_KEYS.GOOGLE_API_KEY
+            : SETTINGS_KEYS.OPENAI_API_KEY;
       const encrypted = localStorage.getItem(key);
 
       if (!encrypted) {
@@ -107,9 +124,13 @@ class SettingsService {
   /**
    * Remove API key from storage
    */
-  removeApiKey(provider: 'anthropic' | 'google'): void {
+  removeApiKey(provider: 'anthropic' | 'google' | 'openai'): void {
     const key =
-      provider === 'anthropic' ? SETTINGS_KEYS.ANTHROPIC_API_KEY : SETTINGS_KEYS.GOOGLE_API_KEY;
+      provider === 'anthropic'
+        ? SETTINGS_KEYS.ANTHROPIC_API_KEY
+        : provider === 'google'
+          ? SETTINGS_KEYS.GOOGLE_API_KEY
+          : SETTINGS_KEYS.OPENAI_API_KEY;
     localStorage.removeItem(key);
   }
 
@@ -125,7 +146,7 @@ class SettingsService {
    */
   loadLLMProvider(): LLMProvider {
     const provider = localStorage.getItem(SETTINGS_KEYS.LLM_PROVIDER);
-    if (provider && ['ollama', 'claude', 'gemini', 'mock'].includes(provider)) {
+    if (provider && ['ollama', 'claude', 'gemini', 'openai', 'mock'].includes(provider)) {
       return provider as LLMProvider;
     }
     return 'ollama'; // Default to ollama
@@ -134,26 +155,30 @@ class SettingsService {
   /**
    * Save model for a specific provider
    */
-  saveModel(provider: 'ollama' | 'claude' | 'gemini', model: string): void {
+  saveModel(provider: 'ollama' | 'claude' | 'gemini' | 'openai', model: string): void {
     const key =
       provider === 'ollama'
         ? SETTINGS_KEYS.OLLAMA_MODEL
         : provider === 'claude'
           ? SETTINGS_KEYS.CLAUDE_MODEL
-          : SETTINGS_KEYS.GEMINI_MODEL;
+          : provider === 'gemini'
+            ? SETTINGS_KEYS.GEMINI_MODEL
+            : SETTINGS_KEYS.OPENAI_MODEL;
     localStorage.setItem(key, model);
   }
 
   /**
    * Load model for a specific provider
    */
-  loadModel(provider: 'ollama' | 'claude' | 'gemini'): string {
+  loadModel(provider: 'ollama' | 'claude' | 'gemini' | 'openai'): string {
     const key =
       provider === 'ollama'
         ? SETTINGS_KEYS.OLLAMA_MODEL
         : provider === 'claude'
           ? SETTINGS_KEYS.CLAUDE_MODEL
-          : SETTINGS_KEYS.GEMINI_MODEL;
+          : provider === 'gemini'
+            ? SETTINGS_KEYS.GEMINI_MODEL
+            : SETTINGS_KEYS.OPENAI_MODEL;
     return localStorage.getItem(key) || DEFAULT_MODELS[provider];
   }
 
@@ -214,18 +239,21 @@ class SettingsService {
    * Load all settings
    */
   async loadSettings(): Promise<AppSettings> {
-    const [anthropicApiKey, googleApiKey] = await Promise.all([
+    const [anthropicApiKey, googleApiKey, openaiApiKey] = await Promise.all([
       this.loadApiKey('anthropic'),
       this.loadApiKey('google'),
+      this.loadApiKey('openai'),
     ]);
 
     return {
       llmProvider: this.loadLLMProvider(),
       anthropicApiKey: anthropicApiKey || undefined,
       googleApiKey: googleApiKey || undefined,
+      openaiApiKey: openaiApiKey || undefined,
       ollamaModel: this.loadModel('ollama'),
       claudeModel: this.loadModel('claude'),
       geminiModel: this.loadModel('gemini'),
+      openaiModel: this.loadModel('openai'),
       timezone: this.loadTimezone(),
       timeFormat: this.loadTimeFormat(),
       nativeLanguage: this.loadNativeLanguage(),
@@ -238,10 +266,12 @@ class SettingsService {
   clearAllSettings(): void {
     localStorage.removeItem(SETTINGS_KEYS.ANTHROPIC_API_KEY);
     localStorage.removeItem(SETTINGS_KEYS.GOOGLE_API_KEY);
+    localStorage.removeItem(SETTINGS_KEYS.OPENAI_API_KEY);
     localStorage.removeItem(SETTINGS_KEYS.LLM_PROVIDER);
     localStorage.removeItem(SETTINGS_KEYS.OLLAMA_MODEL);
     localStorage.removeItem(SETTINGS_KEYS.CLAUDE_MODEL);
     localStorage.removeItem(SETTINGS_KEYS.GEMINI_MODEL);
+    localStorage.removeItem(SETTINGS_KEYS.OPENAI_MODEL);
     localStorage.removeItem(SETTINGS_KEYS.TIMEZONE);
     localStorage.removeItem(SETTINGS_KEYS.TIME_FORMAT);
     localStorage.removeItem(SETTINGS_KEYS.NATIVE_LANGUAGE);

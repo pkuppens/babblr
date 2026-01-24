@@ -14,7 +14,6 @@ from app.routes import (
     assessments,
     chat,
     conversations,
-    credentials,
     grammar,
     lessons,
     progress,
@@ -99,7 +98,6 @@ app.include_router(lessons.router)
 app.include_router(assessments.router)
 app.include_router(user_levels.router)
 app.include_router(progress.router)
-app.include_router(credentials.router)
 
 
 @app.get("/favicon.svg", include_in_schema=False)
