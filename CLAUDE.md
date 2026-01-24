@@ -193,11 +193,110 @@ See `POLICIES.md` for complete policies. Key points:
 **Never use Unicode/emoji in `.sh` or `.bat` files.** Use ASCII prefixes:
 - `[OK]`, `[ERROR]`, `[WARNING]`, `[INFO]`, `[SETUP]`, `[START]`
 
+## GitHub Actions and CI/CD
+
+### Workflow Overview
+
+Babblr uses three main workflows:
+
+1. **CI Workflow** (`.github/workflows/ci.yml`)
+   - Runs on: Push to main, PRs, feature branches
+   - Jobs: Backend lint/test (Python 3.11, 3.12), frontend test, markdown checks
+   - Duration: ~4 min (PR), ~12 min (main with integration tests)
+
+2. **Security Workflow** (`.github/workflows/security.yml`)
+   - Runs on: Push to main, PRs, weekly schedule (Mondays)
+   - Jobs: CodeQL, Gitleaks, pip-audit, npm audit
+   - Duration: ~10 min
+
+3. **Release Workflow** (`.github/workflows/release.yml`)
+   - Runs on: Git tags (`v*.*.*`), manual dispatch
+   - Jobs: Build backend/frontend, generate attestations, create release
+   - Duration: ~15 min
+
+### Composite Actions
+
+Reusable actions in `.github/actions/`:
+- `setup-python` - Python + UV setup with caching
+- `setup-node` - Node.js setup with npm caching
+- `ruff` - Ruff format and lint checks
+- `run-backend-tests` - Backend pytest runner
+- `run-frontend-tests` - Frontend test runner
+
+### Key Features
+
+**Concurrency Control**: Cancels stale PR runs automatically
+**Fail-Fast Matrices**: Stops Python 3.11 tests if 3.12 fails
+**Conditional Execution**: Integration tests only on main or labeled PRs
+**Smart Caching**: UV deps, Whisper models, pytest cache, npm cache
+**Least Privilege**: Default `contents: read`, elevate per-job
+
+### Integration Tests
+
+Integration tests only run on `main` branch by default. To run on PR:
+1. Add `run-integration` label to PR
+2. Push commit or re-run workflow
+
+### Modifying Workflows
+
+**IMPORTANT**: All changes to `.github/workflows/**` and `.github/actions/**` require approval from @pkuppens per CODEOWNERS.
+
+**Testing workflow changes**:
+1. Create feature branch
+2. Modify workflow file
+3. Push to trigger workflow
+4. View results in Actions tab
+5. Iterate until working
+
+### Pre-push Checks
+
+Before pushing, run local checks to predict CI success:
+
+```bash
+# Backend
+cd backend
+uv run ruff format --check .
+uv run ruff check .
+uv run pyright
+uv run pytest tests/test_unit.py -v --tb=short -n auto
+
+# Frontend
+cd frontend
+npm run lint
+npm run format -- --check
+npm run test
+```
+
+### CI Failure Debugging
+
+If CI fails:
+1. View logs in Actions tab
+2. Reproduce locally with exact command
+3. Fix issue
+4. Push or re-run workflow
+
+See `docs/ci/GITHUB_ACTIONS_GUIDE.md` for detailed troubleshooting.
+
+### Security Scanning
+
+Weekly security scans run automatically:
+- CodeQL for Python and TypeScript
+- Gitleaks for secrets
+- pip-audit for Python dependencies
+- npm audit for Node.js dependencies
+
+View results in Security tab → Code scanning.
+
+See `docs/ci/SECURITY_SCANNING.md` for details.
+
 ## Documentation Location
 
 Documentation files are currently in the project root. Key files:
-- `POLICIES.md` - Git workflow, commit messages, PR requirements
+- `POLICIES.md` - Git workflow, commit messages, PR requirements, GitHub Actions policies
 - `VALIDATION.md` - Smoke test checklist
 - `ENVIRONMENT.md` - API key configuration
 - `DEVELOPMENT.md` - Development workflow
 - `backend/tests/README.md` - Test documentation
+- `docs/ci/CI_PIPELINE.md` - CI/CD pipeline architecture
+- `docs/ci/GITHUB_ACTIONS_GUIDE.md` - GitHub Actions developer guide
+- `docs/ci/SECURITY_SCANNING.md` - Security scanning tools and processes

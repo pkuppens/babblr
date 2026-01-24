@@ -1,0 +1,58 @@
+name: 'Run Backend Tests'
+description: 'Runs backend pytest tests with proper environment'
+inputs:
+  test-type:
+    description: 'Type of tests to run (unit, integration, llm_providers)'
+    required: true
+  working-directory:
+    description: 'Working directory to run tests in'
+    required: false
+    default: 'backend'
+  cache-whisper:
+    description: 'Enable Whisper model caching'
+    required: false
+    default: 'true'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Cache Whisper models
+      if: inputs.cache-whisper == 'true'
+      uses: actions/cache@v4
+      with:
+        path: |
+          ${{ github.workspace }}/.cache/whisper
+        key: whisper-${{ runner.os }}-base
+        restore-keys: |
+          whisper-${{ runner.os }}-
+
+    - name: Cache pytest cache
+      uses: actions/cache@v4
+      with:
+        path: ${{ inputs.working-directory }}/.pytest_cache
+        key: pytest-${{ runner.os }}-${{ hashFiles(format('{0}/tests/**/*.py', inputs.working-directory)) }}
+        restore-keys: |
+          pytest-${{ runner.os }}-
+
+    - name: Run tests
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      env:
+        XDG_CACHE_HOME: ${{ github.workspace }}/.cache
+        TEST_RUN_ID: ${{ github.run_id }}-${{ github.run_attempt }}
+      run: |
+        case "${{ inputs.test-type }}" in
+          unit)
+            uv run pytest tests/test_unit.py -v --tb=short -n auto
+            ;;
+          integration)
+            uv run pytest tests/test_integration.py -v --tb=short
+            ;;
+          llm_providers)
+            uv run pytest tests/test_llm_providers.py -v --tb=short
+            ;;
+          *)
+            echo "Unknown test type: ${{ inputs.test-type }}"
+            exit 1
+            ;;
+        esac

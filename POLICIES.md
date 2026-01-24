@@ -123,6 +123,72 @@ All database models must be documented in `docs/DATABASE_SCHEMA.md`:
 
 See `docs/DATABASE_SCHEMA.md` for the complete schema reference and documentation template.
 
+## GitHub Actions and CI/CD
+
+### Workflow Modification Policy
+
+All changes to GitHub Actions workflows and composite actions require approval:
+
+**Protected paths** (require @pkuppens approval):
+- `.github/workflows/**` - All workflow files
+- `.github/actions/**` - All composite actions
+- `.github/dependabot.yml` - Dependency updates configuration
+- `.github/CODEOWNERS` - Code ownership rules
+
+**Enforcement**:
+- CODEOWNERS file defines required reviewers
+- Branch protection rules enforce approval requirements
+- Automated tools (GitHub Copilot) may suggest but cannot merge without approval
+
+**Rationale**:
+- Workflows have elevated permissions and access to secrets
+- Security implications of workflow changes must be reviewed
+- Consistency in CI/CD patterns across repository
+- Prevention of accidental breaking changes
+
+### Security Workflow Changes
+
+Changes to security scanning workflows require additional scrutiny:
+
+**Review checklist**:
+- Security tool configuration changes
+- Permission elevation requests
+- Secret access modifications
+- New external actions added
+
+**Documentation requirements**:
+- Document why change is needed
+- Document security implications
+- Update security documentation if needed
+
+### Pre-commit/Pre-push Alignment
+
+Local checks should indicate if CI will likely pass:
+
+**Pre-commit hooks** (fast checks):
+- Ruff format and lint
+- Gitleaks secret scanning
+- Markdown validation
+
+**Pre-push hooks** (slower checks):
+- Unit tests
+- Type checking
+- Frontend tests
+
+See `docs/ci/GITHUB_ACTIONS_GUIDE.md` for pre-push hook example.
+
+### CI Failure Policy
+
+If CI fails on your PR:
+
+1. **Review logs** - Check which job failed and why
+2. **Reproduce locally** - Run the same command locally
+3. **Fix the issue** - Make necessary code changes
+4. **Re-run CI** - Push fix or re-run failed jobs
+5. **Don't skip checks** - Never merge with failing CI
+
+See `docs/ci/TROUBLESHOOTING_CI.md` for common issues.
+
 ## Issue Management
 
 ### Issue Updates

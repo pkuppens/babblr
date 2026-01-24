@@ -1,0 +1,17 @@
+# CODEOWNERS file for babblr repository
+# See: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# GitHub Actions workflows and composite actions
+# All changes to CI/CD workflows require approval from @pkuppens
+.github/workflows/** @pkuppens
+.github/actions/** @pkuppens
+
+# Security and dependency configuration
+# Changes to security scanning and dependency updates require approval
+.github/dependabot.yml @pkuppens
+.github/CODEOWNERS @pkuppens
+
+# Core documentation
+# Changes to policies and core documentation require approval
+POLICIES.md @pkuppens
+CLAUDE.md @pkuppens
