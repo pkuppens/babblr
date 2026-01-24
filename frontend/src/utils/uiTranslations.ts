@@ -26,6 +26,7 @@ interface UIStrings {
   grammar: string;
   conversations: string;
   assessments: string;
+  progress: string;
   configuration: string;
   // Flashcard hints
   clickToReveal: string;
@@ -53,6 +54,7 @@ const UI_TRANSLATIONS: Record<string, UIStrings> = {
     grammar: 'Gramática',
     conversations: 'Conversaciones',
     assessments: 'Evaluaciones',
+    progress: 'Progreso',
     configuration: 'Configuración',
     clickToReveal: 'Haz clic para ver la traducción',
     clickToShowWord: 'Haz clic para mostrar la palabra',
@@ -77,6 +79,7 @@ const UI_TRANSLATIONS: Record<string, UIStrings> = {
     grammar: 'Grammatica',
     conversations: 'Conversazioni',
     assessments: 'Valutazioni',
+    progress: 'Progresso',
     configuration: 'Configurazione',
     clickToReveal: 'Clicca per vedere la traduzione',
     clickToShowWord: 'Clicca per mostrare la parola',
@@ -101,6 +104,7 @@ const UI_TRANSLATIONS: Record<string, UIStrings> = {
     grammar: 'Grammatik',
     conversations: 'Gespräche',
     assessments: 'Bewertungen',
+    progress: 'Fortschritt',
     configuration: 'Konfiguration',
     clickToReveal: 'Klicken, um die Übersetzung anzuzeigen',
     clickToShowWord: 'Klicken, um das Wort anzuzeigen',
@@ -125,6 +129,7 @@ const UI_TRANSLATIONS: Record<string, UIStrings> = {
     grammar: 'Grammaire',
     conversations: 'Conversations',
     assessments: 'Évaluations',
+    progress: 'Progrès',
     configuration: 'Configuration',
     clickToReveal: 'Cliquer pour voir la traduction',
     clickToShowWord: 'Cliquer pour afficher le mot',
@@ -149,6 +154,7 @@ const UI_TRANSLATIONS: Record<string, UIStrings> = {
     grammar: 'Grammatica',
     conversations: 'Gesprekken',
     assessments: 'Beoordelingen',
+    progress: 'Voortgang',
     configuration: 'Configuratie',
     clickToReveal: 'Klik om de vertaling te zien',
     clickToShowWord: 'Klik om het woord te tonen',
@@ -175,6 +181,7 @@ const DEFAULT_STRINGS: UIStrings = {
   grammar: 'Grammar',
   conversations: 'Conversations',
   assessments: 'Assessments',
+  progress: 'Progress',
   configuration: 'Configuration',
   clickToReveal: 'Click to reveal translation',
   clickToShowWord: 'Click to show word',

@@ -1,0 +1,53 @@
+.progress-container {
+  padding: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.progress-header {
+  margin-bottom: 24px;
+}
+
+.progress-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 8px 0;
+}
+
+.progress-subtitle {
+  font-size: 16px;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.progress-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.progress-loading,
+.progress-error {
+  text-align: center;
+  padding: 48px 24px;
+  color: var(--text-secondary);
+  font-size: 16px;
+}
+
+.progress-error {
+  color: var(--error-color);
+}
+
+/* Responsive layout */
+@media (min-width: 768px) {
+  .progress-cards {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+
+  .assessment-card {
+    grid-column: 1 / -1;
+  }
+}
