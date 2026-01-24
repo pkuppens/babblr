@@ -52,7 +52,7 @@ const VocabularyCard: React.FC<VocabularyCardProps> = ({
   const handleFlipCard = () => {
     const newFlippedState = !isFlipped;
     setIsFlipped(newFlippedState);
-    
+
     // Mark as completed when flipping to show translation (front to back)
     if (newFlippedState && !isCompleted) {
       onCardFlipped();
@@ -62,12 +62,12 @@ const VocabularyCard: React.FC<VocabularyCardProps> = ({
   const handleNext = () => {
     // Reset flip state immediately to prevent flash of next card's solution
     setIsFlipped(false);
-    
+
     // Mark card as completed when clicking Next
     if (!isCompleted) {
       onCardFlipped();
     }
-    
+
     // Small delay to ensure flip animation starts before item changes
     setTimeout(() => {
       onNext();
@@ -77,7 +77,7 @@ const VocabularyCard: React.FC<VocabularyCardProps> = ({
   const handlePrevious = () => {
     // Reset flip state immediately to prevent flash of previous card's solution
     setIsFlipped(false);
-    
+
     // Small delay to ensure flip animation starts before item changes
     setTimeout(() => {
       onPrevious();

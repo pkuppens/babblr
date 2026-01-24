@@ -112,8 +112,7 @@ export function formatDateTime(
 
     // Check if already has timezone indicator (Z or +/-HH:MM)
     const hasTimezoneIndicator =
-      normalizedDateString.endsWith('Z') ||
-      normalizedDateString.match(/[+-]\d{2}:?\d{2}$/);
+      normalizedDateString.endsWith('Z') || normalizedDateString.match(/[+-]\d{2}:?\d{2}$/);
 
     // If no timezone indicator, assume UTC and add Z
     if (!hasTimezoneIndicator) {

@@ -57,9 +57,7 @@ describe('ProgressScreen', () => {
   });
 
   it('should display error when fetch fails', async () => {
-    vi.mocked(progressService.getProgressSummary).mockRejectedValue(
-      new Error('Network error')
-    );
+    vi.mocked(progressService.getProgressSummary).mockRejectedValue(new Error('Network error'));
 
     render(<ProgressScreen selectedLanguage="spanish" />);
 

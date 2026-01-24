@@ -17,7 +17,6 @@ import {
   detectTimeFormat,
   getCurrentTime,
 } from '../utils/dateTime';
-import { maskApiKey } from '../utils/encryption';
 import CostCalculator from './CostCalculator';
 import ModelCombobox from './ModelCombobox';
 import toast from 'react-hot-toast';
@@ -128,21 +127,23 @@ function Settings({ isOpen, onClose, inline = false }: SettingsProps) {
       setTimeFormat(settings.timeFormat);
 
       // Check if keys exist but don't show them for security
+      // Store empty string in state, but mark as masked so we know a key exists
       setHasAnthropicKey(!!settings.anthropicApiKey);
       setHasGoogleKey(!!settings.googleApiKey);
       setHasOpenaiKey(!!settings.openaiApiKey);
 
-      // Show masked keys
+      // Don't load actual keys into state for security - keep state empty
+      // Mark as masked so we know keys exist and can display masked version
       if (settings.anthropicApiKey) {
-        setAnthropicApiKey(maskApiKey(settings.anthropicApiKey));
+        setAnthropicApiKey('');
         setIsAnthropicKeyMasked(true);
       }
       if (settings.googleApiKey) {
-        setGoogleApiKey(maskApiKey(settings.googleApiKey));
+        setGoogleApiKey('');
         setIsGoogleKeyMasked(true);
       }
       if (settings.openaiApiKey) {
-        setOpenaiApiKey(maskApiKey(settings.openaiApiKey));
+        setOpenaiApiKey('');
         setIsOpenaiKeyMasked(true);
       }
     } catch (error) {
@@ -281,24 +282,57 @@ function Settings({ isOpen, onClose, inline = false }: SettingsProps) {
   };
 
   const handleTestAnthropicKey = async () => {
-    if (anthropicApiKey && !isAnthropicKeyMasked) {
-      await validateAnthropicKey(anthropicApiKey);
+    let keyToTest = anthropicApiKey;
+    if (isAnthropicKeyMasked && !anthropicApiKey) {
+      // Load the actual key from storage for testing
+      const loadedKey = await settingsService.loadApiKey('anthropic');
+      if (loadedKey) {
+        keyToTest = loadedKey;
+      } else {
+        toast.error('No API key found to test');
+        return;
+      }
+    }
+    if (keyToTest) {
+      await validateAnthropicKey(keyToTest);
     } else {
       toast.error('Please enter a new API key to test');
     }
   };
 
   const handleTestGoogleKey = async () => {
-    if (googleApiKey && !isGoogleKeyMasked) {
-      await validateGoogleKey(googleApiKey);
+    let keyToTest = googleApiKey;
+    if (isGoogleKeyMasked && !googleApiKey) {
+      // Load the actual key from storage for testing
+      const loadedKey = await settingsService.loadApiKey('google');
+      if (loadedKey) {
+        keyToTest = loadedKey;
+      } else {
+        toast.error('No API key found to test');
+        return;
+      }
+    }
+    if (keyToTest) {
+      await validateGoogleKey(keyToTest);
     } else {
       toast.error('Please enter a new API key to test');
     }
   };
 
   const handleTestOpenaiKey = async () => {
-    if (openaiApiKey && !isOpenaiKeyMasked) {
-      await validateOpenaiKey(openaiApiKey);
+    let keyToTest = openaiApiKey;
+    if (isOpenaiKeyMasked && !openaiApiKey) {
+      // Load the actual key from storage for testing
+      const loadedKey = await settingsService.loadApiKey('openai');
+      if (loadedKey) {
+        keyToTest = loadedKey;
+      } else {
+        toast.error('No API key found to test');
+        return;
+      }
+    }
+    if (keyToTest) {
+      await validateOpenaiKey(keyToTest);
     } else {
       toast.error('Please enter a new API key to test');
     }
@@ -501,17 +535,32 @@ function Settings({ isOpen, onClose, inline = false }: SettingsProps) {
               <div className="settings-input-wrapper">
                 <input
                   type={showAnthropicKey ? 'text' : 'password'}
-                  value={anthropicApiKey}
+                  value={
+                    isAnthropicKeyMasked && !anthropicApiKey && !showAnthropicKey
+                      ? '••••••••••••••••••••••••••••••••••••'
+                      : anthropicApiKey
+                  }
                   onChange={e => {
                     setAnthropicApiKey(e.target.value);
                     setIsAnthropicKeyMasked(false);
                   }}
                   placeholder="sk-ant-api03-..."
                   className="settings-input"
+                  readOnly={isAnthropicKeyMasked && !anthropicApiKey && !showAnthropicKey}
                 />
                 <button
                   className="settings-input-button"
-                  onClick={() => setShowAnthropicKey(!showAnthropicKey)}
+                  onClick={async () => {
+                    if (!showAnthropicKey && isAnthropicKeyMasked && !anthropicApiKey) {
+                      // Load the actual key when user wants to see it
+                      const key = await settingsService.loadApiKey('anthropic');
+                      if (key) {
+                        setAnthropicApiKey(key);
+                        setIsAnthropicKeyMasked(false);
+                      }
+                    }
+                    setShowAnthropicKey(!showAnthropicKey);
+                  }}
                   aria-label={showAnthropicKey ? 'Hide API key' : 'Show API key'}
                 >
                   {showAnthropicKey ? <EyeOff size={20} /> : <Eye size={20} />}
@@ -581,17 +630,32 @@ function Settings({ isOpen, onClose, inline = false }: SettingsProps) {
               <div className="settings-input-wrapper">
                 <input
                   type={showGoogleKey ? 'text' : 'password'}
-                  value={googleApiKey}
+                  value={
+                    isGoogleKeyMasked && !googleApiKey && !showGoogleKey
+                      ? '••••••••••••••••••••••••••••••••••••'
+                      : googleApiKey
+                  }
                   onChange={e => {
                     setGoogleApiKey(e.target.value);
                     setIsGoogleKeyMasked(false);
                   }}
                   placeholder="AIza..."
                   className="settings-input"
+                  readOnly={isGoogleKeyMasked && !googleApiKey && !showGoogleKey}
                 />
                 <button
                   className="settings-input-button"
-                  onClick={() => setShowGoogleKey(!showGoogleKey)}
+                  onClick={async () => {
+                    if (!showGoogleKey && isGoogleKeyMasked && !googleApiKey) {
+                      // Load the actual key when user wants to see it
+                      const key = await settingsService.loadApiKey('google');
+                      if (key) {
+                        setGoogleApiKey(key);
+                        setIsGoogleKeyMasked(false);
+                      }
+                    }
+                    setShowGoogleKey(!showGoogleKey);
+                  }}
                   aria-label={showGoogleKey ? 'Hide API key' : 'Show API key'}
                 >
                   {showGoogleKey ? <EyeOff size={20} /> : <Eye size={20} />}
@@ -749,17 +813,32 @@ function Settings({ isOpen, onClose, inline = false }: SettingsProps) {
               <div className="settings-input-wrapper">
                 <input
                   type={showOpenaiKey ? 'text' : 'password'}
-                  value={openaiApiKey}
+                  value={
+                    isOpenaiKeyMasked && !openaiApiKey && !showOpenaiKey
+                      ? '••••••••••••••••••••••••••••••••••••'
+                      : openaiApiKey
+                  }
                   onChange={e => {
                     setOpenaiApiKey(e.target.value);
                     setIsOpenaiKeyMasked(false);
                   }}
                   placeholder="sk-..."
                   className="settings-input"
+                  readOnly={isOpenaiKeyMasked && !openaiApiKey && !showOpenaiKey}
                 />
                 <button
                   className="settings-input-button"
-                  onClick={() => setShowOpenaiKey(!showOpenaiKey)}
+                  onClick={async () => {
+                    if (!showOpenaiKey && isOpenaiKeyMasked && !openaiApiKey) {
+                      // Load the actual key when user wants to see it
+                      const key = await settingsService.loadApiKey('openai');
+                      if (key) {
+                        setOpenaiApiKey(key);
+                        setIsOpenaiKeyMasked(false);
+                      }
+                    }
+                    setShowOpenaiKey(!showOpenaiKey);
+                  }}
                   aria-label={showOpenaiKey ? 'Hide API key' : 'Show API key'}
                 >
                   {showOpenaiKey ? <EyeOff size={20} /> : <Eye size={20} />}

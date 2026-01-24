@@ -74,13 +74,15 @@ const LessonCard: React.FC<LessonCardProps> = ({ lesson, progress, onClick }) =>
         </div>
 
         {progress?.mastery_score !== undefined && (
-          <div className="mastery-score">
-            Mastery: {Math.round(progress.mastery_score * 100)}%
-          </div>
+          <div className="mastery-score">Mastery: {Math.round(progress.mastery_score * 100)}%</div>
         )}
       </div>
 
-      <button className="lesson-action-button" onClick={onClick} data-testid={`lesson-${lesson.id}`}>
+      <button
+        className="lesson-action-button"
+        onClick={onClick}
+        data-testid={`lesson-${lesson.id}`}
+      >
         {buttonLabel}
       </button>
     </div>

@@ -130,10 +130,7 @@ const LessonPlayer: React.FC<LessonPlayerProps> = ({ lesson, onLessonComplete, o
 
         <div className="lesson-progress-indicator">
           <div className="progress-bar">
-            <div
-              className="progress-bar-fill"
-              style={{ width: `${completionPercentage}%` }}
-            />
+            <div className="progress-bar-fill" style={{ width: `${completionPercentage}%` }} />
           </div>
           <span className="progress-text">
             {completedItems} / {totalItems} {uiStrings.completed}

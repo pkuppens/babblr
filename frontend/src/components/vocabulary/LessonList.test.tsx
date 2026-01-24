@@ -44,24 +44,16 @@ describe('LessonList', () => {
       () => new Promise(() => {}) // Never resolves
     );
 
-    render(
-      <LessonList language="es" onLessonSelect={() => {}} />
-    );
+    render(<LessonList language="es" onLessonSelect={() => {}} />);
 
     expect(screen.getByText('Loading lessons...')).toBeInTheDocument();
   });
 
   it('renders lessons when data is loaded', async () => {
-    vi.mocked(vocabularyService.vocabularyService.getLessons).mockResolvedValue(
-      mockLessons
-    );
-    vi.mocked(vocabularyService.vocabularyService.getProgress).mockRejectedValue(
-      new Error('404')
-    );
+    vi.mocked(vocabularyService.vocabularyService.getLessons).mockResolvedValue(mockLessons);
+    vi.mocked(vocabularyService.vocabularyService.getProgress).mockRejectedValue(new Error('404'));
 
-    render(
-      <LessonList language="es" onLessonSelect={() => {}} />
-    );
+    render(<LessonList language="es" onLessonSelect={() => {}} />);
 
     await waitFor(() => {
       expect(screen.getByText('Greetings')).toBeInTheDocument();
@@ -70,16 +62,10 @@ describe('LessonList', () => {
   });
 
   it('groups lessons by category', async () => {
-    vi.mocked(vocabularyService.vocabularyService.getLessons).mockResolvedValue(
-      mockLessons
-    );
-    vi.mocked(vocabularyService.vocabularyService.getProgress).mockRejectedValue(
-      new Error('404')
-    );
+    vi.mocked(vocabularyService.vocabularyService.getLessons).mockResolvedValue(mockLessons);
+    vi.mocked(vocabularyService.vocabularyService.getProgress).mockRejectedValue(new Error('404'));
 
-    render(
-      <LessonList language="es" onLessonSelect={() => {}} />
-    );
+    render(<LessonList language="es" onLessonSelect={() => {}} />);
 
     await waitFor(() => {
       expect(screen.getByText('Basics')).toBeInTheDocument();
@@ -89,14 +75,10 @@ describe('LessonList', () => {
   it('shows empty state when no lessons available', async () => {
     vi.mocked(vocabularyService.vocabularyService.getLessons).mockResolvedValue([]);
 
-    render(
-      <LessonList language="es" onLessonSelect={() => {}} />
-    );
+    render(<LessonList language="es" onLessonSelect={() => {}} />);
 
     await waitFor(() => {
-      expect(
-        screen.getByText(/No vocabulary lessons available/)
-      ).toBeInTheDocument();
+      expect(screen.getByText(/No vocabulary lessons available/)).toBeInTheDocument();
     });
   });
 
@@ -106,9 +88,7 @@ describe('LessonList', () => {
       new Error(errorMessage)
     );
 
-    render(
-      <LessonList language="es" onLessonSelect={() => {}} />
-    );
+    render(<LessonList language="es" onLessonSelect={() => {}} />);
 
     await waitFor(() => {
       expect(screen.getByText(new RegExp(errorMessage))).toBeInTheDocument();
@@ -117,16 +97,10 @@ describe('LessonList', () => {
 
   it('calls onLessonSelect when lesson is clicked', async () => {
     const onLessonSelect = vi.fn();
-    vi.mocked(vocabularyService.vocabularyService.getLessons).mockResolvedValue(
-      mockLessons
-    );
-    vi.mocked(vocabularyService.vocabularyService.getProgress).mockRejectedValue(
-      new Error('404')
-    );
+    vi.mocked(vocabularyService.vocabularyService.getLessons).mockResolvedValue(mockLessons);
+    vi.mocked(vocabularyService.vocabularyService.getProgress).mockRejectedValue(new Error('404'));
 
-    const { getByTestId } = render(
-      <LessonList language="es" onLessonSelect={onLessonSelect} />
-    );
+    const { getByTestId } = render(<LessonList language="es" onLessonSelect={onLessonSelect} />);
 
     await waitFor(() => {
       getByTestId('lesson-1').click();
@@ -136,16 +110,10 @@ describe('LessonList', () => {
   });
 
   it('filters lessons by CEFR level', async () => {
-    vi.mocked(vocabularyService.vocabularyService.getLessons).mockResolvedValue([
-      mockLessons[0],
-    ]);
-    vi.mocked(vocabularyService.vocabularyService.getProgress).mockRejectedValue(
-      new Error('404')
-    );
+    vi.mocked(vocabularyService.vocabularyService.getLessons).mockResolvedValue([mockLessons[0]]);
+    vi.mocked(vocabularyService.vocabularyService.getProgress).mockRejectedValue(new Error('404'));
 
-    render(
-      <LessonList language="es" selectedLevel="A1" onLessonSelect={() => {}} />
-    );
+    render(<LessonList language="es" selectedLevel="A1" onLessonSelect={() => {}} />);
 
     await waitFor(() => {
       expect(vi.mocked(vocabularyService.vocabularyService.getLessons)).toHaveBeenCalledWith(
@@ -156,9 +124,7 @@ describe('LessonList', () => {
   });
 
   it('fetches progress for each lesson', async () => {
-    vi.mocked(vocabularyService.vocabularyService.getLessons).mockResolvedValue(
-      mockLessons
-    );
+    vi.mocked(vocabularyService.vocabularyService.getLessons).mockResolvedValue(mockLessons);
     vi.mocked(vocabularyService.vocabularyService.getProgress)
       .mockResolvedValueOnce({
         id: 1,
@@ -177,9 +143,7 @@ describe('LessonList', () => {
         last_accessed_at: new Date().toISOString(),
       });
 
-    render(
-      <LessonList language="es" onLessonSelect={() => {}} />
-    );
+    render(<LessonList language="es" onLessonSelect={() => {}} />);
 
     await waitFor(() => {
       expect(vocabularyService.vocabularyService.getProgress).toHaveBeenCalledTimes(2);

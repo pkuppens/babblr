@@ -165,11 +165,7 @@ const VocabularyScreen: React.FC<VocabularyScreenProps> = ({
         <h1 className="vocabulary-title">
           {labels.title}
           {labels.title_en !== labels.title && (
-            <span
-              className="lesson-help"
-              data-tooltip={labels.title_en}
-              aria-label="English title"
-            >
+            <span className="lesson-help" data-tooltip={labels.title_en} aria-label="English title">
               ?
             </span>
           )}
