@@ -1,0 +1,35 @@
+name: 'Run Frontend Tests'
+description: 'Runs frontend tests (lint, format, test, build)'
+inputs:
+  working-directory:
+    description: 'Working directory to run tests in'
+    required: false
+    default: 'frontend'
+  skip-build:
+    description: 'Skip the build step'
+    required: false
+    default: 'false'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Run ESLint
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: npm run lint
+
+    - name: Check formatting
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: npm run format -- --check
+
+    - name: Run tests
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: npm run test
+
+    - name: Build
+      if: inputs.skip-build != 'true'
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: npm run build

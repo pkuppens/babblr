@@ -1,0 +1,188 @@
+name: Security Scanning
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    # Run weekly on Mondays at 00:00 UTC
+    - cron: '0 0 * * 1'
+  workflow_dispatch:
+
+# Concurrency control
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+# Elevated permissions for security scanning
+permissions:
+  contents: read
+  security-events: write
+  actions: read
+
+env:
+  PYTHON_VERSION: "3.12"
+  NODE_VERSION: "20"
+
+jobs:
+  # CodeQL analysis for Python and TypeScript
+  codeql:
+    name: CodeQL Analysis
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      contents: read
+      actions: read
+    strategy:
+      fail-fast: false
+      matrix:
+        language: ['python', 'javascript-typescript']
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+          queries: security-and-quality
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:${{ matrix.language }}"
+
+  # Secret scanning with Gitleaks
+  gitleaks:
+    name: Gitleaks Secret Scan
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
+
+  # Python dependency vulnerability scanning
+  pip-audit:
+    name: Python Dependency Audit
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install uv
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+
+      - name: Cache UV dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/uv
+            ~/.local/share/uv
+          key: uv-audit-${{ runner.os }}-${{ hashFiles('backend/uv.lock') }}
+          restore-keys: |
+            uv-audit-${{ runner.os }}-
+
+      - name: Install dependencies
+        working-directory: backend
+        run: |
+          uv sync --dev
+
+      - name: Install pip-audit
+        run: |
+          uv pip install pip-audit
+
+      - name: Run pip-audit
+        working-directory: backend
+        run: |
+          # Export requirements and audit them
+          uv pip freeze | uv run pip-audit --strict --desc on -r /dev/stdin
+
+  # Node.js dependency vulnerability scanning
+  npm-audit:
+    name: Node.js Dependency Audit
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Run npm audit
+        working-directory: frontend
+        run: |
+          # Run audit and fail on moderate or higher vulnerabilities
+          npm audit --audit-level=moderate
+
+  # Security summary
+  security-summary:
+    name: Security Summary
+    runs-on: ubuntu-latest
+    needs: [codeql, gitleaks, pip-audit, npm-audit]
+    if: always()
+    permissions:
+      contents: read
+    steps:
+      - name: Generate Security Summary
+        run: |
+          echo "# Security Scanning Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Scan Results" >> $GITHUB_STEP_SUMMARY
+          echo "| Scan | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| CodeQL Analysis | ${{ needs.codeql.result == 'success' && '✅ Passed' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Gitleaks Secret Scan | ${{ needs.gitleaks.result == 'success' && '✅ Passed' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Python Dependency Audit | ${{ needs.pip-audit.result == 'success' && '✅ Passed' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Node.js Dependency Audit | ${{ needs.npm-audit.result == 'success' && '✅ Passed' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [ "${{ needs.codeql.result }}" == "success" ] && \
+             [ "${{ needs.gitleaks.result }}" == "success" ] && \
+             [ "${{ needs.pip-audit.result }}" == "success" ] && \
+             [ "${{ needs.npm-audit.result }}" == "success" ]; then
+            echo "✅ **All security scans passed - no vulnerabilities detected!**" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "⚠️ **Some security scans failed - please review the Security tab for details.**" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Check overall status
+        if: |
+          needs.codeql.result != 'success' ||
+          needs.gitleaks.result != 'success' ||
+          needs.pip-audit.result != 'success' ||
+          needs.npm-audit.result != 'success'
+        run: |
+          echo "One or more security scans failed"
+          exit 1

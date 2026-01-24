@@ -1,0 +1,251 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (e.g., v1.0.0)'
+        required: true
+        type: string
+
+# Concurrency control - only one release at a time
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  packages: write
+  attestations: write
+  id-token: write
+
+env:
+  PYTHON_VERSION: "3.12"
+  NODE_VERSION: "20"
+
+jobs:
+  # Build backend artifacts
+  build-backend:
+    name: Build Backend Artifacts
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            VERSION="${{ inputs.version }}"
+          else
+            VERSION="${GITHUB_REF#refs/tags/}"
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Building version: $VERSION"
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install uv
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+
+      - name: Build package
+        working-directory: backend
+        run: |
+          uv build
+
+      - name: Upload backend artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-dist
+          path: backend/dist/*
+          retention-days: ${{ vars.ARTIFACT_RETENTION_DAYS || 90 }}
+
+  # Build frontend artifacts
+  build-frontend:
+    name: Build Frontend Artifacts
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Build Electron app
+        working-directory: frontend
+        run: npm run electron:build
+
+      - name: Upload frontend artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist
+          path: frontend/release/*
+          retention-days: ${{ vars.ARTIFACT_RETENTION_DAYS || 90 }}
+
+  # Generate artifact attestations
+  attest:
+    name: Generate Artifact Attestations
+    runs-on: ubuntu-latest
+    needs: [build-backend, build-frontend]
+    permissions:
+      contents: read
+      attestations: write
+      id-token: write
+    steps:
+      - name: Download backend artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: backend-dist
+          path: backend-dist
+
+      - name: Download frontend artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-dist
+          path: frontend-dist
+
+      - name: Generate attestations for backend
+        uses: actions/attest-build-provenance@v1
+        with:
+          subject-path: 'backend-dist/*'
+
+      - name: Generate attestations for frontend
+        uses: actions/attest-build-provenance@v1
+        with:
+          subject-path: 'frontend-dist/*'
+
+  # Create GitHub release
+  create-release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    needs: [build-backend, build-frontend, attest]
+    permissions:
+      contents: write
+    environment:
+      name: production
+      url: https://github.com/${{ github.repository }}/releases/tag/${{ needs.build-backend.outputs.version }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download backend artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: backend-dist
+          path: backend-dist
+
+      - name: Download frontend artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-dist
+          path: frontend-dist
+
+      - name: Generate release notes
+        id: release-notes
+        run: |
+          VERSION="${{ needs.build-backend.outputs.version }}"
+          
+          # Get commits since last tag
+          LAST_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+          if [ -z "$LAST_TAG" ]; then
+            COMMITS=$(git log --pretty=format:"- %s (%h)" --no-merges)
+          else
+            COMMITS=$(git log $LAST_TAG..HEAD --pretty=format:"- %s (%h)" --no-merges)
+          fi
+          
+          # Create release notes
+          cat > release-notes.md << NOTES
+          # Babblr $VERSION
+          
+          ## Changes
+          
+          $COMMITS
+          
+          ## Artifacts
+          
+          ### Backend
+          - Python wheel package (`.whl`)
+          - Source distribution (`.tar.gz`)
+          
+          ### Frontend
+          - Electron application (platform-specific)
+          
+          ## Verification
+          
+          All artifacts have been attested for supply chain security. View attestations in the GitHub UI.
+          
+          ## Installation
+          
+          See [QUICKSTART.md](https://github.com/${{ github.repository }}/blob/main/QUICKSTART.md) for installation instructions.
+          NOTES
+          
+          echo "Release notes generated"
+
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.build-backend.outputs.version }}
+          name: Babblr ${{ needs.build-backend.outputs.version }}
+          body_path: release-notes.md
+          draft: false
+          prerelease: false
+          files: |
+            backend-dist/*
+            frontend-dist/*
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # Release summary
+  release-summary:
+    name: Release Summary
+    runs-on: ubuntu-latest
+    needs: [build-backend, build-frontend, attest, create-release]
+    if: always()
+    permissions:
+      contents: read
+    steps:
+      - name: Generate Release Summary
+        run: |
+          echo "# Release Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Version: ${{ needs.build-backend.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Build Status" >> $GITHUB_STEP_SUMMARY
+          echo "| Component | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Backend | ${{ needs.build-backend.result == 'success' && '✅ Success' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Frontend | ${{ needs.build-frontend.result == 'success' && '✅ Success' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Attestations | ${{ needs.attest.result == 'success' && '✅ Success' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| GitHub Release | ${{ needs.create-release.result == 'success' && '✅ Success' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [ "${{ needs.create-release.result }}" == "success" ]; then
+            echo "✅ **Release ${{ needs.build-backend.outputs.version }} created successfully!**" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "View release: https://github.com/${{ github.repository }}/releases/tag/${{ needs.build-backend.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ **Release failed - please check the logs.**" >> $GITHUB_STEP_SUMMARY
+          fi

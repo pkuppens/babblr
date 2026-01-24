@@ -1,0 +1,22 @@
+name: 'Run Ruff'
+description: 'Runs Ruff format check and lint'
+inputs:
+  working-directory:
+    description: 'Working directory to run Ruff in'
+    required: false
+    default: 'backend'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Ruff format (check)
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        uv run ruff format --check .
+
+    - name: Ruff lint (check)
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        uv run ruff check .
