@@ -18,8 +18,8 @@ import {
   getCurrentTime,
 } from '../utils/dateTime';
 import { maskApiKey } from '../utils/encryption';
-import CredentialManagement from './CredentialManagement';
 import CostCalculator from './CostCalculator';
+import ModelCombobox from './ModelCombobox';
 import toast from 'react-hot-toast';
 import './Settings.css';
 
@@ -32,25 +32,32 @@ interface SettingsProps {
 // API key validation constants
 const ANTHROPIC_KEY_PREFIX = 'sk-ant-api03-';
 const GOOGLE_KEY_PREFIX = 'AI';
+const OPENAI_KEY_PREFIX = 'sk-';
 
 function Settings({ isOpen, onClose, inline = false }: SettingsProps) {
   const [llmProvider, setLlmProvider] = useState<LLMProvider>('ollama');
   const [anthropicApiKey, setAnthropicApiKey] = useState('');
   const [googleApiKey, setGoogleApiKey] = useState('');
+  const [openaiApiKey, setOpenaiApiKey] = useState('');
   const [showAnthropicKey, setShowAnthropicKey] = useState(false);
   const [showGoogleKey, setShowGoogleKey] = useState(false);
+  const [showOpenaiKey, setShowOpenaiKey] = useState(false);
   const [isValidatingAnthropic, setIsValidatingAnthropic] = useState(false);
   const [isValidatingGoogle, setIsValidatingGoogle] = useState(false);
+  const [isValidatingOpenai, setIsValidatingOpenai] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [hasAnthropicKey, setHasAnthropicKey] = useState(false);
   const [hasGoogleKey, setHasGoogleKey] = useState(false);
+  const [hasOpenaiKey, setHasOpenaiKey] = useState(false);
   const [isAnthropicKeyMasked, setIsAnthropicKeyMasked] = useState(false);
   const [isGoogleKeyMasked, setIsGoogleKeyMasked] = useState(false);
+  const [isOpenaiKeyMasked, setIsOpenaiKeyMasked] = useState(false);
 
   // Model selection state
   const [ollamaModel, setOllamaModel] = useState(DEFAULT_MODELS.ollama);
   const [claudeModel, setClaudeModel] = useState(DEFAULT_MODELS.claude);
   const [geminiModel, setGeminiModel] = useState(DEFAULT_MODELS.gemini);
+  const [openaiModel, setOpenaiModel] = useState(DEFAULT_MODELS.openai);
   const [customOllamaModel, setCustomOllamaModel] = useState('');
 
   // Language settings state
@@ -104,6 +111,7 @@ function Settings({ isOpen, onClose, inline = false }: SettingsProps) {
       setOllamaModel(settings.ollamaModel);
       setClaudeModel(settings.claudeModel);
       setGeminiModel(settings.geminiModel);
+      setOpenaiModel(settings.openaiModel);
 
       // Check if Ollama model is custom (not in predefined list)
       const isOllamaCustom = !AVAILABLE_MODELS.ollama.some(m => m.value === settings.ollamaModel);
@@ -122,6 +130,7 @@ function Settings({ isOpen, onClose, inline = false }: SettingsProps) {
       // Check if keys exist but don't show them for security
       setHasAnthropicKey(!!settings.anthropicApiKey);
       setHasGoogleKey(!!settings.googleApiKey);
+      setHasOpenaiKey(!!settings.openaiApiKey);
 
       // Show masked keys
       if (settings.anthropicApiKey) {
@@ -131,6 +140,10 @@ function Settings({ isOpen, onClose, inline = false }: SettingsProps) {
       if (settings.googleApiKey) {
         setGoogleApiKey(maskApiKey(settings.googleApiKey));
         setIsGoogleKeyMasked(true);
+      }
+      if (settings.openaiApiKey) {
+        setOpenaiApiKey(maskApiKey(settings.openaiApiKey));
+        setIsOpenaiKeyMasked(true);
       }
     } catch (error) {
       console.error('Failed to load settings:', error);
@@ -197,6 +210,28 @@ function Settings({ isOpen, onClose, inline = false }: SettingsProps) {
     }
   };
 
+  const validateOpenaiKey = async (key: string): Promise<boolean> => {
+    setIsValidatingOpenai(true);
+    try {
+      // Simple validation: Check if it looks like a valid OpenAI key
+      if (!key.startsWith(OPENAI_KEY_PREFIX)) {
+        toast.error('Invalid OpenAI API key format');
+        return false;
+      }
+
+      // Note: Full validation would require sending a test request to OpenAI's API
+      // For now, we just validate the format
+      toast.success('OpenAI API key format is valid');
+      return true;
+    } catch (error) {
+      console.error('OpenAI API key validation failed:', error);
+      toast.error('Failed to validate OpenAI API key');
+      return false;
+    } finally {
+      setIsValidatingOpenai(false);
+    }
+  };
+
   const handleSave = async () => {
     setIsSaving(true);
     try {
@@ -210,6 +245,7 @@ function Settings({ isOpen, onClose, inline = false }: SettingsProps) {
       }
       settingsService.saveModel('claude', claudeModel);
       settingsService.saveModel('gemini', geminiModel);
+      settingsService.saveModel('openai', openaiModel);
 
       // Save language settings
       settingsService.saveNativeLanguage(nativeLanguage);
@@ -227,6 +263,11 @@ function Settings({ isOpen, onClose, inline = false }: SettingsProps) {
       if (googleApiKey && !isGoogleKeyMasked) {
         await settingsService.saveApiKey('google', googleApiKey);
         setHasGoogleKey(true);
+      }
+
+      if (openaiApiKey && !isOpenaiKeyMasked) {
+        await settingsService.saveApiKey('openai', openaiApiKey);
+        setHasOpenaiKey(true);
       }
 
       toast.success('Settings saved successfully');
@@ -255,6 +296,14 @@ function Settings({ isOpen, onClose, inline = false }: SettingsProps) {
     }
   };
 
+  const handleTestOpenaiKey = async () => {
+    if (openaiApiKey && !isOpenaiKeyMasked) {
+      await validateOpenaiKey(openaiApiKey);
+    } else {
+      toast.error('Please enter a new API key to test');
+    }
+  };
+
   const handleClearAnthropicKey = () => {
     settingsService.removeApiKey('anthropic');
     setAnthropicApiKey('');
@@ -269,6 +318,14 @@ function Settings({ isOpen, onClose, inline = false }: SettingsProps) {
     setHasGoogleKey(false);
     setIsGoogleKeyMasked(false);
     toast.success('Google API key cleared');
+  };
+
+  const handleClearOpenaiKey = () => {
+    settingsService.removeApiKey('openai');
+    setOpenaiApiKey('');
+    setHasOpenaiKey(false);
+    setIsOpenaiKeyMasked(false);
+    toast.success('OpenAI API key cleared');
   };
 
   if (!isOpen) return null;
@@ -406,16 +463,6 @@ function Settings({ isOpen, onClose, inline = false }: SettingsProps) {
           </div>
         </div>
 
-        {/* Secure Credential Management */}
-        <div className="settings-section">
-          <CredentialManagement />
-        </div>
-
-        {/* Cost Calculator */}
-        <div className="settings-section">
-          <CostCalculator />
-        </div>
-
         {/* LLM Provider Selection */}
         <div className="settings-section">
           <h3>LLM Provider</h3>
@@ -431,6 +478,7 @@ function Settings({ isOpen, onClose, inline = false }: SettingsProps) {
             <option value="ollama">Ollama (Local - No API Key Required)</option>
             <option value="claude">Anthropic Claude (API Key Required)</option>
             <option value="gemini">Google Gemini (API Key Required)</option>
+            <option value="openai">OpenAI (API Key Required)</option>
             <option value="mock">Mock (Testing Only)</option>
           </select>
         </div>
@@ -495,18 +543,23 @@ function Settings({ isOpen, onClose, inline = false }: SettingsProps) {
             )}
 
             <h4 className="settings-subsection-title">Model Selection</h4>
-            <p className="settings-description">Select which Claude model to use.</p>
-            <select
+            <p className="settings-description">
+              Select which Claude model to use, or type a custom model name.{' '}
+              <a
+                href="https://docs.anthropic.com/claude/docs/models-overview"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                View available models and pricing
+              </a>
+            </p>
+            <ModelCombobox
               value={claudeModel}
-              onChange={e => setClaudeModel(e.target.value)}
-              className="settings-select"
-            >
-              {AVAILABLE_MODELS.claude.map(model => (
-                <option key={model.value} value={model.value}>
-                  {model.label}
-                </option>
-              ))}
-            </select>
+              onChange={setClaudeModel}
+              options={AVAILABLE_MODELS.claude}
+              placeholder="Select or type Claude model name..."
+              className="settings-model-combobox"
+            />
           </div>
         )}
 
@@ -570,18 +623,23 @@ function Settings({ isOpen, onClose, inline = false }: SettingsProps) {
             )}
 
             <h4 className="settings-subsection-title">Model Selection</h4>
-            <p className="settings-description">Select which Gemini model to use.</p>
-            <select
+            <p className="settings-description">
+              Select which Gemini model to use, or type a custom model name.{' '}
+              <a
+                href="https://ai.google.dev/models/gemini"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                View available models and pricing
+              </a>
+            </p>
+            <ModelCombobox
               value={geminiModel}
-              onChange={e => setGeminiModel(e.target.value)}
-              className="settings-select"
-            >
-              {AVAILABLE_MODELS.gemini.map(model => (
-                <option key={model.value} value={model.value}>
-                  {model.label}
-                </option>
-              ))}
-            </select>
+              onChange={setGeminiModel}
+              options={AVAILABLE_MODELS.gemini}
+              placeholder="Select or type Gemini model name..."
+              className="settings-model-combobox"
+            />
           </div>
         )}
 
@@ -606,7 +664,10 @@ function Settings({ isOpen, onClose, inline = false }: SettingsProps) {
 
             <h4 className="settings-subsection-title">Model Selection</h4>
             <p className="settings-description">
-              Select an Ollama model to use. Make sure the model is pulled locally.
+              Select an Ollama model to use. Make sure the model is pulled locally.{' '}
+              <a href="https://ollama.com/library" target="_blank" rel="noopener noreferrer">
+                Browse available models
+              </a>
             </p>
             <select
               value={ollamaModel}
@@ -669,6 +730,131 @@ function Settings({ isOpen, onClose, inline = false }: SettingsProps) {
             </div>
           </div>
         )}
+
+        {/* OpenAI API Key */}
+        {llmProvider === 'openai' && (
+          <div className="settings-section">
+            <h3>OpenAI API Key</h3>
+            <p className="settings-description">
+              Get your API key from{' '}
+              <a
+                href="https://platform.openai.com/api-keys"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                OpenAI Platform
+              </a>
+            </p>
+            <div className="settings-input-group">
+              <div className="settings-input-wrapper">
+                <input
+                  type={showOpenaiKey ? 'text' : 'password'}
+                  value={openaiApiKey}
+                  onChange={e => {
+                    setOpenaiApiKey(e.target.value);
+                    setIsOpenaiKeyMasked(false);
+                  }}
+                  placeholder="sk-..."
+                  className="settings-input"
+                />
+                <button
+                  className="settings-input-button"
+                  onClick={() => setShowOpenaiKey(!showOpenaiKey)}
+                  aria-label={showOpenaiKey ? 'Hide API key' : 'Show API key'}
+                >
+                  {showOpenaiKey ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
+              </div>
+              <div className="settings-button-group">
+                <button
+                  onClick={handleTestOpenaiKey}
+                  disabled={isValidatingOpenai || !openaiApiKey}
+                  className="settings-button settings-button-secondary"
+                >
+                  {isValidatingOpenai ? 'Testing...' : 'Test Key'}
+                </button>
+                {hasOpenaiKey && (
+                  <button
+                    onClick={handleClearOpenaiKey}
+                    className="settings-button settings-button-danger"
+                  >
+                    Clear Key
+                  </button>
+                )}
+              </div>
+            </div>
+            {hasOpenaiKey && isOpenaiKeyMasked && (
+              <div className="settings-status settings-status-success">
+                <CheckCircle size={16} />
+                <span>API key configured (enter new key to replace)</span>
+              </div>
+            )}
+
+            <h4 className="settings-subsection-title">Model Selection</h4>
+            <p className="settings-description">
+              Select which OpenAI model to use, or type a custom model name (e.g., gpt-5.2-pro).{' '}
+              <a
+                href="https://platform.openai.com/docs/models"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                View available models and pricing
+              </a>
+            </p>
+            <ModelCombobox
+              value={openaiModel}
+              onChange={setOpenaiModel}
+              options={AVAILABLE_MODELS.openai}
+              placeholder="Select or type OpenAI model name..."
+              className="settings-model-combobox"
+            />
+          </div>
+        )}
+
+        {/* Cost Calculator */}
+        <div className="settings-section">
+          <CostCalculator
+            selectedProvider={
+              llmProvider === 'claude'
+                ? 'anthropic'
+                : llmProvider === 'gemini'
+                  ? 'google'
+                  : llmProvider === 'openai'
+                    ? 'openai'
+                    : 'ollama'
+            }
+            selectedModel={
+              llmProvider === 'claude'
+                ? claudeModel
+                : llmProvider === 'gemini'
+                  ? geminiModel
+                  : llmProvider === 'openai'
+                    ? openaiModel
+                    : ollamaModel === 'custom'
+                      ? customOllamaModel
+                      : ollamaModel
+            }
+            onProviderChange={provider => {
+              if (provider === 'anthropic') setLlmProvider('claude');
+              else if (provider === 'google') setLlmProvider('gemini');
+              else if (provider === 'openai') setLlmProvider('openai');
+              else setLlmProvider('ollama');
+            }}
+            onModelChange={model => {
+              if (llmProvider === 'claude') setClaudeModel(model);
+              else if (llmProvider === 'gemini') setGeminiModel(model);
+              else if (llmProvider === 'openai') setOpenaiModel(model);
+              else {
+                if (AVAILABLE_MODELS.ollama.some(m => m.value === model)) {
+                  setOllamaModel(model);
+                } else {
+                  setOllamaModel('custom');
+                  setCustomOllamaModel(model);
+                }
+              }
+            }}
+          />
+        </div>
 
         {/* STT (Speech-to-Text) Settings */}
         <div className="settings-section">

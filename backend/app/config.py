@@ -10,15 +10,6 @@ class Settings(BaseSettings):
     # LLM Provider selection (runtime swappable)
     llm_provider: str = "ollama"  # "ollama", "claude", "gemini", "mock"
 
-    # Credential Storage Mode
-    # - "secure": Require credentials from secure storage (Electron safeStorage)
-    # - "env": Use environment variables (.env file)
-    # - "hybrid": Try secure storage first, fall back to env (default for development)
-    credential_mode: str = Field(
-        default="hybrid",
-        validation_alias=AliasChoices("credential_mode", "babblr_credential_mode"),
-    )
-
     # Ollama settings (MVP primary)
     ollama_base_url: str = "http://localhost:11434"
     ollama_model: str = "llama3.2:latest"
@@ -110,12 +101,7 @@ settings = Settings()
 
 def get_api_key_for_provider(provider: str) -> Optional[str]:
     """
-    Get API key for a provider with fallback logic.
-
-    Credential resolution order (based on credential_mode):
-    1. "secure": Only use credentials from credential_store (via /credentials API)
-    2. "env": Only use environment variables
-    3. "hybrid": Try credential_store first, fall back to env
+    Get API key for a provider from environment variables.
 
     Args:
         provider: Provider name ('anthropic', 'google', 'openai', 'ollama')
@@ -123,24 +109,11 @@ def get_api_key_for_provider(provider: str) -> Optional[str]:
     Returns:
         API key if available, None otherwise
     """
-    from app.routes.credentials import get_api_key
-
-    api_key: Optional[str] = None
-
-    # Try credential store first (except in "env" mode)
-    if settings.credential_mode != "env":
-        api_key = get_api_key(provider)
-        if api_key:
-            return api_key
-
-    # Fall back to environment variables (except in "secure" mode)
-    if settings.credential_mode != "secure":
-        if provider == "anthropic":
-            api_key = settings.anthropic_api_key or None
-        elif provider == "google":
-            api_key = settings.google_api_key or None
-        elif provider == "openai":
-            api_key = settings.openai_api_key or None
-        # Ollama doesn't use API keys
-
-    return api_key
+    if provider == "anthropic":
+        return settings.anthropic_api_key or None
+    elif provider == "google":
+        return settings.google_api_key or None
+    elif provider == "openai":
+        return settings.openai_api_key or None
+    # Ollama doesn't use API keys
+    return None
