@@ -223,7 +223,7 @@ All artifacts have been attested for supply chain security. View attestations in
 
 ## Installation
 
-See [QUICKSTART.md](https://github.com/pkuppens/babblr/blob/main/QUICKSTART.md) for installation instructions.
+See [README.md](https://github.com/pkuppens/babblr/blob/main/README.md) for installation instructions.
 ```
 
 ## Viewing Attestations
