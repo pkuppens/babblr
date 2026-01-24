@@ -8,6 +8,7 @@ export type TabKey =
   | 'grammar'
   | 'conversations'
   | 'assessments'
+  | 'progress'
   | 'configuration';
 
 export interface Topic {
@@ -202,4 +203,33 @@ export interface VocabularyProgressCreate {
   status?: 'not_started' | 'in_progress' | 'completed';
   completion_percentage?: number;
   mastery_score?: number;
+}
+
+// Progress Dashboard Types
+export interface VocabularyProgressSummary {
+  completed: number;
+  in_progress: number;
+  total: number;
+  last_activity: string | null;
+}
+
+export interface GrammarProgress {
+  completed: number;
+  in_progress: number;
+  total: number;
+  last_activity: string | null;
+}
+
+export interface AssessmentProgress {
+  latest_score: number | null;
+  recommended_level: string | null;
+  skill_scores: any | null;
+  last_attempt: string | null;
+}
+
+export interface ProgressSummary {
+  language: string;
+  vocabulary: VocabularyProgressSummary;
+  grammar: GrammarProgress;
+  assessment: AssessmentProgress;
 }

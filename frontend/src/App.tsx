@@ -8,6 +8,7 @@ import VocabularyScreen from './screens/VocabularyScreen';
 import GrammarScreen from './screens/GrammarScreen';
 import ConversationsScreen from './screens/ConversationsScreen';
 import AssessmentsScreen from './screens/AssessmentsScreen';
+import ProgressScreen from './screens/ProgressScreen';
 import ConfigurationScreen from './screens/ConfigurationScreen';
 import { conversationService, chatService } from './services/api';
 import { settingsService, type TimeFormat } from './services/settings';
@@ -232,6 +233,8 @@ function App() {
             timeFormat={timeFormat}
           />
         );
+      case 'progress':
+        return <ProgressScreen selectedLanguage={selectedLanguage} />;
       case 'configuration':
         return <ConfigurationScreen isOpen={showSettings} onClose={handleCloseSettings} />;
       default:

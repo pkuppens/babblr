@@ -1,5 +1,5 @@
 import React from 'react';
-import { Home, BookOpen, FileText, MessageSquare, ClipboardCheck, Settings } from 'lucide-react';
+import { Home, BookOpen, FileText, MessageSquare, ClipboardCheck, TrendingUp, Settings } from 'lucide-react';
 import type { TabKey } from '../types';
 import { getUIStrings } from '../utils/uiTranslations';
 import './TabBar.css';
@@ -41,6 +41,12 @@ const TABS: TabConfig[] = [
     key: 'assessments',
     labelKey: 'assessments',
     icon: <ClipboardCheck size={20} />,
+    ariaLabelSuffix: 'tab',
+  },
+  {
+    key: 'progress',
+    labelKey: 'progress',
+    icon: <TrendingUp size={20} />,
     ariaLabelSuffix: 'tab',
   },
   {
