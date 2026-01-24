@@ -18,6 +18,7 @@ import {
   getCurrentTime,
 } from '../utils/dateTime';
 import { maskApiKey } from '../utils/encryption';
+import CredentialManagement from './CredentialManagement';
 import toast from 'react-hot-toast';
 import './Settings.css';
 
@@ -402,6 +403,11 @@ function Settings({ isOpen, onClose, inline = false }: SettingsProps) {
             <span className="time-preview-label">Preview:</span>
             <span className="time-preview-value">{currentTimePreview}</span>
           </div>
+        </div>
+
+        {/* Secure Credential Management */}
+        <div className="settings-section">
+          <CredentialManagement />
         </div>
 
         {/* LLM Provider Selection */}

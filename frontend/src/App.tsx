@@ -12,6 +12,7 @@ import ProgressScreen from './screens/ProgressScreen';
 import ConfigurationScreen from './screens/ConfigurationScreen';
 import { conversationService, chatService } from './services/api';
 import { settingsService, type TimeFormat } from './services/settings';
+import { syncCredentialsToBackend, isElectronCredentialAPIAvailable } from './services/credentialService';
 import { useBackendErrorContext } from './contexts/BackendErrorContext';
 import {
   registerPersistentErrorSetter,
@@ -101,7 +102,21 @@ function App() {
   useEffect(() => {
     loadConversations();
     loadDisplaySettings();
+    syncCredentialsOnStartup();
   }, []);
+
+  const syncCredentialsOnStartup = async () => {
+    // Sync credentials from Electron storage to backend on app startup
+    if (isElectronCredentialAPIAvailable()) {
+      try {
+        await syncCredentialsToBackend();
+        console.log('[App] Credentials synced to backend');
+      } catch (error) {
+        console.error('[App] Failed to sync credentials:', error);
+        // Non-critical error - app can still function with .env fallback
+      }
+    }
+  };
 
   const handleLanguageSelectionChange = (language: Language, difficulty: DifficultyLevel) => {
     // Update selection immediately (persists across tabs)
