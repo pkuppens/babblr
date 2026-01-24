@@ -198,7 +198,7 @@ jobs:
           
           ## Installation
           
-          See [QUICKSTART.md](https://github.com/${{ github.repository }}/blob/main/QUICKSTART.md) for installation instructions.
+          See [README.md](https://github.com/${{ github.repository }}/blob/main/README.md) for installation instructions.
           NOTES
           
           echo "Release notes generated"
