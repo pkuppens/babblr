@@ -223,7 +223,7 @@ export interface GrammarProgress {
 export interface AssessmentProgress {
   latest_score: number | null;
   recommended_level: string | null;
-  skill_scores: any | null;
+  skill_scores: SkillScore[] | null;
   last_attempt: string | null;
 }
 

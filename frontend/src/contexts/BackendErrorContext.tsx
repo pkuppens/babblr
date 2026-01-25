@@ -23,6 +23,7 @@ export function BackendErrorProvider({ children }: { children: ReactNode }) {
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useBackendErrorContext() {
   const context = useContext(BackendErrorContext);
   if (context === undefined) {

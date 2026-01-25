@@ -357,6 +357,7 @@ const ConversationInterface: React.FC<ConversationInterfaceProps> = ({
     ttsRate,
     ttsVoiceURI,
     conversation.language,
+    conversation.topic_id,
     speak,
     isSpeaking,
     lastAutoPlayedAssistantId,

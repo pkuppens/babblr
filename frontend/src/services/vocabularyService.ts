@@ -107,7 +107,7 @@ export const vocabularyService = {
       return response.data;
     } catch (error) {
       // Progress might not exist yet (404), return default
-      if ((error as any)?.response?.status === 404) {
+      if ((error as Error & { response?: { status: number } })?.response?.status === 404) {
         console.log('[Vocabulary] No progress found yet for lesson:', { lessonId });
         return {
           id: 0,
