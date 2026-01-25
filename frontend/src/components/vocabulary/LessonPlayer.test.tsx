@@ -120,7 +120,7 @@ describe('LessonPlayer', () => {
     const onLessonComplete = vi.fn();
     const onExit = vi.fn();
 
-    const { rerender } = render(
+    render(
       <LessonPlayer lesson={mockLesson} onLessonComplete={onLessonComplete} onExit={onExit} />
     );
 
