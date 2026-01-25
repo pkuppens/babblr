@@ -1,6 +1,5 @@
 import { describe, it, expect } from 'vitest';
 import { formatDateTime, formatTime, formatDateAndTime } from './dateTime';
-import type { TimeFormat } from '../services/settings';
 
 describe('dateTime utilities', () => {
   describe('formatDateTime with UTC timestamps', () => {

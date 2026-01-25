@@ -18,7 +18,6 @@
 import { expect, test } from "@playwright/test";
 
 const BASE_URL = process.env.FRONTEND_URL || "http://localhost:3000";
-const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8000";
 
 test.describe("Section 5: Frontend UI Validation", () => {
   test.beforeEach(async ({ page }) => {
@@ -119,7 +118,7 @@ test.describe("Section 5: Frontend UI Validation", () => {
     await expect(messageArea).toBeVisible();
 
     // EXPECTED RESULT 3: Initial tutor message in Spanish
-    const tutorMessage = messageArea.locator("text=/^[A-Za-záéíóúñ¿?!¡\s.,]+$/");
+    const tutorMessage = messageArea.locator("text=/^[A-Za-záéíóúñ¿?!¡\\s.,]+$/");
     await expect(tutorMessage).toBeVisible();
   });
 

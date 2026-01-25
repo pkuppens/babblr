@@ -22,7 +22,7 @@ const ProgressCard: React.FC<ProgressCardProps> = ({
   inProgress,
   total,
   lastActivity,
-  type,
+  type: _type,
 }) => {
   const completionPercentage = total > 0 ? Math.round((completed / total) * 100) : 0;
   const notStarted = total - completed - inProgress;
