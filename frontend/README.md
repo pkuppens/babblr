@@ -2,6 +2,11 @@
 
 Electron + React + TypeScript frontend for the Babblr language learning application.
 
+## Requirements
+
+- **Node.js**: 22.0.0 or higher
+- **npm**: 11.8.0 or higher (upgrade with: `npm install -g npm@11.8.0`)
+
 ## Development
 
 ```bash

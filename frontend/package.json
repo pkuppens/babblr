@@ -27,6 +27,10 @@
   ],
   "author": "",
   "license": "(AGPL-3.0-only OR LicenseRef-Babblr-Commercial)",
+  "engines": {
+    "node": ">=22.0.0",
+    "npm": ">=11.8.0"
+  },
   "dependencies": {
     "axios": "^1.7.9",
     "lucide-react": "^0.263.1",

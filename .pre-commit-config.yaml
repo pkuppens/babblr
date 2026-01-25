@@ -73,12 +73,15 @@ repos:
         pass_filenames: false
 
       # Run tests only after formatting and linting pass
+      # Runs when frontend source, config, or dependency files change
+      # Matches CI: npm run test (which runs vitest run)
       - id: frontend-tests
         name: frontend-tests
-        entry: bash -lc "npm --prefix frontend test -- --run"
+        entry: bash -lc "npm --prefix frontend run test"
         language: system
-        files: ^frontend/src/.*\.(ts|tsx|js|jsx)$
+        files: ^frontend/(src/.*\.(ts|tsx|js|jsx)|package\.json|package-lock\.json|vite\.config\.|vitest\.config\.|tsconfig\.json)$
         pass_filenames: false
+        always_run: false
 
   # Markdown checks (lint + broken internal links/anchors)
   - repo: local
