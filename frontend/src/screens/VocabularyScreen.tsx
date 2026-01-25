@@ -2,8 +2,7 @@ import React, { useState } from 'react';
 import LessonList from '../components/vocabulary/LessonList';
 import LessonPlayer from '../components/vocabulary/LessonPlayer';
 import { vocabularyService } from '../services/vocabularyService';
-import type { Language, DifficultyLevel } from '../types';
-import type { VocabularyLessonDetail } from '../types';
+import type { Language, DifficultyLevel, VocabularyLesson, VocabularyLessonDetail } from '../types';
 import './Screen.css';
 import './VocabularyScreen.css';
 

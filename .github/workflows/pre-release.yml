@@ -16,7 +16,7 @@ concurrency:
 # Global environment variables
 env:
   PYTHON_VERSION: "3.12"
-  NODE_VERSION: "22"  # Node.js 22 LTS (maintenance until 2027-04-30)
+  NODE_VERSION: "24"  # Node.js 24 LTS (Active until 2027-04-30, maintenance until 2030-04-30)
   CACHE_WHISPER_MODELS: true
   XDG_CACHE_HOME: ${{ github.workspace }}/.cache
 

@@ -171,7 +171,11 @@ const GrammarScreen: React.FC<GrammarScreenProps> = ({ selectedLanguage, selecte
       [exerciseIndex]: {
         correct: isCorrect,
         explanation:
-          exercise.explanation || (isCorrect ? undefined : `Correct answer: ${exercise.correct}`),
+          typeof exercise.explanation === 'string'
+            ? exercise.explanation
+            : isCorrect
+              ? undefined
+              : `Correct answer: ${exercise.correct}`,
       },
     }));
 

@@ -20,12 +20,12 @@ const UserDisplay: React.FC<UserDisplayProps> = ({ username, isLoggedIn }) => {
         <User size={18} />
         <span className="username">{username}</span>
         {isLoggedIn ? (
-          <LogOut size={16} className="user-status-icon" title="Logged in" />
+          <LogOut size={16} className="user-status-icon" aria-label="Logged in" />
         ) : (
           <LogIn
             size={16}
             className="user-status-icon user-status-icon-inactive"
-            title="Not logged in"
+            aria-label="Not logged in"
           />
         )}
       </div>

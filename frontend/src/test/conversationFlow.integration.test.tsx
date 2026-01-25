@@ -35,19 +35,22 @@ vi.mock('../services/api', () => ({
   },
 }));
 
+import type { DifficultyLevel, MessageRole, TopicsData } from '../types';
+
 // Mock topics data matching the actual API structure
-const mockTopics = {
+const mockTopics: TopicsData = {
   topics: [
     {
       id: 'education',
       icon: '📚',
-      level: 'A1',
+      level: 'A1' as DifficultyLevel,
       names: {
         spanish: 'Educación y Aprendizaje',
         italian: 'Educazione e Apprendimento',
         german: 'Bildung und Lernen',
         french: 'Éducation et Apprentissage',
         dutch: 'Onderwijs en Leren',
+        english: 'Education and Learning',
       },
       descriptions: {
         spanish: 'Conversaciones sobre educación y aprendizaje',
@@ -55,21 +58,28 @@ const mockTopics = {
         german: 'Gespräche über Bildung und Lernen',
         french: "Conversations sur l'éducation et l'apprentissage",
         dutch: 'Gesprekken over onderwijs en leren',
+        english: 'Conversations about education and learning',
       },
       starters: {
         spanish: ['¿Qué estudias?', '¿Te gusta la escuela?'],
+        italian: ['Cosa studi?', 'Ti piace la scuola?'],
+        german: ['Was studierst du?', 'Magst du die Schule?'],
+        french: ["Qu'est-ce que tu étudies?", 'Aimes-tu lécole?'],
+        dutch: ['Wat studeer je?', 'Vind je school leuk?'],
+        english: ['What do you study?', 'Do you like school?'],
       },
     },
     {
       id: 'travel',
       icon: '✈️',
-      level: 'A1',
+      level: 'A1' as DifficultyLevel,
       names: {
         spanish: 'Viajes y Transporte',
         italian: 'Viaggi e Trasporti',
         german: 'Reisen und Transport',
         french: 'Voyages et Transport',
         dutch: 'Reizen en Vervoer',
+        english: 'Travel and Transportation',
       },
       descriptions: {
         spanish: 'Conversaciones sobre viajes y transporte',
@@ -77,21 +87,28 @@ const mockTopics = {
         german: 'Gespräche über Reisen und Transport',
         french: 'Conversations sur les voyages et le transport',
         dutch: 'Gesprekken over reizen en vervoer',
+        english: 'Conversations about travel and transportation',
       },
       starters: {
         spanish: ['¿Dónde quieres viajar?', '¿Cómo vas al trabajo?'],
+        italian: ['Dove vuoi viaggiare?', 'Come vai al lavoro?'],
+        german: ['Wohin möchtest du reisen?', 'Wie kommst du zur Arbeit?'],
+        french: ['Où veux-tu voyager?', 'Comment vas-tu au travail?'],
+        dutch: ['Waar wil je naartoe reizen?', 'Hoe ga je naar je werk?'],
+        english: ['Where do you want to travel?', 'How do you get to work?'],
       },
     },
     {
       id: 'restaurant',
       icon: '🍽️',
-      level: 'A2',
+      level: 'A2' as DifficultyLevel,
       names: {
         spanish: 'Restaurante',
         italian: 'Ristorante',
         german: 'Restaurant',
         french: 'Restaurant',
         dutch: 'Restaurant',
+        english: 'Restaurant',
       },
       descriptions: {
         spanish: 'Pedir comida y bebidas',
@@ -99,9 +116,15 @@ const mockTopics = {
         german: 'Essen und Getränke bestellen',
         french: 'Commander nourriture et boissons',
         dutch: 'Eten en drinken bestellen',
+        english: 'Ordering food and drinks',
       },
       starters: {
         spanish: ['¿Qué quieres comer?', '¿Tienes reserva?'],
+        italian: ['Cosa vuoi mangiare?', 'Hai una prenotazione?'],
+        german: ['Was möchtest du essen?', 'Hast du eine Reservierung?'],
+        french: ['Que veux-tu manger?', 'As-tu une réservation?'],
+        dutch: ['Wat wil je eten?', 'Heb je een reservering?'],
+        english: ['What do you want to eat?', 'Do you have a reservation?'],
       },
     },
   ],
@@ -120,7 +143,7 @@ describe('Conversation Flow Integration', () => {
   const mockInitialMessage = {
     id: 1,
     conversation_id: 1,
-    role: 'assistant',
+    role: 'assistant' as MessageRole,
     content: '¡Hola! Soy tu guía de viajes. ¿A dónde te gustaría viajar hoy?',
     created_at: '2026-01-13T12:00:01Z',
   };
@@ -134,12 +157,9 @@ describe('Conversation Flow Integration', () => {
     vi.mocked(api.conversationService.create).mockResolvedValue(mockConversation);
     vi.mocked(api.chatService.generateInitialMessage).mockResolvedValue({
       assistant_message: mockInitialMessage.content,
-      corrections: null,
+      corrections: undefined,
     });
-    vi.mocked(api.conversationService.get).mockResolvedValue({
-      ...mockConversation,
-      messages: [mockInitialMessage],
-    });
+    vi.mocked(api.conversationService.get).mockResolvedValue(mockConversation);
     vi.mocked(api.conversationService.getMessages).mockResolvedValue([mockInitialMessage]);
   });
 
