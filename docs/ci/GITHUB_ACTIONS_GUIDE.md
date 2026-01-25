@@ -4,9 +4,38 @@ This guide explains how to work with Babblr's GitHub Actions workflows and compo
 
 ## Quick Reference
 
-### Running CI Locally (Pre-push)
+### Setting Up Git Hooks
 
-Before pushing to GitHub, run these checks locally to ensure CI will pass:
+Git hooks are already configured via `.pre-commit-config.yaml` and run automatically:
+
+**Pre-commit hooks** (run on every commit):
+- Prevent commits to main branch
+- Gitleaks secret scanning
+- Ruff format and lint (Python)
+- Pyright type checking (Python)
+- Backend unit tests (fast, parallel)
+- ESLint and Prettier (Frontend)
+- Frontend tests
+- Markdown validation
+
+**To install hooks**:
+```bash
+# From project root
+pre-commit install
+```
+
+**To run hooks manually**:
+```bash
+# Run all hooks on all files
+pre-commit run --all-files
+
+# Run specific hook
+pre-commit run ruff-format --all-files
+```
+
+### Running CI Locally (Manual Check)
+
+If you want to run CI checks manually (without git hooks):
 
 ```bash
 # Backend lint checks
@@ -16,16 +45,17 @@ uv run ruff check .
 uv run pyright
 
 # Backend unit tests
-cd backend
 uv run pytest tests/test_unit.py -v --tb=short -n auto
 
 # Frontend checks
-cd frontend
+cd ../frontend
 npm run lint
 npm run format -- --check
 npm run test
 npm run build
 ```
+
+**Note**: Pre-commit hooks already run most of these checks automatically. Manual checks are useful for debugging or when hooks are disabled.
 
 ### Triggering Integration Tests on PR
 

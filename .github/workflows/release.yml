@@ -11,7 +11,8 @@ on:
         required: true
         type: string
 
-# Concurrency control - only one release at a time
+# Concurrency control - only one release build at a time to prevent conflicts
+# Multiple releases can exist, but only one can be built at a time
 concurrency:
   group: release
   cancel-in-progress: false
@@ -24,7 +25,7 @@ permissions:
 
 env:
   PYTHON_VERSION: "3.12"
-  NODE_VERSION: "20"
+  NODE_VERSION: "22"  # Node.js 22 LTS (maintenance until 2027-04-30)
 
 jobs:
   # Build backend artifacts

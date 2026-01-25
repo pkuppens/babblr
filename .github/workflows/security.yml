@@ -23,7 +23,7 @@ permissions:
 
 env:
   PYTHON_VERSION: "3.12"
-  NODE_VERSION: "20"
+  NODE_VERSION: "22"  # Node.js 22 LTS (maintenance until 2027-04-30)
 
 jobs:
   # CodeQL analysis for Python and TypeScript
@@ -43,16 +43,16 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v3
+        uses: github/codeql-action/init@v4
         with:
           languages: ${{ matrix.language }}
           queries: security-and-quality
 
       - name: Autobuild
-        uses: github/codeql-action/autobuild@v3
+        uses: github/codeql-action/autobuild@v4
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v3
+        uses: github/codeql-action/analyze@v4
         with:
           category: "/language:${{ matrix.language }}"
 
@@ -111,13 +111,13 @@ jobs:
 
       - name: Install pip-audit
         run: |
-          uv pip install pip-audit
+          uv pip install --system pip-audit
 
       - name: Run pip-audit
         working-directory: backend
         run: |
           # Export requirements and audit them
-          uv pip freeze | uv run pip-audit --strict --desc on -r /dev/stdin
+          uv pip freeze | uv pip install --system pip-audit && uv run pip-audit --strict --desc on -r /dev/stdin
 
   # Node.js dependency vulnerability scanning
   npm-audit:

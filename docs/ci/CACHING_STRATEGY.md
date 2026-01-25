@@ -102,7 +102,9 @@ restore-keys: |
 - Warm cache: Instant
 - **Speedup: Eliminates download time**
 
-**Note**: Only cached when `CACHE_WHISPER_MODELS: true`
+**Note**: Only cached when `CACHE_WHISPER_MODELS: true`. Used by unit and integration tests that test speech-to-text functionality.
+
+**GitHub Actions Cache Limits**: 10 GB total per repository. Current usage with UV (~200 MB) + npm (~500 MB) + Whisper (~200 MB) = ~900 MB, well within limits.
 
 ### 4. pytest Cache
 
