@@ -132,12 +132,12 @@ jobs:
           path: frontend-dist
 
       - name: Generate attestations for backend
-        uses: actions/attest-build-provenance@v1
+        uses: actions/attest-build-provenance@v3
         with:
           subject-path: 'backend-dist/*'
 
       - name: Generate attestations for frontend
-        uses: actions/attest-build-provenance@v1
+        uses: actions/attest-build-provenance@v3
         with:
           subject-path: 'frontend-dist/*'
 
