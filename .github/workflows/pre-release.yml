@@ -1,0 +1,114 @@
+name: Pre-Release Tests
+
+on:
+  workflow_dispatch:  # Manual trigger only - run before creating release candidates
+    inputs:
+      ref:
+        description: 'Git ref to test (branch, tag, or commit SHA)'
+        required: false
+        default: 'main'
+
+# Concurrency control - only one pre-release test at a time
+concurrency:
+  group: pre-release
+  cancel-in-progress: false
+
+# Global environment variables
+env:
+  PYTHON_VERSION: "3.12"
+  NODE_VERSION: "22"  # Node.js 22 LTS (maintenance until 2027-04-30)
+  CACHE_WHISPER_MODELS: true
+  XDG_CACHE_HOME: ${{ github.workspace }}/.cache
+
+# Default permissions (least privilege)
+permissions:
+  contents: read
+
+jobs:
+  # Backend integration tests
+  backend-integration-tests:
+    name: Backend Integration Tests
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref || 'main' }}
+
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install uv
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+
+      - name: Cache UV dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/uv
+            ~/.local/share/uv
+          key: uv-integration-${{ runner.os }}-${{ hashFiles('backend/uv.lock') }}-${{ hashFiles('backend/pyproject.toml') }}
+          restore-keys: |
+            uv-integration-${{ runner.os }}-${{ hashFiles('backend/uv.lock') }}-
+            uv-integration-${{ runner.os }}-
+
+      - name: Cache Whisper models
+        if: env.CACHE_WHISPER_MODELS == 'true'
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.XDG_CACHE_HOME }}/whisper
+          key: whisper-${{ runner.os }}-base
+          restore-keys: |
+            whisper-${{ runner.os }}-
+
+      - name: Install dependencies
+        working-directory: backend
+        run: |
+          uv sync --dev
+
+      - name: Run integration tests
+        working-directory: backend
+        env:
+          # Use unique IDs per run for idempotent integration tests
+          TEST_RUN_ID: ${{ github.run_id }}-${{ github.run_attempt }}
+        run: |
+          uv run pytest tests/test_integration.py -v --tb=short
+
+  # Summary job
+  pre-release-summary:
+    name: Pre-Release Summary
+    runs-on: ubuntu-latest
+    needs: [backend-integration-tests]
+    if: always()
+    permissions:
+      contents: read
+    steps:
+      - name: Generate Summary
+        run: |
+          echo "# Pre-Release Tests Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Git Ref**: \`${{ inputs.ref || 'main' }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "| Test Suite | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|------------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Backend Integration Tests | ${{ needs.backend-integration-tests.result == 'success' && '✅ Passed' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [ "${{ needs.backend-integration-tests.result }}" == "success" ]; then
+            echo "✅ **All integration tests passed - ready to create release candidate!**" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ **Integration tests failed - do not create release candidate.**" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Check overall status
+        if: needs.backend-integration-tests.result != 'success'
+        run: |
+          echo "Integration tests failed"
+          exit 1
