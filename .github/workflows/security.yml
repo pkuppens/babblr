@@ -63,6 +63,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      pull-requests: write  # Add this to allow PR comments
     steps:
       - name: Checkout code
         uses: actions/checkout@v4

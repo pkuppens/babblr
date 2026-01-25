@@ -148,9 +148,6 @@ jobs:
     needs: [build-backend, build-frontend, attest]
     permissions:
       contents: write
-    environment:
-      name: production
-      url: https://github.com/${{ github.repository }}/releases/tag/${{ needs.build-backend.outputs.version }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
