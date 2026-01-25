@@ -66,8 +66,8 @@ function App() {
   };
 
   const initialSelection = loadLanguageSelection();
-  const [selectedLanguage, setSelectedLanguage] = useState<Language>(initialSelection.language);
-  const [selectedDifficulty, setSelectedDifficulty] = useState<DifficultyLevel>(
+  const [selectedLanguage, setSelectedLanguage] = useState<Language | null>(initialSelection.language);
+  const [selectedDifficulty, setSelectedDifficulty] = useState<DifficultyLevel | null>(
     initialSelection.difficulty
   );
 
