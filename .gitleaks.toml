@@ -1,0 +1,19 @@
+# Gitleaks configuration file
+# https://github.com/gitleaks/gitleaks#configuration
+
+title = "Babblr Gitleaks Configuration"
+
+# Allowlist for false positives
+[allowlist]
+description = "Allowlist for known false positives in documentation and test files"
+
+# Allow the example API key pattern in SECURITY_SCANNING.md documentation
+# This is a documentation example (line 234), not a real secret
+regexes = [
+  '''sk-1234567890abcdef''',
+]
+
+# Only allow this pattern in documentation files
+paths = [
+  '''docs/ci/SECURITY_SCANNING\.md''',
+]
