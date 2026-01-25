@@ -153,62 +153,6 @@ jobs:
           # Use -n auto for parallel execution (adapts to available cores)
           uv run pytest tests/test_unit.py -v --tb=short -n auto
 
-  # Backend integration tests - only on main branch or labeled PRs
-  backend-test-integration:
-    name: Backend Integration Tests
-    runs-on: ubuntu-latest
-    needs: backend-test-unit
-    if: |
-      github.ref == 'refs/heads/main' ||
-      contains(github.event.pull_request.labels.*.name, 'run-integration')
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Python ${{ env.RELEASE_PYTHON_VERSION }}
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ env.RELEASE_PYTHON_VERSION }}
-
-      - name: Install uv
-        run: |
-          curl -LsSf https://astral.sh/uv/install.sh | sh
-          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
-
-      - name: Cache UV dependencies
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.cache/uv
-            ~/.local/share/uv
-          key: uv-integration-${{ runner.os }}-${{ hashFiles('backend/uv.lock') }}-${{ hashFiles('backend/pyproject.toml') }}
-          restore-keys: |
-            uv-integration-${{ runner.os }}-${{ hashFiles('backend/uv.lock') }}-
-            uv-integration-${{ runner.os }}-
-
-      - name: Cache Whisper models
-        if: env.CACHE_WHISPER_MODELS == 'true'
-        uses: actions/cache@v4
-        with:
-          path: |
-            ${{ github.workspace }}/.cache/whisper
-          key: whisper-${{ runner.os }}-base
-          restore-keys: |
-            whisper-${{ runner.os }}-
-
-      - name: Install dependencies
-        working-directory: backend
-        run: |
-          uv sync --dev
-
-      - name: Run integration tests
-        working-directory: backend
-        env:
-          # Use unique IDs per run for idempotent integration tests
-          TEST_RUN_ID: ${{ github.run_id }}-${{ github.run_attempt }}
-        run: |
-          uv run pytest tests/test_integration.py -v --tb=short
-
   # Frontend linting and tests
   frontend-test:
     name: Frontend Lint & Test
@@ -280,7 +224,7 @@ jobs:
   ci-summary:
     name: CI Summary
     runs-on: ubuntu-latest
-    needs: [backend-lint, backend-test-unit, backend-test-integration, frontend-test, markdown-check]
+    needs: [backend-lint, backend-test-unit, frontend-test, markdown-check]
     if: always()
     permissions:
       contents: read
@@ -294,7 +238,6 @@ jobs:
           echo "|-----|--------|" >> $GITHUB_STEP_SUMMARY
           echo "| Backend Lint | ${{ needs.backend-lint.result == 'success' && '✅ Passed' || needs.backend-lint.result == 'skipped' && '⏭️ Skipped' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Backend Unit Tests | ${{ needs.backend-test-unit.result == 'success' && '✅ Passed' || needs.backend-test-unit.result == 'skipped' && '⏭️ Skipped' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Backend Integration Tests | ${{ needs.backend-test-integration.result == 'success' && '✅ Passed' || needs.backend-test-integration.result == 'skipped' && '⏭️ Skipped' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Frontend Lint & Test | ${{ needs.frontend-test.result == 'success' && '✅ Passed' || needs.frontend-test.result == 'skipped' && '⏭️ Skipped' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Markdown Checks | ${{ needs.markdown-check.result == 'success' && '✅ Passed' || needs.markdown-check.result == 'skipped' && '⏭️ Skipped' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
@@ -302,7 +245,6 @@ jobs:
           # Overall status
           if [ "${{ needs.backend-lint.result }}" == "success" ] && \
              [ "${{ needs.backend-test-unit.result }}" == "success" ] && \
-             ([ "${{ needs.backend-test-integration.result }}" == "success" ] || [ "${{ needs.backend-test-integration.result }}" == "skipped" ]) && \
              [ "${{ needs.frontend-test.result }}" == "success" ] && \
              [ "${{ needs.markdown-check.result }}" == "success" ]; then
             echo "✅ **All checks passed - ready for review!**" >> $GITHUB_STEP_SUMMARY
@@ -314,14 +256,12 @@ jobs:
           echo "## Configuration" >> $GITHUB_STEP_SUMMARY
           echo "- Python versions: ${{ env.SUPPORTED_PYTHON_VERSIONS }}" >> $GITHUB_STEP_SUMMARY
           echo "- Node.js version: ${{ env.NODE_VERSION }}" >> $GITHUB_STEP_SUMMARY
-          echo "- Integration tests on PR: ${{ env.RUN_INTEGRATION_TESTS_ON_PR }}" >> $GITHUB_STEP_SUMMARY
-          echo "- Integration tests on main: ${{ env.RUN_INTEGRATION_TESTS_ON_MAIN }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Note: Integration tests run separately in pre-release workflow" >> $GITHUB_STEP_SUMMARY
 
       - name: Check overall status
         if: |
           needs.backend-lint.result != 'success' ||
           needs.backend-test-unit.result != 'success' ||
-          (needs.backend-test-integration.result != 'success' && needs.backend-test-integration.result != 'skipped') ||
           needs.frontend-test.result != 'success' ||
           needs.markdown-check.result != 'success'
         run: |

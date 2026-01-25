@@ -231,7 +231,7 @@ After security scans complete, view summary in:
 
 ❌ **Bad**:
 ```python
-API_KEY = "sk-1234567890abcdef"
+API_KEY = "sk-1234567890abcdef"  # gitleaks:allow - example only
 ```
 
 ✅ **Good**:

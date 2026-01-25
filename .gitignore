@@ -218,7 +218,7 @@ __marimo__/
 
 # Node.js
 node_modules/
-package-lock.json
+# Note: package-lock.json should be committed for reproducible builds and npm cache in CI
 
 # Build outputs
 frontend/dist/
