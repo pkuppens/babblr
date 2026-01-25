@@ -7,8 +7,9 @@ Get Babblr running in 5 minutes!
 Before you start, make sure you have:
 
 1. **Python 3.12.9+** - Check with: `python3 --version`
-2. **Node.js 24+** - Check with: `node --version`
-3. **Anthropic API Key** - Get free tier at: https://console.anthropic.com/
+2. **Node.js 22+** - Check with: `node --version`
+3. **npm 11.8.0+** - Check with: `npm --version` (upgrade with: `npm install -g npm@11.8.0`)
+4. **Anthropic API Key** - Get free tier at: https://console.anthropic.com/
 
 ## Step 1: Clone & Setup (2 minutes)
 
