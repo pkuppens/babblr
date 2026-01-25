@@ -199,7 +199,7 @@ export default function CostCalculator({
 
   // Map model names from cost calculator format to settings format
   // Since we're using the same format now, just return as-is
-  const mapModelFromCostCalculator = (provider: Provider, model: string): string => {
+  const mapModelFromCostCalculator = (_provider: Provider, model: string): string => {
     return model;
   };
 

@@ -28,8 +28,11 @@
   "author": "",
   "license": "(AGPL-3.0-only OR LicenseRef-Babblr-Commercial)",
   "engines": {
-    "node": ">=22.0.0",
+    "node": ">=24.0.0",
     "npm": ">=11.8.0"
+  },
+  "overrides": {
+    "tar": ">=7.5.4"
   },
   "dependencies": {
     "axios": "^1.7.9",
@@ -52,8 +55,8 @@
     "@vitest/ui": "^4.0.17",
     "autoprefixer": "^10.4.23",
     "concurrently": "^9.1.0",
-    "electron": "^33.2.1",
-    "electron-builder": "^25.1.8",
+    "electron": "^40.0.0",
+    "electron-builder": "^26.4.0",
     "eslint": "^9.39.2",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-react": "^7.37.5",

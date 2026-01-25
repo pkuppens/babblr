@@ -23,8 +23,8 @@ permissions:
 
 env:
   PYTHON_VERSION: "3.12"
-  NODE_VERSION: "22"  # Node.js 22 LTS (maintenance until 2027-04-30)
-  NPM_VERSION: "11.8.0"  # npm 11.8.0 (compatible with Node.js 22)
+  NODE_VERSION: "24"  # Node.js 24 LTS (Active until 2027-04-30, maintenance until 2030-04-30)
+  NPM_VERSION: "11.8.0"  # npm 11.8.0 (compatible with Node.js 24)
 
 jobs:
   # CodeQL analysis for Python and TypeScript

@@ -66,10 +66,8 @@ function App() {
   };
 
   const initialSelection = loadLanguageSelection();
-  const [selectedLanguage, setSelectedLanguage] = useState<Language | null>(
-    initialSelection.language
-  );
-  const [selectedDifficulty, setSelectedDifficulty] = useState<DifficultyLevel | null>(
+  const [selectedLanguage, setSelectedLanguage] = useState<Language>(initialSelection.language);
+  const [selectedDifficulty, setSelectedDifficulty] = useState<DifficultyLevel>(
     initialSelection.difficulty
   );
 
@@ -121,8 +119,6 @@ function App() {
 
   const handleTopicSelected = async (topic: Topic) => {
     // Create the conversation with topic and generate initial tutor message
-    if (!selectedLanguage || !selectedDifficulty) return;
-
     try {
       // Create conversation with topic_id
       const conversation = await conversationService.create(
@@ -252,8 +248,9 @@ function App() {
             onClick={() => {
               setActiveTab('home');
               setCurrentConversation(null);
-              setSelectedLanguage(null);
-              setSelectedDifficulty(null);
+              const defaultSelection = loadLanguageSelection();
+              setSelectedLanguage(defaultSelection.language);
+              setSelectedDifficulty(defaultSelection.difficulty);
               setShowTopicSelector(false);
             }}
             style={{ cursor: 'pointer' }}
@@ -268,7 +265,11 @@ function App() {
         </div>
       </header>
 
-      <TabBar activeTab={activeTab} onTabChange={handleTabChange} language={selectedLanguage} />
+      <TabBar
+        activeTab={activeTab}
+        onTabChange={handleTabChange}
+        language={selectedLanguage || undefined}
+      />
 
       <main className="app-main" role="main">
         {renderActiveScreen()}

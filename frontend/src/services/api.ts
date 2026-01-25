@@ -267,7 +267,7 @@ export interface GrammarLessonDetail extends GrammarLesson {
     id: number;
     title: string;
     description: string;
-    examples: Array<{ es?: string; en?: string; [key: string]: string }>;
+    examples: Array<{ es?: string; en?: string; [key: string]: string | undefined }>;
     difficulty_level: string;
   }>;
   examples: Array<{
