@@ -15,7 +15,7 @@
  * - npx playwright test --debug (debug mode)
  */
 
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 
 const BASE_URL = process.env.FRONTEND_URL || "http://localhost:3000";
 
@@ -416,7 +416,7 @@ test.describe("Section 6: End-to-End Conversation Testing", () => {
  * Navigate to an active conversation
  */
 async function navigateToConversation(
-  page: any,
+  page: Page,
   options?: { language?: string; level?: string }
 ) {
   const language = options?.language || "Spanish";
@@ -452,7 +452,7 @@ async function navigateToConversation(
 /**
  * Send a message in the conversation
  */
-async function sendMessage(page: any, message: string) {
+async function sendMessage(page: Page, message: string) {
   const inputField = page.locator('input[placeholder*="message"], textarea[placeholder*="message"]').first();
   await inputField.fill(message);
 

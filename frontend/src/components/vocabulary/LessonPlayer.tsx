@@ -63,7 +63,7 @@ const LessonPlayer: React.FC<LessonPlayerProps> = ({ lesson, onLessonComplete, o
 
     const debounceTimer = setTimeout(saveProgress, 500);
     return () => clearTimeout(debounceTimer);
-  }, [currentItemIndex, completedItems, lesson]);
+  }, [currentItemIndex, completedItems, lesson, currentItem, totalItems, completionPercentage]);
 
   // Mark item as completed when card is flipped
   const handleCardFlipped = () => {

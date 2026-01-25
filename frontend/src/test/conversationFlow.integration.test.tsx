@@ -129,18 +129,18 @@ describe('Conversation Flow Integration', () => {
     vi.clearAllMocks();
 
     // Setup default mocks
-    (api.conversationService.list as any).mockResolvedValue([]);
-    (api.topicsService.getTopics as any).mockResolvedValue(mockTopics);
-    (api.conversationService.create as any).mockResolvedValue(mockConversation);
-    (api.chatService.generateInitialMessage as any).mockResolvedValue({
+    vi.mocked(api.conversationService.list).mockResolvedValue([]);
+    vi.mocked(api.topicsService.getTopics).mockResolvedValue(mockTopics);
+    vi.mocked(api.conversationService.create).mockResolvedValue(mockConversation);
+    vi.mocked(api.chatService.generateInitialMessage).mockResolvedValue({
       assistant_message: mockInitialMessage.content,
       corrections: null,
     });
-    (api.conversationService.get as any).mockResolvedValue({
+    vi.mocked(api.conversationService.get).mockResolvedValue({
       ...mockConversation,
       messages: [mockInitialMessage],
     });
-    (api.conversationService.getMessages as any).mockResolvedValue([mockInitialMessage]);
+    vi.mocked(api.conversationService.getMessages).mockResolvedValue([mockInitialMessage]);
   });
 
   afterEach(() => {

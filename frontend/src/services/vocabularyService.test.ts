@@ -192,8 +192,8 @@ describe('vocabularyService', () => {
     });
 
     it('should return default empty progress for 404 (not yet started)', async () => {
-      const error = new Error('Not found');
-      (error as any).response = { status: 404 };
+      const error = new Error('Not found') as Error & { response: { status: number } };
+      error.response = { status: 404 };
       vi.mocked(api.get).mockRejectedValue(error);
 
       const result = await vocabularyService.getProgress(1);
@@ -204,8 +204,8 @@ describe('vocabularyService', () => {
     });
 
     it('should throw error for non-404 errors', async () => {
-      const error = new Error('Server error');
-      (error as any).response = { status: 500 };
+      const error = new Error('Server error') as Error & { response: { status: number } };
+      error.response = { status: 500 };
       vi.mocked(api.get).mockRejectedValue(error);
 
       await expect(vocabularyService.getProgress(1)).rejects.toThrow();

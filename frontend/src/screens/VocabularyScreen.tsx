@@ -127,7 +127,7 @@ const VocabularyScreen: React.FC<VocabularyScreenProps> = ({
   const languageCode = languageToCode(language);
   const labels = getVocabularyLabels(language);
 
-  const handleLessonSelect = async (lesson: any) => {
+  const handleLessonSelect = async (lesson: VocabularyLesson) => {
     try {
       // Fetch the full lesson detail (with items)
       const lessonDetail = await vocabularyService.getLesson(lesson.id);
