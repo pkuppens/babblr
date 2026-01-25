@@ -2,18 +2,19 @@ name: CI
 
 on:
   push:
-    # Runs on push to main (for post-merge verification) and feature branches (for early feedback)
-    # Push to main is allowed only via merged PRs due to branch protection rules
-    # Includes copilot/* branches so Copilot contributions are tested before PR creation
-    branches: [main, feature/*, task/*, bug/*, hotfix/*, copilot/*]
+    # Only run on push to main for post-merge verification
+    # Feature branches are tested via pull_request events to avoid duplication
+    branches: [main]
   pull_request:
     # Runs automatically on all PRs to main (no approval needed for CI steps)
+    # This covers all feature branches, avoiding duplicate runs from push events
     branches: [main]
   workflow_dispatch:  # Allows manual trigger for testing or re-running CI
 
-# Concurrency control: Cancel in-progress runs for the same workflow on the same PR
+# Concurrency control: Cancel in-progress runs for the same workflow
+# Use PR number for PRs, branch name for pushes to prevent duplicate runs
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 # Global environment variables with semantic names
