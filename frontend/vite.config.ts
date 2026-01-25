@@ -22,6 +22,7 @@ export default defineConfig({
       '**/dist/**',
       '**/.git/**',
       '**/*integration*.test.{ts,tsx}',
+      '**/tests/e2e*.spec.ts',
     ],
     coverage: {
       provider: 'v8',
