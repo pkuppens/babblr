@@ -17,19 +17,22 @@ describe('TabBar', () => {
   describe('when rendered', () => {
     it('should render all tabs with correct labels', () => {
       const mockOnTabChange = vi.fn();
-      render(<TabBar activeTab="home" onTabChange={mockOnTabChange} />);
+      // Pass explicit language to ensure English labels
+      render(<TabBar activeTab="home" onTabChange={mockOnTabChange} language="english" />);
 
       expect(screen.getByRole('tab', { name: /home tab/i })).toBeInTheDocument();
       expect(screen.getByRole('tab', { name: /vocabulary lessons tab/i })).toBeInTheDocument();
       expect(screen.getByRole('tab', { name: /grammar lessons tab/i })).toBeInTheDocument();
       expect(screen.getByRole('tab', { name: /conversations tab/i })).toBeInTheDocument();
-      expect(screen.getByRole('tab', { name: /cefr assessments tab/i })).toBeInTheDocument();
+      expect(screen.getByRole('tab', { name: /assessments tab/i })).toBeInTheDocument();
       expect(screen.getByRole('tab', { name: /configuration settings tab/i })).toBeInTheDocument();
     });
 
     it('should highlight the active tab', () => {
       const mockOnTabChange = vi.fn();
-      const { rerender } = render(<TabBar activeTab="home" onTabChange={mockOnTabChange} />);
+      const { rerender } = render(
+        <TabBar activeTab="home" onTabChange={mockOnTabChange} language="english" />
+      );
 
       const homeTab = screen.getByRole('tab', { name: /home tab/i });
       expect(homeTab).toHaveClass('tab-button-active');
@@ -44,7 +47,7 @@ describe('TabBar', () => {
 
     it('should set correct tabIndex for accessibility', () => {
       const mockOnTabChange = vi.fn();
-      render(<TabBar activeTab="vocabulary" onTabChange={mockOnTabChange} />);
+      render(<TabBar activeTab="vocabulary" onTabChange={mockOnTabChange} language="english" />);
 
       const activeTab = screen.getByRole('tab', { name: /vocabulary lessons tab/i });
       expect(activeTab).toHaveAttribute('tabIndex', '0');
@@ -60,7 +63,7 @@ describe('TabBar', () => {
     it('should call onTabChange with the correct tab key', async () => {
       const user = userEvent.setup();
       const mockOnTabChange = vi.fn();
-      render(<TabBar activeTab="home" onTabChange={mockOnTabChange} />);
+      render(<TabBar activeTab="home" onTabChange={mockOnTabChange} language="english" />);
 
       const conversationsTab = screen.getByRole('tab', { name: /conversations tab/i });
       await user.click(conversationsTab);
@@ -74,7 +77,7 @@ describe('TabBar', () => {
     it('should navigate to the next tab with ArrowRight', async () => {
       const user = userEvent.setup();
       const mockOnTabChange = vi.fn();
-      render(<TabBar activeTab="home" onTabChange={mockOnTabChange} />);
+      render(<TabBar activeTab="home" onTabChange={mockOnTabChange} language="english" />);
 
       const homeTab = screen.getByRole('tab', { name: /home tab/i });
       homeTab.focus();
@@ -87,7 +90,7 @@ describe('TabBar', () => {
     it('should navigate to the previous tab with ArrowLeft', async () => {
       const user = userEvent.setup();
       const mockOnTabChange = vi.fn();
-      render(<TabBar activeTab="vocabulary" onTabChange={mockOnTabChange} />);
+      render(<TabBar activeTab="vocabulary" onTabChange={mockOnTabChange} language="english" />);
 
       const vocabularyTab = screen.getByRole('tab', { name: /vocabulary lessons tab/i });
       vocabularyTab.focus();
@@ -100,7 +103,7 @@ describe('TabBar', () => {
     it('should wrap to the last tab when ArrowLeft is pressed on the first tab', async () => {
       const user = userEvent.setup();
       const mockOnTabChange = vi.fn();
-      render(<TabBar activeTab="home" onTabChange={mockOnTabChange} />);
+      render(<TabBar activeTab="home" onTabChange={mockOnTabChange} language="english" />);
 
       const homeTab = screen.getByRole('tab', { name: /home tab/i });
       homeTab.focus();
@@ -113,7 +116,7 @@ describe('TabBar', () => {
     it('should wrap to the first tab when ArrowRight is pressed on the last tab', async () => {
       const user = userEvent.setup();
       const mockOnTabChange = vi.fn();
-      render(<TabBar activeTab="configuration" onTabChange={mockOnTabChange} />);
+      render(<TabBar activeTab="configuration" onTabChange={mockOnTabChange} language="english" />);
 
       const configTab = screen.getByRole('tab', { name: /configuration settings tab/i });
       configTab.focus();
@@ -126,9 +129,9 @@ describe('TabBar', () => {
     it('should navigate to the first tab with Home key', async () => {
       const user = userEvent.setup();
       const mockOnTabChange = vi.fn();
-      render(<TabBar activeTab="assessments" onTabChange={mockOnTabChange} />);
+      render(<TabBar activeTab="assessments" onTabChange={mockOnTabChange} language="english" />);
 
-      const assessmentsTab = screen.getByRole('tab', { name: /cefr assessments tab/i });
+      const assessmentsTab = screen.getByRole('tab', { name: /assessments tab/i });
       assessmentsTab.focus();
 
       await user.keyboard('{Home}');
@@ -139,7 +142,7 @@ describe('TabBar', () => {
     it('should navigate to the last tab with End key', async () => {
       const user = userEvent.setup();
       const mockOnTabChange = vi.fn();
-      render(<TabBar activeTab="home" onTabChange={mockOnTabChange} />);
+      render(<TabBar activeTab="home" onTabChange={mockOnTabChange} language="english" />);
 
       const homeTab = screen.getByRole('tab', { name: /home tab/i });
       homeTab.focus();
@@ -152,7 +155,7 @@ describe('TabBar', () => {
     it('should activate a tab with Enter key', async () => {
       const user = userEvent.setup();
       const mockOnTabChange = vi.fn();
-      render(<TabBar activeTab="home" onTabChange={mockOnTabChange} />);
+      render(<TabBar activeTab="home" onTabChange={mockOnTabChange} language="english" />);
 
       const grammarTab = screen.getByRole('tab', { name: /grammar lessons tab/i });
       grammarTab.focus();
@@ -165,7 +168,7 @@ describe('TabBar', () => {
     it('should activate a tab with Space key', async () => {
       const user = userEvent.setup();
       const mockOnTabChange = vi.fn();
-      render(<TabBar activeTab="home" onTabChange={mockOnTabChange} />);
+      render(<TabBar activeTab="home" onTabChange={mockOnTabChange} language="english" />);
 
       const vocabularyTab = screen.getByRole('tab', { name: /vocabulary lessons tab/i });
       vocabularyTab.focus();

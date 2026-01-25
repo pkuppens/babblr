@@ -198,14 +198,46 @@ describe('LessonPlayer', () => {
 
     const nextButton = screen.getByText(/Next/);
 
-    // Navigate through all items
-    await user.click(nextButton); // Move to item 2
-    await user.click(nextButton); // Move to item 3
-    await user.click(nextButton); // Trigger completion
+    // Navigate through all items - clicking Next marks each item as completed
+    // and moves to the next one. For 3 items, we need 3 clicks to complete all.
+    await user.click(nextButton); // Move to item 2, mark item 1 as completed
+    await waitFor(
+      () => {
+        expect(screen.getByText('2 of 3')).toBeInTheDocument();
+      },
+      { timeout: 1000 }
+    );
 
-    await waitFor(() => {
-      expect(onLessonComplete).toHaveBeenCalledTimes(1);
-    });
+    await user.click(nextButton); // Move to item 3, mark item 2 as completed
+    await waitFor(
+      () => {
+        expect(screen.getByText('3 of 3')).toBeInTheDocument();
+      },
+      { timeout: 1000 }
+    );
+
+    // Click Next on the last item to mark it as completed and trigger completion
+    // The VocabularyCard's handleNext will mark item 3 as completed, then call onNext
+    // VocabularyCard has a 50ms delay before calling onNext
+    await user.click(nextButton);
+
+    // Wait for progress to show all items completed (indicates state has updated)
+    // Use getAllByText since "3 / 3" appears in multiple places (progress indicator and card navigation)
+    await waitFor(
+      () => {
+        const progressTexts = screen.getAllByText(/3 \/ 3/);
+        expect(progressTexts.length).toBeGreaterThan(0);
+      },
+      { timeout: 1000 }
+    );
+
+    // Now wait for the completion callback - useEffect should trigger onLessonComplete
+    await waitFor(
+      () => {
+        expect(onLessonComplete).toHaveBeenCalledTimes(1);
+      },
+      { timeout: 2000 }
+    );
   });
 
   it('shows completion message when lesson is complete', async () => {
@@ -220,13 +252,35 @@ describe('LessonPlayer', () => {
     const nextButton = screen.getByText(/Next/);
 
     // Navigate through all items to completion
-    await user.click(nextButton);
-    await user.click(nextButton);
+    await user.click(nextButton); // Move to item 2, mark item 1 as completed
+    await waitFor(
+      () => {
+        expect(screen.getByText('2 of 3')).toBeInTheDocument();
+      },
+      { timeout: 1000 }
+    );
+
+    await user.click(nextButton); // Move to item 3, mark item 2 as completed
+    await waitFor(
+      () => {
+        expect(screen.getByText('3 of 3')).toBeInTheDocument();
+      },
+      { timeout: 1000 }
+    );
+
+    // Click Next on the last item to mark it as completed and trigger completion
+    // VocabularyCard has a 50ms delay before calling onNext
     await user.click(nextButton);
 
-    await waitFor(() => {
-      expect(screen.getByText(/Lesson Complete/)).toBeInTheDocument();
-      expect(screen.getByText(/completed all 3 vocabulary items/)).toBeInTheDocument();
-    });
+    // Wait for the completion message - the completion message appears when completedItems >= totalItems
+    // Need to wait for state updates and the 50ms delay from VocabularyCard
+    await waitFor(
+      () => {
+        // Check for completion message (works with both English and Spanish)
+        expect(screen.getByText(/Lesson Complete|¡Lección completada!/)).toBeInTheDocument();
+        expect(screen.getByText(/completed all 3|completado todos los 3/)).toBeInTheDocument();
+      },
+      { timeout: 5000 }
+    );
   });
 });

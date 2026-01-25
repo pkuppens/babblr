@@ -65,6 +65,7 @@ const LessonCard: React.FC<LessonCardProps> = ({ lesson, progress, onClick }) =>
             <div
               className="progress-bar-fill"
               style={{ width: `${completionPercentage}%` }}
+              role="progressbar"
               aria-valuenow={completionPercentage}
               aria-valuemin={0}
               aria-valuemax={100}

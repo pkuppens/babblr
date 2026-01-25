@@ -16,9 +16,10 @@ describe('ProgressCard', () => {
     );
 
     expect(screen.getByText('Vocabulary Lessons')).toBeInTheDocument();
-    expect(screen.getByText('5')).toBeInTheDocument();
+    // Check that numbers appear in the document (may appear multiple times)
+    expect(screen.getAllByText('5').length).toBeGreaterThan(0);
     expect(screen.getByText('Completed')).toBeInTheDocument();
-    expect(screen.getByText('2')).toBeInTheDocument();
+    expect(screen.getAllByText('2').length).toBeGreaterThan(0);
     expect(screen.getByText('In Progress')).toBeInTheDocument();
   });
 

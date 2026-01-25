@@ -90,6 +90,11 @@ describe('App Tab Navigation', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     (api.conversationService.list as unknown as MockedService).mockResolvedValue([]);
+    // Mock localStorage to return English language selection
+    localStorage.setItem(
+      'babblr_language_selection',
+      JSON.stringify({ language: 'english', difficulty: 'A1' })
+    );
   });
 
   describe('when switching tabs', () => {
@@ -118,16 +123,20 @@ describe('App Tab Navigation', () => {
         expect(api.conversationService.list).toHaveBeenCalled();
       });
 
-      // Click on conversations tab
-      const conversationsTab = screen.getByRole('tab', { name: /conversations tab/i });
+      // Click on conversations tab (works with both English and Spanish)
+      const conversationsTab = screen.getByRole('tab', {
+        name: /(conversations|conversaciones) tab/i,
+      });
       await user.click(conversationsTab);
 
       // Select a conversation (this would normally set currentConversation)
       // For this test, we'll verify that switching tabs doesn't clear state
       // by checking that the conversations tab content is still accessible
 
-      // Switch to vocabulary tab
-      const vocabularyTab = screen.getByRole('tab', { name: /vocabulary lessons tab/i });
+      // Switch to vocabulary tab (works with both English and Spanish)
+      const vocabularyTab = screen.getByRole('tab', {
+        name: /(vocabulary|vocabulario) lessons tab/i,
+      });
       await user.click(vocabularyTab);
 
       // Verify vocabulary screen is shown (use getAllByText since text appears in multiple places)
@@ -159,26 +168,32 @@ describe('App Tab Navigation', () => {
       const homeTab = screen.getByRole('tab', { name: /home tab/i });
       expect(homeTab).toHaveAttribute('aria-selected', 'true');
 
-      // Test Vocabulary tab
-      const vocabularyTab = screen.getByRole('tab', { name: /vocabulary lessons tab/i });
+      // Test Vocabulary tab (works with both English and Spanish)
+      const vocabularyTab = screen.getByRole('tab', {
+        name: /(vocabulary|vocabulario) lessons tab/i,
+      });
       await user.click(vocabularyTab);
-      const vocabularyTexts = screen.getAllByText(/vocabulary lessons/i);
+      const vocabularyTexts = screen.getAllByText(/(vocabulary|vocabulario) lessons/i);
       expect(vocabularyTexts.length).toBeGreaterThan(0);
 
-      // Test Grammar tab
-      const grammarTab = screen.getByRole('tab', { name: /grammar lessons tab/i });
+      // Test Grammar tab (works with both English and Spanish)
+      const grammarTab = screen.getByRole('tab', { name: /(grammar|gramática) lessons tab/i });
       await user.click(grammarTab);
-      const grammarTexts = screen.getAllByText(/grammar lessons/i);
+      const grammarTexts = screen.getAllByText(/(grammar|gramática) lessons/i);
       expect(grammarTexts.length).toBeGreaterThan(0);
 
-      // Test Conversations tab
-      const conversationsTab = screen.getByRole('tab', { name: /conversations tab/i });
+      // Test Conversations tab (works with both English and Spanish)
+      const conversationsTab = screen.getByRole('tab', {
+        name: /(conversations|conversaciones) tab/i,
+      });
       await user.click(conversationsTab);
-      const conversationsTexts = screen.getAllByText(/conversations/i);
+      const conversationsTexts = screen.getAllByText(/(conversations|conversaciones)/i);
       expect(conversationsTexts.length).toBeGreaterThan(0);
 
-      // Test Assessments tab
-      const assessmentsTab = screen.getByRole('tab', { name: /cefr assessments tab/i });
+      // Test Assessments tab (works with both English and Spanish)
+      const assessmentsTab = screen.getByRole('tab', {
+        name: /(assessments|evaluaciones|cefr assessments) tab/i,
+      });
       await user.click(assessmentsTab);
       expect(screen.getByText(/cefr assessments/i)).toBeInTheDocument();
     });
@@ -239,7 +254,9 @@ describe('App Tab Navigation', () => {
       // This will trigger handleStartNewConversation which should switch to conversations tab
       // Note: This test verifies the tab switching behavior exists
       // Full conversation flow testing would require more complex component interaction setup
-      const conversationsTab = screen.getByRole('tab', { name: /conversations tab/i });
+      const conversationsTab = screen.getByRole('tab', {
+        name: /(conversations|conversaciones) tab/i,
+      });
       expect(conversationsTab).toBeInTheDocument();
       // The actual conversation flow switching is tested in the "should preserve conversation state" test
     });

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import type { VocabularyLessonDetail, VocabularyProgressCreate } from '../../types';
 import VocabularyCard from './VocabularyCard';
 import { vocabularyService } from '../../services/vocabularyService';
@@ -27,6 +27,7 @@ const LessonPlayer: React.FC<LessonPlayerProps> = ({ lesson, onLessonComplete, o
   const [isSavingProgress, setIsSavingProgress] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [completedItemsSet, setCompletedItemsSet] = useState<Set<number>>(new Set());
+  const completionTriggeredRef = useRef(false);
   const uiStrings = getUIStrings(lesson.language);
 
   const currentItem = lesson.items[currentItemIndex];
@@ -70,17 +71,41 @@ const LessonPlayer: React.FC<LessonPlayerProps> = ({ lesson, onLessonComplete, o
     setCompletedItemsSet(prev => {
       const newSet = new Set(prev);
       newSet.add(currentItemIndex);
+      const allCompleted = newSet.size >= totalItems;
+
+      // Check if lesson is complete after marking this item
+      if (allCompleted && currentItemIndex === totalItems - 1 && !completionTriggeredRef.current) {
+        // All items completed and we're on the last item - trigger completion
+        completionTriggeredRef.current = true;
+        // Use setTimeout to ensure this runs after state update
+        setTimeout(() => {
+          onLessonComplete();
+        }, 0);
+      }
+
       return newSet;
     });
   };
 
+  // Watch for completion and trigger callback when all items are completed
+  // This is a backup in case completion is detected through other means
+  useEffect(() => {
+    if (
+      completedItems >= totalItems &&
+      currentItemIndex === totalItems - 1 &&
+      !completionTriggeredRef.current
+    ) {
+      // All items completed and we're on the last item - trigger completion
+      completionTriggeredRef.current = true;
+      onLessonComplete();
+    }
+  }, [completedItems, totalItems, currentItemIndex, onLessonComplete]);
+
   const handleNext = () => {
     if (currentItemIndex < totalItems - 1) {
       setCurrentItemIndex(currentItemIndex + 1);
-    } else if (currentItemIndex === totalItems - 1 && completedItems >= totalItems) {
-      // Lesson complete - only when all items are completed
-      onLessonComplete();
     }
+    // Completion is now handled by useEffect above
   };
 
   const handlePrevious = () => {
@@ -89,7 +114,14 @@ const LessonPlayer: React.FC<LessonPlayerProps> = ({ lesson, onLessonComplete, o
     }
   };
 
-  const canGoNext = currentItemIndex < totalItems - 1 || completedItems >= totalItems;
+  // Next button should be enabled if:
+  // 1. We're not on the last item, OR
+  // 2. All items are completed, OR
+  // 3. We're on the last item (can always mark current item as completed)
+  const canGoNext =
+    currentItemIndex < totalItems - 1 ||
+    completedItems >= totalItems ||
+    currentItemIndex === totalItems - 1;
   const canGoPrevious = currentItemIndex > 0;
 
   return (
