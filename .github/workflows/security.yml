@@ -1,18 +1,18 @@
 name: Security Scanning
 
 on:
-  push:
-    branches: [main]
   pull_request:
+    # Only run on PRs to avoid duplication - PRs are scanned before merge
+    # Post-merge verification happens via weekly scheduled scans
     branches: [main]
   schedule:
-    # Run weekly on Mondays at 00:00 UTC
+    # Run weekly on Mondays at 00:00 UTC for post-merge verification
     - cron: '0 0 * * 1'
   workflow_dispatch:
 
-# Concurrency control
+# Concurrency control: Use PR number for PRs to prevent duplicate runs
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 # Elevated permissions for security scanning
