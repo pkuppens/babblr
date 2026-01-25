@@ -140,7 +140,9 @@ See [backend/tests/README.md](backend/tests/README.md) for more testing details.
 - GitHub Actions must be green before merge (linting + testing + any other required checks for the PR).
 - If your PR changes the frontend, please also run the frontend checks locally (e.g., `npm run lint` and `npm run build`) and mention the results in the PR.
   
-For the backend, CI currently runs (at minimum) Ruff formatting/linting, Pyright type checks, and unit tests. See the workflow: [Python CI](.github/workflows/python-ci.yml).
+For the backend, CI runs Ruff formatting/linting, Pyright type checks, and unit tests. See the workflow: [CI](.github/workflows/ci.yml).
+
+**Note**: Changes to `.github/workflows/**` and `.github/actions/**` require approval from @pkuppens per CODEOWNERS policy.
 
 ### PR Review Process
 
