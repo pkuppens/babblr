@@ -1,0 +1,8 @@
+# Gitleaks ignore file
+# https://github.com/gitleaks/gitleaks#gitleaksignore
+
+# Documentation examples - not real secrets
+docs/ci/SECURITY_SCANNING.md:234
+
+# Test fixtures - not real credentials
+backend/tests/test_llm_factory_credentials.py:48
