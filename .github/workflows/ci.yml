@@ -4,7 +4,8 @@ on:
   push:
     # Runs on push to main (for post-merge verification) and feature branches (for early feedback)
     # Push to main is allowed only via merged PRs due to branch protection rules
-    branches: [main, feature/*, task/*, bug/*, hotfix/*]
+    # Includes copilot/* branches so Copilot contributions are tested before PR creation
+    branches: [main, feature/*, task/*, bug/*, hotfix/*, copilot/*]
   pull_request:
     # Runs automatically on all PRs to main (no approval needed for CI steps)
     branches: [main]
