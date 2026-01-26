@@ -6,7 +6,7 @@ services:
     build:
       context: ../backend
       dockerfile: Dockerfile.dev
-    image: babblr/backend:dev
+    image: babblr-backend:dev
     container_name: babblr-backend-dev
     ports:
       - "8000:8000"
@@ -29,8 +29,8 @@ services:
       # Exclude .venv to avoid conflicts
       - /app/.venv
       # Persistent data volumes
-      - audio_data:/data/audio
-      - whisper_cache:/home/babblr/.cache/whisper
+      - babblr-volume-audio-files:/data/audio
+      - babblr-volume-whisper-models:/home/babblr/.cache/whisper
     depends_on:
       postgres:
         condition: service_healthy
@@ -45,7 +45,7 @@ services:
     build:
       context: ../frontend
       dockerfile: Dockerfile.dev
-    image: babblr/frontend:dev
+    image: babblr-frontend:dev
     container_name: babblr-frontend-dev
     ports:
       - "5173:5173"
@@ -65,13 +65,13 @@ services:
   # PostgreSQL Database
   postgres:
     image: postgres:16-alpine
-    container_name: babblr-postgres
+    container_name: babblr-postgres-dev
     environment:
       POSTGRES_USER: babblr
       POSTGRES_PASSWORD: devpassword
       POSTGRES_DB: babblr
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - babblr-volume-postgres-data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
     healthcheck:
@@ -86,11 +86,11 @@ services:
   # Ollama LLM Service
   ollama:
     image: ollama/ollama:latest
-    container_name: babblr-ollama
+    container_name: babblr-ollama-dev
     ports:
       - "11434:11434"
     volumes:
-      - ollama_models:/root/.ollama
+      - babblr-volume-ollama-models:/root/.ollama
     restart: unless-stopped
     networks:
       - babblr-network
@@ -106,26 +106,31 @@ services:
   # Redis (Optional - for caching)
   redis:
     image: redis:7-alpine
-    container_name: babblr-redis
+    container_name: babblr-redis-dev
     ports:
       - "6379:6379"
     volumes:
-      - redis_data:/data
+      - babblr-volume-redis-data:/data
     restart: unless-stopped
     networks:
       - babblr-network
 
 volumes:
-  postgres_data:
+  babblr-volume-postgres-data:
     driver: local
-  audio_data:
+    name: babblr-volume-postgres-data
+  babblr-volume-audio-files:
     driver: local
-  whisper_cache:
+    name: babblr-volume-audio-files
+  babblr-volume-whisper-models:
     driver: local
-  ollama_models:
+    name: babblr-volume-whisper-models
+  babblr-volume-ollama-models:
     driver: local
-  redis_data:
+    name: babblr-volume-ollama-models
+  babblr-volume-redis-data:
     driver: local
+    name: babblr-volume-redis-data
 
 networks:
   babblr-network:

@@ -244,3 +244,10 @@ tmpclaude*
 
 # Databricks generated data (regenerate with generate_synthetic_data.py)
 databricks/data/*.parquet
+backend/.env*
+
+# Docker
+docker/.env
+docker/.env.local
+docker/.env.*.local
+
