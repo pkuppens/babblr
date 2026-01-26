@@ -5,7 +5,7 @@ anthropic==0.39.0
 openai-whisper==20250625
 imageio-ffmpeg==0.6.0
 python-dotenv==1.2.1
-sqlalchemy==2.0.36
+sqlalchemy==2.0.46
 aiosqlite==0.22.1
 pydantic==2.12.5
 pydantic-settings==2.12.0
