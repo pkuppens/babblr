@@ -1,0 +1,132 @@
+version: '3.9'
+
+services:
+  # Backend API (Development with hot-reload)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    image: babblr/backend:dev
+    container_name: babblr-backend-dev
+    ports:
+      - "8000:8000"
+    environment:
+      - BABBLR_API_HOST=0.0.0.0
+      - BABBLR_API_PORT=8000
+      - BABBLR_CONVERSATION_DATABASE_URL=postgresql+asyncpg://babblr:devpassword@postgres:5432/babblr
+      - LLM_PROVIDER=${LLM_PROVIDER:-ollama}
+      - OLLAMA_BASE_URL=http://ollama:11434
+      - OLLAMA_MODEL=${OLLAMA_MODEL:-llama3.2:latest}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY:-}
+      - BABBLR_AUDIO_STORAGE_PATH=/data/audio
+      - WHISPER_MODEL=${WHISPER_MODEL:-base}
+      - PYTHONUNBUFFERED=1
+      - PYTHONDONTWRITEBYTECODE=1
+    volumes:
+      # Mount source code for hot-reload
+      - ./backend:/app
+      # Exclude .venv to avoid conflicts
+      - /app/.venv
+      # Persistent data volumes
+      - audio_data:/data/audio
+      - whisper_cache:/home/babblr/.cache/whisper
+    depends_on:
+      postgres:
+        condition: service_healthy
+      ollama:
+        condition: service_started
+    restart: unless-stopped
+    networks:
+      - babblr-network
+
+  # Frontend Web App (Development with Vite HMR)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    image: babblr/frontend:dev
+    container_name: babblr-frontend-dev
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_URL=http://localhost:8000
+    volumes:
+      # Mount source code for hot-reload
+      - ./frontend:/app
+      # Exclude node_modules to avoid conflicts
+      - /app/node_modules
+    depends_on:
+      - backend
+    restart: unless-stopped
+    networks:
+      - babblr-network
+
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: babblr-postgres
+    environment:
+      POSTGRES_USER: babblr
+      POSTGRES_PASSWORD: devpassword
+      POSTGRES_DB: babblr
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U babblr"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - babblr-network
+
+  # Ollama LLM Service
+  ollama:
+    image: ollama/ollama:latest
+    container_name: babblr-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_models:/root/.ollama
+    restart: unless-stopped
+    networks:
+      - babblr-network
+    # Uncomment for GPU support (requires NVIDIA Docker runtime)
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: 1
+    #           capabilities: [gpu]
+
+  # Redis (Optional - for caching)
+  redis:
+    image: redis:7-alpine
+    container_name: babblr-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    networks:
+      - babblr-network
+
+volumes:
+  postgres_data:
+    driver: local
+  audio_data:
+    driver: local
+  whisper_cache:
+    driver: local
+  ollama_models:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  babblr-network:
+    driver: bridge
