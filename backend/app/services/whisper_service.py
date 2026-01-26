@@ -7,12 +7,16 @@ future replacement with other STT implementations (e.g., cloud-based services).
 """
 
 import asyncio
+import json
 import logging
+import os
 import subprocess
 import time
 from abc import ABC, abstractmethod
+from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+import httpx
 import numpy as np
 
 logger = logging.getLogger(__name__)
@@ -132,7 +136,7 @@ class STTService(ABC):
 
     @abstractmethod
     async def transcribe(
-        self, audio_path: str, language: Optional[str] = None
+        self, audio_path: str, language: Optional[str] = None, timeout: int = 30
     ) -> TranscriptionResult:
         """
         Transcribe audio file to text.
@@ -140,6 +144,7 @@ class STTService(ABC):
         Args:
             audio_path: Path to the audio file
             language: Optional language hint (e.g., 'es' for Spanish)
+            timeout: Timeout in seconds for transcription
 
         Returns:
             TranscriptionResult with text, language, confidence, and duration
@@ -529,10 +534,167 @@ class WhisperService(STTService):
         return info
 
 
+class WhisperWebservice(STTService):
+    """Use a remote Whisper ASR webservice over HTTP.
+
+    This adapter sends audio to a Whisper ASR webservice container (e.g. the
+    openai-whisper-asr-webservice image) and parses the response. It supports
+    basic transcription with language hints and JSON output.
+    """
+
+    def __init__(self, base_url: str, model_size: str, device: str, timeout: int = 300):
+        """Initialize the remote webservice client.
+
+        Args:
+            base_url: Base URL of the Whisper webservice (e.g., http://babblr-whisper:9000).
+            model_size: The configured model name for display (e.g., "base", "large-v3").
+            device: Device label reported to the UI ("cuda", "cpu", or "auto").
+            timeout: Request timeout in seconds for remote transcription.
+        """
+        self.base_url = base_url.rstrip("/")
+        self.model_size = model_size
+        self.device = device
+        self.timeout = timeout
+
+    def _map_language_code(self, language: Optional[str]) -> Optional[str]:
+        """Map full language names to Whisper language codes.
+
+        Args:
+            language: Language name or code.
+
+        Returns:
+            Language code (e.g., "es") or None if not provided.
+        """
+        if not language:
+            return None
+
+        language_lower = language.lower()
+        if language_lower in WhisperService.SUPPORTED_LANGUAGES.values():
+            return language_lower
+        return WhisperService.SUPPORTED_LANGUAGES.get(language_lower, language_lower)
+
+    async def transcribe(
+        self, audio_path: str, language: Optional[str] = None, timeout: int = 30
+    ) -> TranscriptionResult:
+        """Transcribe audio by calling a remote Whisper ASR webservice.
+
+        Args:
+            audio_path: Path to the audio file.
+            language: Optional language hint (e.g., "es" or "spanish").
+            timeout: Timeout in seconds for the HTTP request.
+
+        Returns:
+            TranscriptionResult with text, language, confidence, and duration.
+
+        Raises:
+            FileNotFoundError: If the audio file does not exist.
+            RuntimeError: If the remote service returns an error response.
+        """
+        if not os.path.exists(audio_path):
+            raise FileNotFoundError(f"Audio file not found: {audio_path}")
+
+        language_code = self._map_language_code(language)
+        params: dict[str, Any] = {"task": "transcribe", "output": "json"}
+        if language_code:
+            params["language"] = language_code
+
+        effective_timeout = max(timeout, self.timeout)
+        file_name = Path(audio_path).name
+
+        try:
+            async with httpx.AsyncClient(timeout=effective_timeout) as client:
+                with open(audio_path, "rb") as audio_file:
+                    files = {"audio_file": (file_name, audio_file, "application/octet-stream")}
+                    response = await client.post(f"{self.base_url}/asr", params=params, files=files)
+                    response.raise_for_status()
+        except httpx.HTTPError as exc:
+            raise RuntimeError(f"Whisper webservice request failed: {exc}") from exc
+
+        try:
+            payload = response.json()
+        except ValueError:
+            try:
+                payload = json.loads(response.text)
+            except json.JSONDecodeError:
+                payload = None
+
+        if isinstance(payload, dict):
+            text = str(payload.get("text", "")).strip()
+            detected_language = str(payload.get("language", language_code or "unknown"))
+        else:
+            text = response.text.strip()
+            detected_language = language_code or "unknown"
+
+        return TranscriptionResult(
+            text=text,
+            language=detected_language,
+            confidence=WhisperService.DEFAULT_CONFIDENCE,
+            duration=0.0,
+            metadata={"remote": True, "provider": "whisper_webservice"},
+        )
+
+    def get_supported_languages(self) -> List[str]:
+        """Return list of supported language codes."""
+        return list(WhisperService.SUPPORTED_LANGUAGES.values())
+
+    def get_available_models(self) -> List[str]:
+        """Return list of available models."""
+        return WhisperService.AVAILABLE_MODELS.copy()
+
+    def is_model_cached(self, model_size: str) -> bool:
+        """Return False for remote model cache checks.
+
+        Args:
+            model_size: Model to check.
+
+        Returns:
+            False because cache is managed by the remote service.
+        """
+        return False
+
+    def switch_model(self, new_model_size: str) -> bool:
+        """Return False because model switching is external.
+
+        Args:
+            new_model_size: New model to use.
+
+        Returns:
+            False since the remote service must be restarted with ASR_MODEL.
+        """
+        return False
+
+    def get_cuda_info(self) -> Dict[str, Any]:
+        """Return CUDA status as reported by configuration.
+
+        Returns:
+            Dictionary with CUDA status and basic device info.
+        """
+        available = self.device == "cuda"
+        return {
+            "available": available,
+            "device": self.device,
+            "device_name": None,
+            "memory_total_gb": None,
+            "memory_free_gb": None,
+        }
+
+
 # Initialize the service with configuration
-def create_whisper_service() -> WhisperService:
-    """Create and initialize Whisper service with configuration."""
+def create_whisper_service() -> STTService:
+    """Create and initialize the STT service with configuration.
+
+    Returns:
+        STTService instance (local Whisper or remote webservice).
+    """
     from app.config import settings
+
+    if settings.stt_provider.lower() == "whisper_webservice":
+        return WhisperWebservice(
+            base_url=settings.stt_webservice_url,
+            model_size=settings.whisper_model,
+            device=settings.stt_webservice_device,
+            timeout=settings.stt_webservice_timeout,
+        )
 
     return WhisperService(model_size=settings.whisper_model, device=settings.whisper_device)
 

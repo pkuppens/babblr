@@ -402,6 +402,7 @@ async def get_stt_config(include_status: bool = False):
             device = "unknown"
 
         response_content = {
+            "provider": settings.stt_provider,
             "current_model": current_model,
             "available_models": models,
             "cuda": cuda_info,
@@ -475,6 +476,15 @@ async def update_stt_model(request: dict, background_tasks: BackgroundTasks):
         model: str
 
     try:
+        if settings.stt_provider.lower() == "whisper_webservice":
+            raise HTTPException(
+                status_code=409,
+                detail=(
+                    "STT model switching is managed by the Whisper webservice container. "
+                    "Restart that container with ASR_MODEL set to the desired model."
+                ),
+            )
+
         update_request = ModelUpdateRequest(**request)
         new_model = update_request.model
 

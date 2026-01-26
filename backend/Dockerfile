@@ -50,8 +50,8 @@ WORKDIR /app
 # Copy application code
 COPY --chown=babblr:babblr . .
 
-# Switch to non-root user
-USER babblr
+# Ensure entrypoint is executable
+RUN chmod +x /app/docker-entrypoint.sh
 
 # Add venv to PATH
 ENV PATH="/app/.venv/bin:$PATH"
@@ -70,6 +70,9 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
 
 # Expose port
 EXPOSE 8000
+
+# Entrypoint ensures volume permissions and drops to non-root
+ENTRYPOINT ["sh", "-c", "set -e; if [ \"$(id -u)\" = \"0\" ]; then mkdir -p /data /home/babblr/.cache/whisper; chown -R babblr:babblr /data /home/babblr/.cache/whisper; exec su -s /bin/sh babblr -c \"$*\"; fi; exec \"$@\"", "--"]
 
 # Default command
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

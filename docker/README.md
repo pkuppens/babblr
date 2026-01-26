@@ -291,42 +291,34 @@ services:
 
 ## GPU Support (Optional)
 
-To enable GPU acceleration for Whisper and Ollama:
+By default, Whisper uses `WHISPER_DEVICE=auto` and will fall back to CPU when
+CUDA is not available. To enable GPU acceleration on machines that have a
+supported NVIDIA setup, use the GPU override file.
 
 **1. Install NVIDIA Container Toolkit**
 
-**2. Uncomment GPU configuration in docker-compose file:**
-
-```yaml
-services:
-  backend:
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: 1
-              capabilities: [gpu]
-
-  ollama:
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: 1
-              capabilities: [gpu]
-```
-
-**3. Restart services:**
+**2. Start services with the GPU override:**
 ```bash
-docker-compose -f docker-compose.base.yml -f docker-compose.dev.yml up -d --force-recreate
+docker-compose -f docker-compose.base.yml -f docker-compose.dev.yml -f docker-compose.gpu.yml up -d
 ```
 
-**4. Verify GPU access:**
+**3. Verify GPU access (optional):**
 ```bash
 docker-compose -f docker-compose.base.yml -f docker-compose.dev.yml exec backend nvidia-smi
 ```
+
+**Notes:**
+- If you run without the GPU override file, the backend stays on CPU.
+- If you use the GPU override on a host without NVIDIA support, Docker will
+  fail fast and you should remove the override file.
+
+For more detail, see `docker/GPU.md`.
+
+## Whisper Container Mode (Optional)
+
+You can run a dedicated Whisper container and point the backend to it. This is
+useful when you want GPU-backed Whisper without running the model inside the
+backend container. See `docker/WHISPER.md` for setup and configuration details.
 
 ## Data Persistence
 
@@ -388,6 +380,6 @@ Once comfortable with Docker Compose:
 
 - [Docker Documentation](https://docs.docker.com/)
 - [Docker Compose Documentation](https://docs.docker.com/compose/)
-- [Backend README](backend/README.md)
-- [Frontend README](frontend/README.md)
-- [DevOps Transformation Plan](tmp/devops/00-OVERVIEW.md)
+- [Backend README](../backend/README.md)
+- [Frontend README](../frontend/README.md)
+- [DevOps Transformation Plan](../tmp/devops/00-OVERVIEW.md)

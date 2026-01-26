@@ -45,6 +45,16 @@ class Settings(BaseSettings):
     # Whisper settings
     whisper_model: str = "base"
     whisper_device: str = "auto"  # "auto", "cuda", or "cpu"
+    stt_provider: str = Field(
+        default="local",
+        validation_alias=AliasChoices("stt_provider", "stt_provider"),
+    )
+    stt_webservice_url: str = Field(
+        default="http://babblr-whisper:9000",
+        validation_alias=AliasChoices("stt_webservice_url", "stt_webservice_url"),
+    )
+    stt_webservice_timeout: int = 300
+    stt_webservice_device: str = "auto"
 
     # TTS settings
     tts_voice_spanish: str = "es-ES-AlvaroNeural"

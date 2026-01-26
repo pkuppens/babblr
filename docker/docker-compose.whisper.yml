@@ -1,0 +1,16 @@
+services:
+  babblr-whisper:
+    image: onerahmet/openai-whisper-asr-webservice:latest
+    container_name: babblr-whisper
+    ports:
+      - "9000:9000"
+    environment:
+      - ASR_ENGINE=${WHISPER_CONTAINER_ENGINE:-openai_whisper}
+      - ASR_MODEL=${WHISPER_CONTAINER_MODEL:-base}
+      - ASR_MODEL_PATH=/data/whisper
+      - ASR_DEVICE=${WHISPER_CONTAINER_DEVICE:-cpu}
+    volumes:
+      - babblr-volume-whisper-models:/data/whisper
+    restart: unless-stopped
+    networks:
+      - babblr-network
