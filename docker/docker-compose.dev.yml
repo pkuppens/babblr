@@ -1,5 +1,3 @@
-version: '3.9'
-
 services:
   # Backend API (Development with hot-reload)
   backend:
@@ -13,7 +11,8 @@ services:
     environment:
       - BABBLR_API_HOST=0.0.0.0
       - BABBLR_API_PORT=8000
-      - BABBLR_CONVERSATION_DATABASE_URL=postgresql+asyncpg://babblr:devpassword@postgres:5432/babblr
+      # Using SQLite for PoC (backend doesn't have asyncpg for PostgreSQL yet)
+      - BABBLR_CONVERSATION_DATABASE_URL=sqlite+aiosqlite:////data/babblr.db
       - LLM_PROVIDER=${LLM_PROVIDER:-ollama}
       - OLLAMA_BASE_URL=http://ollama:11434
       - OLLAMA_MODEL=${OLLAMA_MODEL:-llama3.2:latest}
@@ -31,11 +30,10 @@ services:
       # Persistent data volumes
       - babblr-volume-audio-files:/data/audio
       - babblr-volume-whisper-models:/home/babblr/.cache/whisper
+      # SQLite database file
+      - babblr-volume-sqlite-db:/data
     depends_on:
-      postgres:
-        condition: service_healthy
-      ollama:
-        condition: service_started
+      - ollama
     restart: unless-stopped
     networks:
       - babblr-network
@@ -115,23 +113,5 @@ services:
     networks:
       - babblr-network
 
-volumes:
-  babblr-volume-postgres-data:
-    driver: local
-    name: babblr-volume-postgres-data
-  babblr-volume-audio-files:
-    driver: local
-    name: babblr-volume-audio-files
-  babblr-volume-whisper-models:
-    driver: local
-    name: babblr-volume-whisper-models
-  babblr-volume-ollama-models:
-    driver: local
-    name: babblr-volume-ollama-models
-  babblr-volume-redis-data:
-    driver: local
-    name: babblr-volume-redis-data
-
-networks:
-  babblr-network:
-    driver: bridge
+# Volumes and networks are defined in docker-compose.base.yml
+# Use: docker-compose -f docker-compose.base.yml -f docker-compose.dev.yml up

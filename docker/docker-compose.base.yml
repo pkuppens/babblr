@@ -1,0 +1,51 @@
+# Base infrastructure: volumes and networks shared by dev and prod
+
+volumes:
+  # Database storage
+  babblr-volume-postgres-data:
+    driver: local
+    name: babblr-volume-postgres-data
+    labels:
+      com.babblr.description: "PostgreSQL database files"
+
+  # Audio file storage
+  babblr-volume-audio-files:
+    driver: local
+    name: babblr-volume-audio-files
+    labels:
+      com.babblr.description: "User audio recordings and TTS output"
+
+  # Whisper model cache
+  babblr-volume-whisper-models:
+    driver: local
+    name: babblr-volume-whisper-models
+    labels:
+      com.babblr.description: "Whisper STT model cache"
+
+  # Ollama model storage
+  babblr-volume-ollama-models:
+    driver: local
+    name: babblr-volume-ollama-models
+    labels:
+      com.babblr.description: "Ollama LLM models"
+
+  # Redis data
+  babblr-volume-redis-data:
+    driver: local
+    name: babblr-volume-redis-data
+    labels:
+      com.babblr.description: "Redis cache data"
+
+  # SQLite database
+  babblr-volume-sqlite-db:
+    driver: local
+    name: babblr-volume-sqlite-db
+    labels:
+      com.babblr.description: "SQLite database file"
+
+networks:
+  babblr-network:
+    driver: bridge
+    name: babblr-network
+    labels:
+      com.babblr.description: "Internal network for Babblr services"
