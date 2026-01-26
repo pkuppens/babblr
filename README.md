@@ -57,7 +57,22 @@ For a detailed visual walkthrough and UI specifications, see the [Visual Guide](
 
 ## Getting Started
 
-### Quick Setup (Recommended)
+### Docker (Easiest for Development)
+
+Run the entire stack with hot-reload using Docker Compose:
+
+```bash
+cd docker
+cp .env.template .env
+# Edit .env if you want to use Claude/Gemini instead of Ollama
+docker-compose -f docker-compose.dev.yml up -d
+```
+
+This starts backend, frontend, PostgreSQL, and Ollama in containers with automatic code reloading.
+
+See [docker/README.md](docker/README.md) for detailed Docker setup and troubleshooting.
+
+### Quick Setup (Native Installation)
 
 Use the automated setup script with uv package manager:
 
