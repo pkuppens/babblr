@@ -2,6 +2,18 @@
 
 This guide explains how to run Babblr using Docker and Docker Compose, with support for both **development** (hot-reload) and **production** modes.
 
+## Directory Structure
+
+All Docker orchestration files are located in the `docker/` directory:
+- `docker-compose.yml` - Production-like setup
+- `docker-compose.dev.yml` - Development with hot-reload
+- `.env.template` - Environment configuration template
+- `README.md` - This file
+
+Application-specific Docker files remain in their respective directories:
+- `backend/Dockerfile`, `backend/Dockerfile.dev`, `backend/.dockerignore`
+- `frontend/Dockerfile`, `frontend/Dockerfile.dev`, `frontend/.dockerignore`, `frontend/nginx.conf`
+
 ## Prerequisites
 
 - [Docker](https://docs.docker.com/get-docker/) (version 20.10+)
@@ -13,13 +25,14 @@ This guide explains how to run Babblr using Docker and Docker Compose, with supp
 
 **1. Clone the repository:**
 ```bash
-git clone https://github.com/yourusername/babblr.git
+git clone https://github.com/pkuppens/babblr.git
 cd babblr
 ```
 
 **2. Create environment file:**
 ```bash
-cp .env.docker .env
+cd docker
+cp .env.template .env
 # Edit .env and add your API keys if using Claude or Gemini
 ```
 

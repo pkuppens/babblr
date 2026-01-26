@@ -1,13 +1,13 @@
 version: '3.9'
 
 services:
-  # Backend API (Production)
+  # Backend API (Development with hot-reload)
   backend:
     build:
-      context: ./backend
-      dockerfile: Dockerfile
-    image: babblr/backend:latest
-    container_name: babblr-backend
+      context: ../backend
+      dockerfile: Dockerfile.dev
+    image: babblr/backend:dev
+    container_name: babblr-backend-dev
     ports:
       - "8000:8000"
     environment:
@@ -21,9 +21,16 @@ services:
       - GOOGLE_API_KEY=${GOOGLE_API_KEY:-}
       - BABBLR_AUDIO_STORAGE_PATH=/data/audio
       - WHISPER_MODEL=${WHISPER_MODEL:-base}
+      - PYTHONUNBUFFERED=1
+      - PYTHONDONTWRITEBYTECODE=1
     volumes:
+      # Mount source code for hot-reload
+      - ../backend:/app
+      # Exclude .venv to avoid conflicts
+      - /app/.venv
+      # Persistent data volumes
       - audio_data:/data/audio
-      - whisper_cache:/cache/.cache/whisper
+      - whisper_cache:/home/babblr/.cache/whisper
     depends_on:
       postgres:
         condition: service_healthy
@@ -32,33 +39,28 @@ services:
     restart: unless-stopped
     networks:
       - babblr-network
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
-      interval: 30s
-      timeout: 10s
-      start_period: 40s
-      retries: 3
 
-  # Frontend Web App (Production with Nginx)
+  # Frontend Web App (Development with Vite HMR)
   frontend:
     build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    image: babblr/frontend:latest
-    container_name: babblr-frontend
+      context: ../frontend
+      dockerfile: Dockerfile.dev
+    image: babblr/frontend:dev
+    container_name: babblr-frontend-dev
     ports:
-      - "3000:80"
+      - "5173:5173"
+    environment:
+      - VITE_API_URL=http://localhost:8000
+    volumes:
+      # Mount source code for hot-reload
+      - ../frontend:/app
+      # Exclude node_modules to avoid conflicts
+      - /app/node_modules
     depends_on:
       - backend
     restart: unless-stopped
     networks:
       - babblr-network
-    healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:80/"]
-      interval: 30s
-      timeout: 5s
-      start_period: 10s
-      retries: 3
 
   # PostgreSQL Database
   postgres:

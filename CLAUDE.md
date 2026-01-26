@@ -98,6 +98,39 @@ npm run build                 # TypeScript + Vite build
 npm run electron:build        # Create distributable
 ```
 
+### Docker (from `docker/` directory)
+
+```bash
+# Development mode with hot-reload
+docker-compose -f docker-compose.dev.yml up -d        # Start all services
+docker-compose -f docker-compose.dev.yml logs -f      # View logs
+docker-compose -f docker-compose.dev.yml down         # Stop services
+
+# Production mode
+docker-compose up -d                                  # Start all services
+docker-compose down                                   # Stop services
+
+# Rebuild after dependency changes
+docker-compose -f docker-compose.dev.yml up -d --build backend
+
+# Access service shells
+docker-compose -f docker-compose.dev.yml exec backend /bin/bash
+docker-compose -f docker-compose.dev.yml exec frontend /bin/sh
+
+# Run tests in containers
+docker-compose -f docker-compose.dev.yml exec backend uv run pytest tests/ -v
+docker-compose -f docker-compose.dev.yml exec frontend npm run test
+```
+
+**Development Mode Benefits:**
+- All services start with one command
+- Hot-reload enabled (uvicorn --reload, Vite HMR)
+- PostgreSQL included (no manual setup)
+- Ollama LLM service included
+- Code changes reflect immediately
+
+See [docker/README.md](docker/README.md) for detailed Docker documentation.
+
 ## Architecture
 
 ### Backend (`backend/app/`)
