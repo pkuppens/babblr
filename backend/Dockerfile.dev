@@ -23,7 +23,7 @@ RUN useradd -m -u 1000 babblr && \
 # Set working directory
 WORKDIR /app
 
-# Switch to non-root user
+# Switch to non-root user for dependency install
 USER babblr
 
 # Copy dependency files only (for layer caching)
@@ -32,6 +32,13 @@ COPY --chown=babblr:babblr pyproject.toml uv.lock README.md ./
 
 # Install dependencies with uv (includes dev dependencies)
 RUN uv sync --frozen
+
+# Copy entrypoint script
+COPY --chown=babblr:babblr docker-entrypoint.sh /app/docker-entrypoint.sh
+RUN chmod +x /app/docker-entrypoint.sh
+
+# Switch back to root so entrypoint can fix volume permissions
+USER root
 
 # Add venv to PATH
 ENV PATH="/app/.venv/bin:$PATH"
@@ -46,6 +53,9 @@ ENV PYTHONUNBUFFERED=1 \
 
 # Expose port
 EXPOSE 8000
+
+# Entrypoint ensures volume permissions and drops to non-root
+ENTRYPOINT ["sh", "-c", "set -e; if [ \"$(id -u)\" = \"0\" ]; then mkdir -p /data /home/babblr/.cache/whisper; chown -R babblr:babblr /data /home/babblr/.cache/whisper; exec su -s /bin/sh babblr -c \"$*\"; fi; exec \"$@\"", "--"]
 
 # Development command with hot-reload
 # Note: The app code will be mounted as a volume, so we don't copy it here

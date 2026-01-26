@@ -4,7 +4,7 @@ import logging
 from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database.db import get_db
@@ -42,21 +42,31 @@ async def update_user_level(
     result = await db.execute(select(UserLevel).where(UserLevel.language == language))
     user_level = result.scalar()
 
+    now = datetime.now(timezone.utc)
     if user_level:
-        user_level.cefr_level = level_data.cefr_level
-        user_level.proficiency_score = level_data.proficiency_score
-        user_level.assessed_at = datetime.now(timezone.utc)
+        await db.execute(
+            update(UserLevel)
+            .where(UserLevel.id == user_level.id)
+            .values(
+                cefr_level=level_data.cefr_level,
+                proficiency_score=level_data.proficiency_score,
+                assessed_at=now,
+                updated_at=now,
+            )
+        )
+        await db.commit()
+        result = await db.execute(select(UserLevel).where(UserLevel.id == user_level.id))
+        user_level = result.scalar_one()
     else:
         user_level = UserLevel(
             language=language,
             cefr_level=level_data.cefr_level,
             proficiency_score=level_data.proficiency_score,
-            assessed_at=datetime.now(timezone.utc),
+            assessed_at=now,
         )
         db.add(user_level)
-
-    await db.commit()
-    await db.refresh(user_level)
+        await db.commit()
+        await db.refresh(user_level)
 
     logger.info(f"Updated user level for {language}: {level_data.cefr_level}")
 

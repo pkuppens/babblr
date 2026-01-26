@@ -19,9 +19,14 @@ services:
       - GOOGLE_API_KEY=${GOOGLE_API_KEY:-}
       - BABBLR_AUDIO_STORAGE_PATH=/data/audio
       - WHISPER_MODEL=${WHISPER_MODEL:-base}
+      - WHISPER_DEVICE=${WHISPER_DEVICE:-auto}
+      - STT_PROVIDER=${STT_PROVIDER:-local}
+      - STT_WEBSERVICE_URL=${STT_WEBSERVICE_URL:-http://babblr-whisper:9000}
+      - STT_WEBSERVICE_TIMEOUT=${STT_WEBSERVICE_TIMEOUT:-300}
+      - STT_WEBSERVICE_DEVICE=${STT_WEBSERVICE_DEVICE:-auto}
     volumes:
       - babblr-volume-audio-files:/data/audio
-      - babblr-volume-whisper-models:/cache/.cache/whisper
+      - babblr-volume-whisper-models:/home/babblr/.cache/whisper
     depends_on:
       postgres:
         condition: service_healthy

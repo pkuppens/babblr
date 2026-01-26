@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { X, Eye, EyeOff, CheckCircle, AlertCircle, Search, Cpu, Zap } from 'lucide-react';
 import {
   settingsService,
@@ -84,6 +84,12 @@ function Settings({ isOpen, onClose, inline = false }: SettingsProps) {
   const [isLoadingSttConfig, setIsLoadingSttConfig] = useState(false);
   const [isSwitchingModel, setIsSwitchingModel] = useState(false);
   const [modelSwitchProgress, setModelSwitchProgress] = useState<string>('');
+  const [modelSwitchPercent, setModelSwitchPercent] = useState<number>(0);
+  const modelSwitchStartRef = useRef<number | null>(null);
+  const modelSwitchTimerRef = useRef<number | null>(null);
+
+  const MODEL_SWITCH_EXPECTED_MS = 4 * 60 * 1000;
+  const MODEL_SWITCH_TIMEOUT_MS = 6 * 60 * 1000;
 
   // Filtered timezone options based on search
   const filteredTimezones = useMemo(() => filterTimezones(timezoneSearch), [timezoneSearch]);
@@ -100,6 +106,40 @@ function Settings({ isOpen, onClose, inline = false }: SettingsProps) {
       loadSttConfig();
     }
   }, [isOpen]);
+
+  useEffect(() => {
+    return () => {
+      if (modelSwitchTimerRef.current !== null) {
+        window.clearInterval(modelSwitchTimerRef.current);
+        modelSwitchTimerRef.current = null;
+      }
+    };
+  }, []);
+
+  const startModelSwitchProgress = () => {
+    setModelSwitchPercent(0);
+    modelSwitchStartRef.current = Date.now();
+    if (modelSwitchTimerRef.current !== null) {
+      window.clearInterval(modelSwitchTimerRef.current);
+    }
+    modelSwitchTimerRef.current = window.setInterval(() => {
+      const start = modelSwitchStartRef.current ?? Date.now();
+      const elapsed = Date.now() - start;
+      const nextPercent = Math.min(95, Math.round((elapsed / MODEL_SWITCH_EXPECTED_MS) * 100));
+      setModelSwitchPercent(prev => (nextPercent > prev ? nextPercent : prev));
+    }, 1000);
+  };
+
+  const stopModelSwitchProgress = (finalPercent?: number) => {
+    if (modelSwitchTimerRef.current !== null) {
+      window.clearInterval(modelSwitchTimerRef.current);
+      modelSwitchTimerRef.current = null;
+    }
+    modelSwitchStartRef.current = null;
+    if (typeof finalPercent === 'number') {
+      setModelSwitchPercent(finalPercent);
+    }
+  };
 
   const loadSettings = async () => {
     try {
@@ -1000,6 +1040,7 @@ function Settings({ isOpen, onClose, inline = false }: SettingsProps) {
 
                   setIsSwitchingModel(true);
                   setModelSwitchProgress('Initiating model switch...');
+                  startModelSwitchProgress();
 
                   try {
                     // Start the model switch (returns immediately)
@@ -1009,7 +1050,7 @@ function Settings({ isOpen, onClose, inline = false }: SettingsProps) {
                     // Update progress message based on action
                     if (action === 'downloading') {
                       setModelSwitchProgress(
-                        `Downloading model ${newModel}... (this may take a few minutes)`
+                        `Downloading model ${newModel}... (expect ~4 minutes for large models)`
                       );
                     } else {
                       setModelSwitchProgress(`Switching to model ${newModel}...`);
@@ -1028,6 +1069,7 @@ function Settings({ isOpen, onClose, inline = false }: SettingsProps) {
 
                           if (status.error) {
                             setModelSwitchProgress('Model switch failed');
+                            stopModelSwitchProgress(0);
                             toast.error(`Failed to switch model: ${status.error}`);
                             setIsSwitchingModel(false);
                             setModelSwitchProgress('');
@@ -1039,9 +1081,11 @@ function Settings({ isOpen, onClose, inline = false }: SettingsProps) {
                           const config = await speechService.getSttConfig();
                           if (config.current_model === newModel) {
                             setModelSwitchProgress('Model loaded successfully!');
+                            stopModelSwitchProgress(100);
                             setTimeout(() => {
                               setIsSwitchingModel(false);
                               setModelSwitchProgress('');
+                              setModelSwitchPercent(0);
                             }, 1000);
                           } else {
                             // Still switching, keep polling
@@ -1060,23 +1104,28 @@ function Settings({ isOpen, onClose, inline = false }: SettingsProps) {
                         clearInterval(pollInterval);
                         setIsSwitchingModel(false);
                         setModelSwitchProgress('');
+                        stopModelSwitchProgress(0);
                         console.error('Failed to check switch status:', error);
                       }
                     }, 1000); // Poll every second
 
-                    // Set a maximum timeout (5 minutes for downloads)
+                    // Set a maximum timeout (6 minutes for large model downloads)
                     setTimeout(() => {
                       clearInterval(pollInterval);
                       if (isSwitchingModel) {
                         setIsSwitchingModel(false);
                         setModelSwitchProgress('');
-                        toast.error('Model switch timed out. Check server logs for details.');
+                        stopModelSwitchProgress(0);
+                        toast.error(
+                          'Model switch timed out after 6 minutes. Check server logs for details.'
+                        );
                       }
-                    }, 300000); // 5 minutes
+                    }, MODEL_SWITCH_TIMEOUT_MS);
                   } catch (error) {
                     console.error('Failed to update STT model:', error);
                     setIsSwitchingModel(false);
                     setModelSwitchProgress('');
+                    stopModelSwitchProgress(0);
                     toast.error('Failed to initiate model switch. Check server logs for details.');
                   }
                 }}
@@ -1092,16 +1141,27 @@ function Settings({ isOpen, onClose, inline = false }: SettingsProps) {
               {isSwitchingModel && (
                 <div className="stt-model-switch-progress" style={{ marginTop: '1rem' }}>
                   <div className="stt-progress-spinner"></div>
-                  <p className="settings-description" style={{ margin: '0.5rem 0 0 0' }}>
-                    {modelSwitchProgress || 'Switching model...'}
-                  </p>
-                  <p
-                    className="settings-description"
-                    style={{ fontSize: '0.8rem', color: '#6b7280' }}
-                  >
-                    This may take a few minutes if the model needs to be downloaded. Progress is
-                    shown in the server console.
-                  </p>
+                  <div className="stt-progress-meta">
+                    <p className="settings-description" style={{ margin: '0.5rem 0 0 0' }}>
+                      {modelSwitchProgress || 'Switching model...'}
+                    </p>
+                    <div className="stt-progress-bar">
+                      <div
+                        className="stt-progress-bar-fill"
+                        style={{ width: `${modelSwitchPercent}%` }}
+                      ></div>
+                    </div>
+                    <p className="settings-description stt-progress-percent">
+                      {modelSwitchPercent}% complete
+                    </p>
+                    <p
+                      className="settings-description"
+                      style={{ fontSize: '0.8rem', color: '#6b7280' }}
+                    >
+                      Large models can take about 4 minutes. Keep this window open while the model
+                      downloads.
+                    </p>
+                  </div>
                 </div>
               )}
               <p
