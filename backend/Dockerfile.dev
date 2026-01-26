@@ -27,7 +27,8 @@ WORKDIR /app
 USER babblr
 
 # Copy dependency files only (for layer caching)
-COPY --chown=babblr:babblr pyproject.toml uv.lock ./
+# Note: README.md is required by pyproject.toml
+COPY --chown=babblr:babblr pyproject.toml uv.lock README.md ./
 
 # Install dependencies with uv (includes dev dependencies)
 RUN uv sync --frozen

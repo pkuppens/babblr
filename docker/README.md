@@ -5,10 +5,16 @@ This guide explains how to run Babblr using Docker and Docker Compose, with supp
 ## Directory Structure
 
 All Docker orchestration files are located in the `docker/` directory:
-- `docker-compose.yml` - Production-like setup
-- `docker-compose.dev.yml` - Development with hot-reload
+- `docker-compose.base.yml` - Shared infrastructure (volumes, networks)
+- `docker-compose.dev.yml` - Development services with hot-reload
+- `docker-compose.yml` - Production services
 - `.env.template` - Environment configuration template
 - `README.md` - This file
+
+**Modular Design:**
+The compose files are separated by concern:
+- **Base**: Infrastructure (volumes, networks) - can be tested independently
+- **Dev/Prod**: Services that use the base infrastructure
 
 Application-specific Docker files remain in their respective directories:
 - `backend/Dockerfile`, `backend/Dockerfile.dev`, `backend/.dockerignore`
@@ -38,12 +44,14 @@ cp .env.template .env
 
 **3. Start all services:**
 ```bash
-docker-compose -f docker-compose.dev.yml up -d
+docker-compose -f docker-compose.base.yml -f docker-compose.dev.yml up -d
 ```
+
+**Note:** The `-f` flag is used twice to compose multiple files together. The base file defines infrastructure, and the dev file defines services.
 
 **4. Pull Ollama model (first time only):**
 ```bash
-docker-compose -f docker-compose.dev.yml exec ollama ollama pull llama3.2:latest
+docker-compose -f docker-compose.base.yml -f docker-compose.dev.yml exec ollama ollama pull llama3.2:latest
 ```
 
 **5. Access the application:**
@@ -66,7 +74,7 @@ docker-compose -f docker-compose.dev.yml exec ollama ollama pull llama3.2:latest
 
 **Command:**
 ```bash
-docker-compose -f docker-compose.dev.yml up -d
+docker-compose -f docker-compose.base.yml -f docker-compose.dev.yml up -d
 ```
 
 ### Production Mode (`docker-compose.yml`)
@@ -103,36 +111,36 @@ The Docker Compose setup includes these services:
 
 ```bash
 # Development mode (hot-reload)
-docker-compose -f docker-compose.dev.yml up -d
+docker-compose -f docker-compose.base.yml -f docker-compose.dev.yml up -d
 
 # Production mode
 docker-compose up -d
 
 # Start specific service only
-docker-compose -f docker-compose.dev.yml up -d backend
+docker-compose -f docker-compose.base.yml -f docker-compose.dev.yml up -d backend
 ```
 
 ### Viewing Logs
 
 ```bash
 # All services
-docker-compose -f docker-compose.dev.yml logs -f
+docker-compose -f docker-compose.base.yml -f docker-compose.dev.yml logs -f
 
 # Specific service
-docker-compose -f docker-compose.dev.yml logs -f backend
+docker-compose -f docker-compose.base.yml -f docker-compose.dev.yml logs -f backend
 
 # Last 100 lines
-docker-compose -f docker-compose.dev.yml logs --tail=100 backend
+docker-compose -f docker-compose.base.yml -f docker-compose.dev.yml logs --tail=100 backend
 ```
 
 ### Stopping Services
 
 ```bash
 # Stop all services
-docker-compose -f docker-compose.dev.yml down
+docker-compose -f docker-compose.base.yml -f docker-compose.dev.yml down
 
 # Stop and remove volumes (WARNING: deletes data)
-docker-compose -f docker-compose.dev.yml down -v
+docker-compose -f docker-compose.base.yml -f docker-compose.dev.yml down -v
 ```
 
 ### Rebuilding After Code Changes
@@ -152,36 +160,36 @@ docker-compose up -d --build
 
 ```bash
 # Access PostgreSQL shell
-docker-compose -f docker-compose.dev.yml exec postgres psql -U babblr -d babblr
+docker-compose -f docker-compose.base.yml -f docker-compose.dev.yml exec postgres psql -U babblr -d babblr
 
 # Run SQL file
-docker-compose -f docker-compose.dev.yml exec -T postgres psql -U babblr -d babblr < backup.sql
+docker-compose -f docker-compose.base.yml -f docker-compose.dev.yml exec -T postgres psql -U babblr -d babblr < backup.sql
 
 # Create database backup
-docker-compose -f docker-compose.dev.yml exec postgres pg_dump -U babblr babblr > backup.sql
+docker-compose -f docker-compose.base.yml -f docker-compose.dev.yml exec postgres pg_dump -U babblr babblr > backup.sql
 ```
 
 ### Running Tests Inside Containers
 
 ```bash
 # Backend tests
-docker-compose -f docker-compose.dev.yml exec backend uv run pytest tests/ -v
+docker-compose -f docker-compose.base.yml -f docker-compose.dev.yml exec backend uv run pytest tests/ -v
 
 # Frontend tests
-docker-compose -f docker-compose.dev.yml exec frontend npm run test
+docker-compose -f docker-compose.base.yml -f docker-compose.dev.yml exec frontend npm run test
 ```
 
 ### Accessing Container Shells
 
 ```bash
 # Backend shell
-docker-compose -f docker-compose.dev.yml exec backend /bin/bash
+docker-compose -f docker-compose.base.yml -f docker-compose.dev.yml exec backend /bin/bash
 
 # Frontend shell
-docker-compose -f docker-compose.dev.yml exec frontend /bin/sh
+docker-compose -f docker-compose.base.yml -f docker-compose.dev.yml exec frontend /bin/sh
 
 # PostgreSQL shell
-docker-compose -f docker-compose.dev.yml exec postgres /bin/sh
+docker-compose -f docker-compose.base.yml -f docker-compose.dev.yml exec postgres /bin/sh
 ```
 
 ## Environment Configuration
@@ -205,7 +213,7 @@ WHISPER_MODEL=base
 
 **Note:** Environment changes require service restart:
 ```bash
-docker-compose -f docker-compose.dev.yml restart backend
+docker-compose -f docker-compose.base.yml -f docker-compose.dev.yml restart backend
 ```
 
 ## Troubleshooting
@@ -214,24 +222,24 @@ docker-compose -f docker-compose.dev.yml restart backend
 
 **Check service status:**
 ```bash
-docker-compose -f docker-compose.dev.yml ps
+docker-compose -f docker-compose.base.yml -f docker-compose.dev.yml ps
 ```
 
 **Check logs for errors:**
 ```bash
-docker-compose -f docker-compose.dev.yml logs backend
+docker-compose -f docker-compose.base.yml -f docker-compose.dev.yml logs backend
 ```
 
 ### Backend can't connect to database
 
 **Verify PostgreSQL is healthy:**
 ```bash
-docker-compose -f docker-compose.dev.yml exec postgres pg_isready -U babblr
+docker-compose -f docker-compose.base.yml -f docker-compose.dev.yml exec postgres pg_isready -U babblr
 ```
 
 **Manually test connection:**
 ```bash
-docker-compose -f docker-compose.dev.yml exec backend python -c "from app.database.db import engine; print('DB OK')"
+docker-compose -f docker-compose.base.yml -f docker-compose.dev.yml exec backend python -c "from app.database.db import engine; print('DB OK')"
 ```
 
 ### Frontend can't reach backend
@@ -243,31 +251,31 @@ curl http://localhost:8000/health
 
 **Check network connectivity:**
 ```bash
-docker-compose -f docker-compose.dev.yml exec frontend wget -O- http://backend:8000/health
+docker-compose -f docker-compose.base.yml -f docker-compose.dev.yml exec frontend wget -O- http://backend:8000/health
 ```
 
 ### Hot-reload not working (dev mode)
 
 **Verify volume mounts:**
 ```bash
-docker-compose -f docker-compose.dev.yml exec backend ls -la /app
+docker-compose -f docker-compose.base.yml -f docker-compose.dev.yml exec backend ls -la /app
 ```
 
 **Restart services:**
 ```bash
-docker-compose -f docker-compose.dev.yml restart backend frontend
+docker-compose -f docker-compose.base.yml -f docker-compose.dev.yml restart backend frontend
 ```
 
 ### Ollama model not found
 
 **Pull the model manually:**
 ```bash
-docker-compose -f docker-compose.dev.yml exec ollama ollama pull llama3.2:latest
+docker-compose -f docker-compose.base.yml -f docker-compose.dev.yml exec ollama ollama pull llama3.2:latest
 ```
 
 **List available models:**
 ```bash
-docker-compose -f docker-compose.dev.yml exec ollama ollama list
+docker-compose -f docker-compose.base.yml -f docker-compose.dev.yml exec ollama ollama list
 ```
 
 ### Port conflicts
@@ -312,12 +320,12 @@ services:
 
 **3. Restart services:**
 ```bash
-docker-compose -f docker-compose.dev.yml up -d --force-recreate
+docker-compose -f docker-compose.base.yml -f docker-compose.dev.yml up -d --force-recreate
 ```
 
 **4. Verify GPU access:**
 ```bash
-docker-compose -f docker-compose.dev.yml exec backend nvidia-smi
+docker-compose -f docker-compose.base.yml -f docker-compose.dev.yml exec backend nvidia-smi
 ```
 
 ## Data Persistence
@@ -338,7 +346,7 @@ Data is stored in Docker volumes and persists across container restarts:
 mkdir -p backups
 
 # Backup PostgreSQL
-docker-compose -f docker-compose.dev.yml exec postgres pg_dump -U babblr babblr > backups/db-$(date +%Y%m%d).sql
+docker-compose -f docker-compose.base.yml -f docker-compose.dev.yml exec postgres pg_dump -U babblr babblr > backups/db-$(date +%Y%m%d).sql
 
 # Backup audio files
 docker run --rm -v babblr_audio_data:/data -v $(pwd)/backups:/backup alpine tar czf /backup/audio-$(date +%Y%m%d).tar.gz -C /data .
@@ -347,7 +355,7 @@ docker run --rm -v babblr_audio_data:/data -v $(pwd)/backups:/backup alpine tar 
 **Restore volumes:**
 ```bash
 # Restore PostgreSQL
-docker-compose -f docker-compose.dev.yml exec -T postgres psql -U babblr -d babblr < backups/db-20260126.sql
+docker-compose -f docker-compose.base.yml -f docker-compose.dev.yml exec -T postgres psql -U babblr -d babblr < backups/db-20260126.sql
 
 # Restore audio files
 docker run --rm -v babblr_audio_data:/data -v $(pwd)/backups:/backup alpine tar xzf /backup/audio-20260126.tar.gz -C /data

@@ -1,5 +1,3 @@
-version: '3.9'
-
 services:
   # Backend API (Production)
   backend:
@@ -113,23 +111,5 @@ services:
     networks:
       - babblr-network
 
-volumes:
-  babblr-volume-postgres-data:
-    driver: local
-    name: babblr-volume-postgres-data
-  babblr-volume-audio-files:
-    driver: local
-    name: babblr-volume-audio-files
-  babblr-volume-whisper-models:
-    driver: local
-    name: babblr-volume-whisper-models
-  babblr-volume-ollama-models:
-    driver: local
-    name: babblr-volume-ollama-models
-  babblr-volume-redis-data:
-    driver: local
-    name: babblr-volume-redis-data
-
-networks:
-  babblr-network:
-    driver: bridge
+# Volumes and networks are defined in docker-compose.base.yml
+# Use: docker-compose -f docker-compose.base.yml -f docker-compose.yml up

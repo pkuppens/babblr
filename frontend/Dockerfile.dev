@@ -6,20 +6,18 @@ FROM node:24-alpine
 # Install basic utilities
 RUN apk add --no-cache curl
 
-# Create non-root user
-RUN addgroup -g 1000 babblr && \
-    adduser -D -u 1000 -G babblr babblr && \
-    mkdir -p /app && \
-    chown -R babblr:babblr /app
+# Use existing node user from base image (UID/GID 1000)
+RUN mkdir -p /app && \
+    chown -R node:node /app
 
 # Set working directory
 WORKDIR /app
 
 # Switch to non-root user
-USER babblr
+USER node
 
 # Copy package files only (for layer caching)
-COPY --chown=babblr:babblr package*.json ./
+COPY --chown=node:node package*.json ./
 
 # Install dependencies (including dev dependencies)
 RUN npm ci
