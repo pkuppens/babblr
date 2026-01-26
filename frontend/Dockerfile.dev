@@ -1,0 +1,32 @@
+# ============================================
+# Development Dockerfile with Vite HMR support
+# ============================================
+FROM node:24-alpine
+
+# Install basic utilities
+RUN apk add --no-cache curl
+
+# Create non-root user
+RUN addgroup -g 1000 babblr && \
+    adduser -D -u 1000 -G babblr babblr && \
+    mkdir -p /app && \
+    chown -R babblr:babblr /app
+
+# Set working directory
+WORKDIR /app
+
+# Switch to non-root user
+USER babblr
+
+# Copy package files only (for layer caching)
+COPY --chown=babblr:babblr package*.json ./
+
+# Install dependencies (including dev dependencies)
+RUN npm ci
+
+# Expose Vite dev server port
+EXPOSE 5173
+
+# Development command with Vite HMR
+# Note: The app code will be mounted as a volume, so we don't copy it here
+CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]

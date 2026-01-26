@@ -1,0 +1,71 @@
+# Python cache and bytecode
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+
+# Database files
+*.db
+*.db-shm
+*.db-wal
+backup_*.db
+
+# Environment files
+.env
+.env.*
+
+# Testing
+tests/
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# Linting and formatting
+.ruff_cache/
+.mypy_cache/
+.pytype/
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Logs
+*.log
+logs/
+
+# Audio files (generated at runtime)
+audio_files/
+audio_output/
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Documentation
+*.md
+!README.md
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Scripts (not needed in container)
+setup-venv.bat
+setup-venv.sh
+check_cuda.py
+check_timestamps.py
+test_backend.py
+test_prompt_system.py

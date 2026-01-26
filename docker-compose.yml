@@ -1,0 +1,130 @@
+version: '3.9'
+
+services:
+  # Backend API (Production)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    image: babblr/backend:latest
+    container_name: babblr-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - BABBLR_API_HOST=0.0.0.0
+      - BABBLR_API_PORT=8000
+      - BABBLR_CONVERSATION_DATABASE_URL=postgresql+asyncpg://babblr:devpassword@postgres:5432/babblr
+      - LLM_PROVIDER=${LLM_PROVIDER:-ollama}
+      - OLLAMA_BASE_URL=http://ollama:11434
+      - OLLAMA_MODEL=${OLLAMA_MODEL:-llama3.2:latest}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY:-}
+      - BABBLR_AUDIO_STORAGE_PATH=/data/audio
+      - WHISPER_MODEL=${WHISPER_MODEL:-base}
+    volumes:
+      - audio_data:/data/audio
+      - whisper_cache:/cache/.cache/whisper
+    depends_on:
+      postgres:
+        condition: service_healthy
+      ollama:
+        condition: service_started
+    restart: unless-stopped
+    networks:
+      - babblr-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      start_period: 40s
+      retries: 3
+
+  # Frontend Web App (Production with Nginx)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    image: babblr/frontend:latest
+    container_name: babblr-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+    networks:
+      - babblr-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:80/"]
+      interval: 30s
+      timeout: 5s
+      start_period: 10s
+      retries: 3
+
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: babblr-postgres
+    environment:
+      POSTGRES_USER: babblr
+      POSTGRES_PASSWORD: devpassword
+      POSTGRES_DB: babblr
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U babblr"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - babblr-network
+
+  # Ollama LLM Service
+  ollama:
+    image: ollama/ollama:latest
+    container_name: babblr-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_models:/root/.ollama
+    restart: unless-stopped
+    networks:
+      - babblr-network
+    # Uncomment for GPU support (requires NVIDIA Docker runtime)
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: 1
+    #           capabilities: [gpu]
+
+  # Redis (Optional - for caching)
+  redis:
+    image: redis:7-alpine
+    container_name: babblr-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    networks:
+      - babblr-network
+
+volumes:
+  postgres_data:
+    driver: local
+  audio_data:
+    driver: local
+  whisper_cache:
+    driver: local
+  ollama_models:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  babblr-network:
+    driver: bridge
