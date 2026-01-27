@@ -2,6 +2,40 @@
 
 This document provides a comprehensive smoke test and validation plan for Babblr. Use it to verify the project is running correctly after setup, or to validate functionality after changes.
 
+## Deployment Modes
+
+Babblr supports two deployment modes, both fully functional:
+
+### Mode 1: Manual (Non-Containerized) - Default
+
+**Use when**: Active development, debugging, or learning the codebase
+
+**Setup**: Run `setup.sh` (Linux/macOS) or `setup.bat` (Windows)
+
+**Start**:
+- Backend: `./run-backend.sh` or `run-backend.bat`
+- Frontend: `./run-frontend.sh` or `run-frontend.bat`
+
+**Database**: SQLite (default, file-based)
+
+**Validation**: Sections 1-6 below
+
+### Mode 2: Containerized (Docker)
+
+**Use when**: Production-like testing, team collaboration, or deployment
+
+**Setup**: See `docker/README.md`
+
+**Start**: `docker-compose -f docker-compose.dev.yml up -d` (from `docker/` directory)
+
+**Database**: PostgreSQL (containerized)
+
+**Validation**: See `docker/README.md` for container-specific validation
+
+**Note**: Both modes can coexist. You can run manual mode and connect to a containerized PostgreSQL instance if desired.
+
+---
+
 ## Table of Contents
 
 - [1. Environment Setup Validation](#1-environment-setup-validation)
@@ -12,6 +46,7 @@ This document provides a comprehensive smoke test and validation plan for Babblr
 - [6. End-to-End Validation](#6-end-to-end-validation)
 - [7. Automated E2E Testing (Optional)](#7-automated-e2e-testing-optional)
 - [8. Pending Features](#8-pending-features)
+- [9. Docker/Containerized Validation](#9-dockercontainerized-validation)
 
 ---
 
@@ -719,4 +754,192 @@ uv run pytest tests/ -v --cov=app --cov-report=html
 
 ---
 
-*Last updated: 2026-01-05*
+## 9. Docker/Containerized Validation
+
+### Goal: Verify Docker Compose setup works correctly
+
+For comprehensive Docker validation, see `docker/README.md`. Quick validation checklist:
+
+#### 9.1 Prerequisites
+
+```bash
+# Check Docker is installed and running
+docker --version
+# Expected: Docker version 20.10+
+
+docker-compose --version
+# Expected: Docker Compose version 2.0+
+
+# Check Docker daemon is running
+docker ps
+# Expected: No error
+```
+
+#### 9.2 Start Services
+
+```bash
+# Navigate to docker directory
+cd docker
+
+# Create .env file from template
+cp .env.template .env
+
+# Start all services (development mode)
+docker-compose -f docker-compose.dev.yml up -d
+
+# Check services are running
+docker-compose -f docker-compose.dev.yml ps
+```
+
+**Expected output**: All services show "Up" status:
+- `babblr-backend`
+- `babblr-frontend`
+- `babblr-postgres`
+- `babblr-ollama`
+
+#### 9.3 Verify Services
+
+```bash
+# Check backend health
+curl http://localhost:8000/health
+# Expected: {"status":"healthy",...}
+
+# Check frontend
+curl http://localhost:5173
+# Expected: HTML response (Vite dev server)
+
+# Check PostgreSQL
+docker-compose -f docker-compose.dev.yml exec postgres psql -U babblr_admin -d babblr -c "SELECT 1;"
+# Expected: (1 row)
+
+# Check Ollama
+curl http://localhost:11434/api/tags
+# Expected: JSON with available models
+```
+
+#### 9.4 Test Hot-Reload
+
+**Backend hot-reload**:
+```bash
+# Edit a file in backend/app/
+echo "# Test change" >> backend/app/main.py
+
+# Watch backend logs
+docker-compose -f docker-compose.dev.yml logs -f backend
+# Expected: "Reloading..." message appears
+```
+
+**Frontend hot-reload**:
+```bash
+# Edit a file in frontend/src/
+echo "// Test change" >> frontend/src/App.tsx
+
+# Browser should auto-refresh (Vite HMR)
+```
+
+#### 9.5 View Logs
+
+```bash
+# All services
+docker-compose -f docker-compose.dev.yml logs -f
+
+# Specific service
+docker-compose -f docker-compose.dev.yml logs -f backend
+```
+
+#### 9.6 Stop Services
+
+```bash
+# Stop all services
+docker-compose -f docker-compose.dev.yml down
+
+# Stop and remove volumes (clean slate)
+docker-compose -f docker-compose.dev.yml down -v
+```
+
+#### 9.7 Troubleshooting
+
+<details>
+<summary>Port already in use</summary>
+
+```bash
+# Check what's using the port
+# Linux/macOS:
+lsof -i :8000
+lsof -i :5173
+
+# Windows:
+netstat -ano | findstr :8000
+netstat -ano | findstr :5173
+
+# Stop conflicting services or change ports in docker-compose.dev.yml
+```
+</details>
+
+<details>
+<summary>Services won't start</summary>
+
+```bash
+# Check logs for errors
+docker-compose -f docker-compose.dev.yml logs
+
+# Rebuild images
+docker-compose -f docker-compose.dev.yml up -d --build
+
+# Clean Docker cache
+docker system prune -a
+```
+</details>
+
+<details>
+<summary>Database connection errors</summary>
+
+```bash
+# Check PostgreSQL is healthy
+docker-compose -f docker-compose.dev.yml exec postgres pg_isready
+
+# Verify environment variables
+docker-compose -f docker-compose.dev.yml exec backend env | grep DATABASE
+
+# Restart services
+docker-compose -f docker-compose.dev.yml restart backend
+```
+</details>
+
+### Docker Validation Checklist
+
+- [ ] Docker and Docker Compose installed
+- [ ] All services start without errors
+- [ ] Backend health check returns healthy
+- [ ] Frontend accessible at http://localhost:5173
+- [ ] PostgreSQL connection works
+- [ ] Ollama service running
+- [ ] Hot-reload works for backend
+- [ ] Hot-reload works for frontend (Vite HMR)
+- [ ] Logs accessible via docker-compose logs
+- [ ] Services stop cleanly with docker-compose down
+
+### Connecting Manual Mode to Docker PostgreSQL
+
+You can run the backend manually and connect to Docker's PostgreSQL:
+
+```bash
+# Start only PostgreSQL
+cd docker
+docker-compose -f docker-compose.dev.yml up -d postgres
+
+# Run backend manually
+cd ../backend
+export BABBLR_CONVERSATION_DATABASE_URL="postgresql+asyncpg://babblr_admin:your_password@localhost:5432/babblr"
+./run-backend.sh
+
+# Run frontend manually
+cd ../frontend
+./run-frontend.sh
+```
+
+This hybrid approach is useful for debugging backend code while using containerized PostgreSQL.
+
+---
+
+*Last updated: 2026-01-27*
