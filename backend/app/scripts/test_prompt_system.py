@@ -1,6 +1,6 @@
 """Demonstrate the adaptive CEFR prompt system in the terminal.
 
-This module is meant for manual verification during development. It prints
+This module is meant for manual verification during development. It logs
 sample prompts and correction strategies across CEFR levels.
 
 Run it after installing the backend in editable mode:
@@ -8,11 +8,22 @@ Run it after installing the backend in editable mode:
 - `uv run babblr-test-prompt-system`
 """
 
+import logging
+import sys
+
+# Configure logging for standalone script output
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(message)s",
+    handlers=[logging.StreamHandler(sys.stdout)],
+)
+logger = logging.getLogger(__name__)
+
 from app.services.prompt_builder import get_prompt_builder
 
 
 def test_prompt_generation() -> None:
-    """Print a representative set of prompts and settings for all CEFR levels.
+    """Log a representative set of prompts and settings for all CEFR levels.
 
     The output includes:
     - Level normalization examples
@@ -21,43 +32,45 @@ def test_prompt_generation() -> None:
     - Prompt previews for a few representative topics
     - A1 → C2 progression path
     """
-    print("=" * 80)
-    print("TESTING ADAPTIVE CEFR PROMPT SYSTEM")
-    print("=" * 80)
-    print()
+    logger.info("=" * 80)
+    logger.info("TESTING ADAPTIVE CEFR PROMPT SYSTEM")
+    logger.info("=" * 80)
+    logger.info("")
 
     builder = get_prompt_builder()
 
     # Test basic functionality
-    print("1. Testing level normalization:")
-    print(f"   'beginner' normalizes to: {builder.normalize_level('beginner')}")
-    print(f"   'intermediate' normalizes to: {builder.normalize_level('intermediate')}")
-    print(f"   'advanced' normalizes to: {builder.normalize_level('advanced')}")
-    print(f"   'a1' normalizes to: {builder.normalize_level('a1')}")
-    print(f"   'B2' normalizes to: {builder.normalize_level('B2')}")
-    print()
+    logger.info("1. Testing level normalization:")
+    logger.info(f"   'beginner' normalizes to: {builder.normalize_level('beginner')}")
+    logger.info(f"   'intermediate' normalizes to: {builder.normalize_level('intermediate')}")
+    logger.info(f"   'advanced' normalizes to: {builder.normalize_level('advanced')}")
+    logger.info(f"   'a1' normalizes to: {builder.normalize_level('a1')}")
+    logger.info(f"   'B2' normalizes to: {builder.normalize_level('B2')}")
+    logger.info("")
 
     # Test available levels
-    print("2. Available CEFR levels:")
+    logger.info("2. Available CEFR levels:")
     levels = builder.list_available_levels()
     for level_info in levels:
-        print(f"   {level_info['level']}: {level_info['level_name']} - {level_info['description']}")
-    print()
+        logger.info(
+            f"   {level_info['level']}: {level_info['level_name']} - {level_info['description']}"
+        )
+    logger.info("")
 
     # Test correction strategies
-    print("3. Correction strategies by level:")
+    logger.info("3. Correction strategies by level:")
     for level in ["A1", "B1", "C1"]:
         strategy = builder.get_correction_strategy(level)
-        print(f"   {level}:")
-        print(f"      Ignore punctuation: {strategy['ignore_punctuation']}")
-        print(f"      Ignore capitalization: {strategy['ignore_capitalization']}")
-        print(f"      Ignore diacritics: {strategy['ignore_diacritics']}")
-        print(f"      Focus on: {', '.join(strategy['focus_on'])}")
-        print()
+        logger.info(f"   {level}:")
+        logger.info(f"      Ignore punctuation: {strategy['ignore_punctuation']}")
+        logger.info(f"      Ignore capitalization: {strategy['ignore_capitalization']}")
+        logger.info(f"      Ignore diacritics: {strategy['ignore_diacritics']}")
+        logger.info(f"      Focus on: {', '.join(strategy['focus_on'])}")
+        logger.info("")
 
     # Test prompt building for different levels
-    print("4. Sample prompts for Spanish at different levels:")
-    print()
+    logger.info("4. Sample prompts for Spanish at different levels:")
+    logger.info("")
 
     test_cases: list[tuple[str, str, str, list[str]]] = [
         ("A1", "beginner", "food and drinks", ["hola", "gracias", "agua"]),
@@ -66,8 +79,8 @@ def test_prompt_generation() -> None:
     ]
 
     for level, level_name, topic, vocab in test_cases:
-        print(f"   Level {level} ({level_name}) - Topic: {topic}")
-        print("   " + "-" * 76)
+        logger.info(f"   Level {level} ({level_name}) - Topic: {topic}")
+        logger.info("   " + "-" * 76)
 
         prompt = builder.build_prompt(
             language="Spanish",
@@ -78,14 +91,14 @@ def test_prompt_generation() -> None:
             common_mistakes=["verb conjugation in past tense"],
         )
 
-        # Print first 500 characters of the prompt
+        # Log first 500 characters of the prompt
         prompt_preview = prompt[:500] + "..." if len(prompt) > 500 else prompt
-        print(f"   {prompt_preview}")
-        print(f"   (Full prompt length: {len(prompt)} characters)")
-        print()
+        logger.info(f"   {prompt_preview}")
+        logger.info(f"   (Full prompt length: {len(prompt)} characters)")
+        logger.info("")
 
     # Test level progression
-    print("5. Level progression:")
+    logger.info("5. Level progression:")
     current = "A1"
     progression = [current]
     while True:
@@ -94,12 +107,12 @@ def test_prompt_generation() -> None:
             break
         progression.append(next_level)
         current = next_level
-    print(f"   Progression path: {' -> '.join(progression)}")
-    print()
+    logger.info(f"   Progression path: {' -> '.join(progression)}")
+    logger.info("")
 
-    print("=" * 80)
-    print("ALL TESTS COMPLETED SUCCESSFULLY")
-    print("=" * 80)
+    logger.info("=" * 80)
+    logger.info("ALL TESTS COMPLETED SUCCESSFULLY")
+    logger.info("=" * 80)
 
 
 def main() -> None:
@@ -110,7 +123,7 @@ def main() -> None:
     try:
         test_prompt_generation()
     except Exception as exc:
-        print(f"ERROR: {exc}")
+        logger.error(f"ERROR: {exc}")
         import traceback
 
         traceback.print_exc()

@@ -15,11 +15,14 @@ The production tests require:
 - Claude: API_KEY configured in .env (will be skipped if not available)
 """
 
+import logging
 import os
 import sys
 from unittest.mock import AsyncMock, patch
 
 import pytest
+
+logger = logging.getLogger(__name__)
 
 # Add backend to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
@@ -415,8 +418,8 @@ class TestProviderIntegration:
                 results["claude"] = f"Error: {str(e)[:50]}"
 
         # At least one should be available
-        print("\nProvider Availability:")
+        logger.info("\nProvider Availability:")
         for provider, status in results.items():
-            print(f"  {provider}: {status}")
+            logger.info(f"  {provider}: {status}")
 
         assert len(results) > 0, "No providers found to test"

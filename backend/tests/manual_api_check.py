@@ -16,12 +16,21 @@ Notes:
 
 from __future__ import annotations
 
+import logging
 import os
 import sys
 import time
 from typing import Any
 
 import httpx
+
+# Configure logging for standalone script output
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(message)s",
+    handlers=[logging.StreamHandler(sys.stdout)],
+)
+logger = logging.getLogger(__name__)
 
 DEFAULT_BASE_URL = "http://localhost:8000"
 
@@ -49,23 +58,23 @@ def _truncate(text: str, max_len: int = 250) -> str:
 
 
 def _print_fail(title: str, message: str) -> None:
-    """Print a failure message in a consistent, readable format.
+    """Log a failure message in a consistent, readable format.
 
     Args:
         title (str): Short label of the step that failed.
         message (str): Human-readable explanation of the failure.
     """
-    print(f"[FAIL] {title}: {_truncate(message)}")
+    logger.info(f"[FAIL] {title}: {_truncate(message)}")
 
 
 def _print_ok(title: str, message: str) -> None:
-    """Print a success message in a consistent, readable format.
+    """Log a success message in a consistent, readable format.
 
     Args:
         title (str): Short label of the step that succeeded.
         message (str): Human-readable success message.
     """
-    print(f"[ OK ] {title}: {_truncate(message)}")
+    logger.info(f"[ OK ] {title}: {_truncate(message)}")
 
 
 def test_health_check(client: httpx.Client) -> bool:
@@ -79,7 +88,7 @@ def test_health_check(client: httpx.Client) -> bool:
     Returns:
         bool: True if the endpoint responds with HTTP 200 and expected JSON, else False.
     """
-    print("Testing health check...")
+    logger.info("Testing health check...")
     try:
         response = client.get("/health")
     except Exception as exc:
@@ -99,7 +108,7 @@ def test_health_check(client: httpx.Client) -> bool:
     status = data.get("status", "<missing>")
     services = data.get("services", {})
     _print_ok("Health", f"Backend is healthy (status={status})")
-    print(f"   Services: {services}")
+    logger.info(f"   Services: {services}")
     return True
 
 
@@ -112,7 +121,7 @@ def test_create_conversation(client: httpx.Client) -> dict[str, Any] | None:
     Returns:
         dict[str, Any] | None: The created conversation object on success, otherwise None.
     """
-    print("\nTesting conversation creation...")
+    logger.info("\nTesting conversation creation...")
     try:
         response = client.post(
             "/conversations",
@@ -134,8 +143,8 @@ def test_create_conversation(client: httpx.Client) -> dict[str, Any] | None:
 
     conversation_id = conversation.get("id")
     _print_ok("Create conversation", f"Created conversation id={conversation_id}")
-    print(f"   Language: {conversation.get('language')}")
-    print(f"   Difficulty: {conversation.get('difficulty_level')}")
+    logger.info(f"   Language: {conversation.get('language')}")
+    logger.info(f"   Difficulty: {conversation.get('difficulty_level')}")
     return conversation
 
 
@@ -151,7 +160,7 @@ def test_chat(client: httpx.Client, conversation_id: int) -> bool:
     Returns:
         bool: True if a plausible response is received, else False.
     """
-    print("\nTesting chat endpoint...")
+    logger.info("\nTesting chat endpoint...")
     try:
         response = client.post(
             "/chat",
@@ -179,10 +188,10 @@ def test_chat(client: httpx.Client, conversation_id: int) -> bool:
 
     assistant_msg = str(chat_response.get("assistant_message", ""))
     _print_ok("Chat", "Response received")
-    print(f"   Assistant (preview): {_truncate(assistant_msg, max_len=100)}")
+    logger.info(f"   Assistant (preview): {_truncate(assistant_msg, max_len=100)}")
     corrections = chat_response.get("corrections")
     if corrections:
-        print(f"   Corrections: {len(corrections)}")
+        logger.info(f"   Corrections: {len(corrections)}")
     return True
 
 
@@ -196,7 +205,7 @@ def test_get_messages(client: httpx.Client, conversation_id: int) -> bool:
     Returns:
         bool: True if messages are returned as a list, else False.
     """
-    print("\nTesting message retrieval...")
+    logger.info("\nTesting message retrieval...")
     try:
         response = client.get(f"/conversations/{conversation_id}/messages")
     except Exception as exc:
@@ -221,9 +230,9 @@ def test_get_messages(client: httpx.Client, conversation_id: int) -> bool:
     for msg in messages[:5]:
         role = msg.get("role", "<missing>")
         content = str(msg.get("content", ""))
-        print(f"   {role}: {_truncate(content, max_len=50)}")
+        logger.info(f"   {role}: {_truncate(content, max_len=50)}")
     if len(messages) > 5:
-        print("   ... (more messages omitted)")
+        logger.info("   ... (more messages omitted)")
     return True
 
 
@@ -236,7 +245,7 @@ def test_list_conversations(client: httpx.Client) -> bool:
     Returns:
         bool: True if the endpoint returns a JSON list, else False.
     """
-    print("\nTesting conversation list...")
+    logger.info("\nTesting conversation list...")
     try:
         response = client.get("/conversations")
     except Exception as exc:
@@ -272,7 +281,7 @@ def test_tts(client: httpx.Client) -> bool:
     Returns:
         bool: True if the check is non-fatal (success or expected not-available), else False.
     """
-    print("\nTesting text-to-speech...")
+    logger.info("\nTesting text-to-speech...")
     try:
         response = client.post("/tts/synthesize", json={"text": "Hola", "language": "spanish"})
     except Exception as exc:
@@ -299,37 +308,37 @@ def main() -> None:
     """
     base_url = os.getenv("BABBLR_BASE_URL", DEFAULT_BASE_URL).strip() or DEFAULT_BASE_URL
 
-    print("=" * 60)
-    print("Babblr Backend Live API Check")
-    print("=" * 60)
-    print(f"\nTarget: {base_url}")
-    print("Make sure the backend is running first.\n")
+    logger.info("=" * 60)
+    logger.info("Babblr Backend Live API Check")
+    logger.info("=" * 60)
+    logger.info(f"\nTarget: {base_url}")
+    logger.info("Make sure the backend is running first.\n")
 
     time.sleep(0.5)
 
     timeout = httpx.Timeout(5.0)
     with httpx.Client(base_url=base_url, timeout=timeout) as client:
         if not test_health_check(client):
-            print("\nBackend is not responding. Make sure it is running.")
+            logger.info("\nBackend is not responding. Make sure it is running.")
             sys.exit(1)
 
         conversation = test_create_conversation(client)
         if not conversation or "id" not in conversation:
-            print("\nCould not create a conversation.")
+            logger.info("\nCould not create a conversation.")
             sys.exit(1)
 
         conversation_id = int(conversation["id"])
 
         if not test_chat(client, conversation_id):
-            print("\nChat test failed. Check if ANTHROPIC_API_KEY is set in backend/.env.")
+            logger.info("\nChat test failed. Check if ANTHROPIC_API_KEY is set in backend/.env.")
 
         test_get_messages(client, conversation_id)
         test_list_conversations(client)
         test_tts(client)
 
-    print("\n" + "=" * 60)
-    print("Live API check completed.")
-    print("=" * 60)
+    logger.info("\n" + "=" * 60)
+    logger.info("Live API check completed.")
+    logger.info("=" * 60)
 
 
 if __name__ == "__main__":
