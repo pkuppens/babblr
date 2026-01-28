@@ -266,7 +266,7 @@ ANTHROPIC_API_KEY=sk-ant-...
 2. **Test as you go** - Don't wait until the end
 3. **Use TypeScript types** - Leverage the type system
 4. **Handle errors gracefully** - Show user-friendly messages
-5. **Log appropriately** - Use `console.log` in frontend, `print()` in backend
+5. **Log appropriately** - Use `console.log` in frontend, `logging` in backend (avoid `print()` statements)
 6. **Keep services optional** - Not everyone will have all dependencies
 
 ## Database

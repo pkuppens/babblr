@@ -3,12 +3,16 @@
 This test makes real HTTP requests to verify the endpoint works correctly.
 """
 
+import logging
+
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.models import Conversation, Message
+
+logger = logging.getLogger(__name__)
 
 
 @pytest.mark.integration
@@ -39,11 +43,11 @@ async def test_initial_message_endpoint_with_payload(client: TestClient, db: Asy
 
     response = client.post("/chat/initial-message", json=payload)
 
-    # Debug: Print response if it fails
+    # Debug: Log response if it fails
     if response.status_code != 200:
-        print(f"Response status: {response.status_code}")
-        print(f"Response body: {response.text}")
-        print(f"Request payload: {payload}")
+        logger.debug(f"Response status: {response.status_code}")
+        logger.debug(f"Response body: {response.text}")
+        logger.debug(f"Request payload: {payload}")
 
     assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
 

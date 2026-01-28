@@ -3,11 +3,19 @@ Quick validation test for the backend API.
 Run with: pytest test_backend.py
 """
 
+import logging
 import os
 import sys
 
 # Add backend to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+
+# Configure logging for standalone script output
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(message)s",
+)
+logger = logging.getLogger(__name__)
 
 from app.config import settings
 from app.models.schemas import ChatRequest, ConversationCreate
@@ -49,11 +57,11 @@ def test_imports():
 
 
 if __name__ == "__main__":
-    print("Running basic validation tests...")
+    logger.info("Running basic validation tests...")
     test_config_loads()
-    print("✅ Config loads")
+    logger.info("✅ Config loads")
     test_schemas_validate()
-    print("✅ Schemas validate")
+    logger.info("✅ Schemas validate")
     test_imports()
-    print("✅ All imports work")
-    print("\n✨ All validation tests passed!")
+    logger.info("✅ All imports work")
+    logger.info("\n✨ All validation tests passed!")
