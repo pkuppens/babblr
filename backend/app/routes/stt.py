@@ -26,6 +26,7 @@ from app.models.schemas import TranscriptionResponse
 from app.services.language_catalog import LANGUAGE_VARIANTS, list_locales
 from app.services.stt import STTError, STTService, STTTimeoutError
 from app.services.stt_correction_service import get_stt_correction_service
+from app.utils.performance import async_perf_timer
 
 logger = logging.getLogger(__name__)
 
@@ -126,9 +127,10 @@ async def transcribe_audio(
 
         # Transcribe with timeout
         try:
-            result = await stt_service.transcribe(
-                temp_file.name, language=language, timeout=DEFAULT_TRANSCRIPTION_TIMEOUT
-            )
+            async with async_perf_timer("stt.transcribe_whisper", logging.INFO):
+                result = await stt_service.transcribe(
+                    temp_file.name, language=language, timeout=DEFAULT_TRANSCRIPTION_TIMEOUT
+                )
         except STTTimeoutError as e:
             raise HTTPException(
                 status_code=408,
@@ -153,12 +155,13 @@ async def transcribe_audio(
 
         if conversation is not None and conversation_history:
             stt_correction_service = get_stt_correction_service()
-            correction_result = await stt_correction_service.correct_transcription(
-                stt_text=result.text,
-                conversation_history=conversation_history,
-                language=str(conversation.language),
-                difficulty_level=str(conversation.difficulty_level),
-            )
+            async with async_perf_timer("stt.correction_llm", logging.INFO):
+                correction_result = await stt_correction_service.correct_transcription(
+                    stt_text=result.text,
+                    conversation_history=conversation_history,
+                    language=str(conversation.language),
+                    difficulty_level=str(conversation.difficulty_level),
+                )
 
             final_text = correction_result.corrected_text
             if correction_result.corrections:
