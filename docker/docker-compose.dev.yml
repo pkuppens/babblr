@@ -42,6 +42,14 @@ services:
     restart: unless-stopped
     networks:
       - babblr-network
+    # GPU support for Whisper STT (requires NVIDIA Docker runtime)
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
 
   # Frontend Web App (Development with Vite HMR)
   frontend:
