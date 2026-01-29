@@ -125,9 +125,7 @@ async def performance_middleware(request: Request, call_next):
     start_time = time.perf_counter()
 
     # Log request start
-    logger.debug(
-        f"[PERF] REQUEST START - {request.method} {request.url.path}"
-    )
+    logger.debug(f"[PERF] REQUEST START - {request.method} {request.url.path}")
 
     # Process request
     response = await call_next(request)
@@ -143,6 +141,7 @@ async def performance_middleware(request: Request, call_next):
     response.headers["X-Response-Time"] = f"{elapsed_ms:.2f}ms"
 
     return response
+
 
 # Include routers
 app.include_router(conversations.router)

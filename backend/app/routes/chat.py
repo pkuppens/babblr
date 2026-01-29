@@ -144,7 +144,11 @@ async def chat(request: ChatRequest, db: AsyncSession = Depends(get_db)):
 
         # Convert messages to dict format, ensuring content is string (not Column)
         # Limit to recent messages to reduce LLM latency
-        recent_messages = messages[-settings.conversation_max_history:] if len(messages) > settings.conversation_max_history else messages
+        recent_messages = (
+            messages[-settings.conversation_max_history :]
+            if len(messages) > settings.conversation_max_history
+            else messages
+        )
         conversation_history = [
             {"role": str(msg.role), "content": str(msg.content)} for msg in recent_messages
         ]
@@ -186,8 +190,14 @@ async def chat(request: ChatRequest, db: AsyncSession = Depends(get_db)):
         cefr_order = ["A1", "A2", "B1", "B2", "C1", "C2"]
         try:
             user_level_index = cefr_order.index(request.difficulty_level)
-            max_level_index = cefr_order.index(settings.correction_max_level) if settings.correction_max_level != "0" else -1
-            should_correct = settings.correction_max_level != "0" and user_level_index <= max_level_index
+            max_level_index = (
+                cefr_order.index(settings.correction_max_level)
+                if settings.correction_max_level != "0"
+                else -1
+            )
+            should_correct = (
+                settings.correction_max_level != "0" and user_level_index <= max_level_index
+            )
         except ValueError:
             # If level not found, default to correcting
             should_correct = settings.correction_max_level != "0"

@@ -10,7 +10,6 @@ from typing import Optional
 from app.config import settings
 from app.services.stt.base import STTService
 from app.services.stt.external_whisper import ExternalWhisperService
-from app.services.stt.local_whisper import LocalWhisperService
 from app.services.stt.mock_whisper import MockSTTService
 from app.services.whisper_service import WhisperService
 

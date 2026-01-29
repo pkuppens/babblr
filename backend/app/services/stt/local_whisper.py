@@ -105,9 +105,7 @@ def _load_audio(audio_path: str, sr: int = WHISPER_SAMPLE_RATE) -> np.ndarray:
     ]
 
     try:
-        result = subprocess.run(
-            cmd, capture_output=True, check=True, timeout=30
-        )
+        result = subprocess.run(cmd, capture_output=True, check=True, timeout=30)
     except subprocess.TimeoutExpired:
         raise RuntimeError("Audio loading timed out")
     except subprocess.CalledProcessError as e:

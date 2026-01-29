@@ -584,9 +584,7 @@ async def get_cuda_info(stt_service: STTService = Depends(get_stt_service)):
             try:
                 # For external service with async fetch method, use it directly
                 if hasattr(stt_service, "_fetch_cuda_info"):
-                    cuda_info = await asyncio.wait_for(
-                        stt_service._fetch_cuda_info(), timeout=5.0
-                    )
+                    cuda_info = await asyncio.wait_for(stt_service._fetch_cuda_info(), timeout=5.0)
                 else:
                     # For local service or external with sync method, run in executor
                     loop = asyncio.get_event_loop()
