@@ -25,8 +25,8 @@ from app.routes import (
 )
 from app.services.assessment_seed import seed_assessment_data
 from app.services.llm import ProviderFactory
+from app.services.stt import STTServiceFactory
 from app.services.tts_service import tts_service
-from app.services.whisper_service import whisper_service
 
 _STATIC_DIR = Path(__file__).resolve().parent / "static"
 
@@ -66,7 +66,37 @@ async def lifespan(app: FastAPI):
             "The application will continue, but assessments may not be available."
         )
 
+    # Initialize STT service with proper lifecycle management
+    try:
+        logger.info("Initializing STT service...")
+        stt_service = STTServiceFactory.create()
+        app.state.stt_service = stt_service
+
+        # Warmup service to pre-load models in worker processes
+        # This ensures first transcription is fast (1-2s) instead of slow (5-10s model load)
+        if hasattr(stt_service, "warmup"):
+            logger.info("Warming up STT service (pre-loading models)...")
+            await stt_service.warmup()
+        logger.info("STT service initialized successfully")
+    except Exception as e:
+        logger.error(f"Failed to initialize STT service: {e}", exc_info=True)
+        # Don't fail startup - service will be unavailable but app can still run
+        # Routes will handle the error gracefully
+
     yield
+
+    # Shutdown: Clean up resources
+    logger.info("Starting graceful shutdown...")
+
+    # Close STT service
+    if hasattr(app.state, "stt_service") and hasattr(app.state.stt_service, "close"):
+        try:
+            await app.state.stt_service.close()
+            logger.info("STT service closed successfully")
+        except Exception as e:
+            logger.warning(f"Error closing STT service: {e}")
+
+    logger.info("Shutdown complete")
 
 
 # Create FastAPI application
@@ -141,9 +171,35 @@ async def health_check():
     except Exception:
         ollama_available_models = None
 
-    whisper_cuda = (
-        whisper_service.get_cuda_info() if hasattr(whisper_service, "get_cuda_info") else {}
-    )
+    # Get STT service info (with fallback for backward compatibility)
+    stt_service = getattr(app.state, "stt_service", None)
+    whisper_status = "unavailable"
+    whisper_info = {}
+
+    if stt_service:
+        try:
+            whisper_status = "loaded"
+            whisper_info = {
+                "provider": stt_service.name,
+                "current_model": (
+                    stt_service.model_size
+                    if hasattr(stt_service, "model_size")
+                    else settings.whisper_model
+                ),
+                "supported_models": (
+                    stt_service.get_available_models()
+                    if hasattr(stt_service, "get_available_models")
+                    else []
+                ),
+            }
+            # Add CUDA info if available (for LocalWhisperService)
+            if hasattr(stt_service, "get_cuda_info"):
+                whisper_info["runtime"] = stt_service.get_cuda_info()
+            elif hasattr(stt_service, "device"):
+                whisper_info["device"] = stt_service.device
+        except Exception as e:
+            logger.warning(f"Error getting STT service info: {e}")
+            whisper_status = "error"
 
     return {
         "status": "healthy",
@@ -151,15 +207,8 @@ async def health_check():
         "llm_provider": settings.llm_provider,
         "services": {
             "whisper": {
-                "status": "loaded",
-                "current_model": settings.whisper_model,
-                "supported_models": whisper_service.get_available_models(),
-                "supported_locales": (
-                    whisper_service.get_supported_locales()  # type: ignore[attr-defined]
-                    if hasattr(whisper_service, "get_supported_locales")
-                    else whisper_service.get_supported_languages()
-                ),
-                "runtime": whisper_cuda,
+                "status": whisper_status,
+                **whisper_info,
             },
             "claude": "configured" if claude_configured else "not configured",
             "ollama": {

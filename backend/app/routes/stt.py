@@ -20,11 +20,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import settings
 from app.database.db import get_db
+from app.dependencies import get_stt_service
 from app.models.models import Conversation, Message
 from app.models.schemas import TranscriptionResponse
 from app.services.language_catalog import LANGUAGE_VARIANTS, list_locales
+from app.services.stt import STTError, STTService, STTTimeoutError
 from app.services.stt_correction_service import get_stt_correction_service
-from app.services.whisper_service import whisper_service
 
 logger = logging.getLogger(__name__)
 
@@ -43,6 +44,7 @@ async def transcribe_audio(
     language: Optional[str] = None,
     conversation_id: int | None = None,
     db: AsyncSession = Depends(get_db),
+    stt_service: STTService = Depends(get_stt_service),
 ):
     """
     Transcribe audio file to text using OpenAI Whisper.
@@ -123,9 +125,20 @@ async def transcribe_audio(
         logger.info("Starting transcription...")
 
         # Transcribe with timeout
-        result = await whisper_service.transcribe(
-            temp_file.name, language=language, timeout=DEFAULT_TRANSCRIPTION_TIMEOUT
-        )
+        try:
+            result = await stt_service.transcribe(
+                temp_file.name, language=language, timeout=DEFAULT_TRANSCRIPTION_TIMEOUT
+            )
+        except STTTimeoutError as e:
+            raise HTTPException(
+                status_code=408,
+                detail=f"Transcription timed out: {str(e)}",
+            )
+        except STTError as e:
+            raise HTTPException(
+                status_code=500,
+                detail=f"Transcription failed: {str(e)}",
+            )
 
         logger.info(
             "Transcription successful: language=%s, confidence=%.2f, duration=%.2fs",
@@ -172,22 +185,11 @@ async def transcribe_audio(
         )
 
     except HTTPException:
-        # Re-raise HTTP exceptions (like 404)
+        # Re-raise HTTP exceptions (like 404, 408, 500)
         raise
     except Exception as e:
         logger.error("Transcription failed: %s", str(e), exc_info=True)
-
-        # Provide more specific error messages
-        error_msg = str(e)
-        if "timed out" in error_msg.lower():
-            raise HTTPException(
-                status_code=408,
-                detail="Transcription timed out. Please try with a shorter audio file.",
-            )
-        elif "not installed" in error_msg.lower():
-            raise HTTPException(status_code=503, detail="Speech-to-text service not available")
-        else:
-            raise HTTPException(status_code=500, detail=f"Transcription failed: {error_msg}")
+        raise HTTPException(status_code=500, detail=f"Transcription failed: {str(e)}")
 
     finally:
         # Clean up temp file
@@ -236,7 +238,7 @@ async def get_supported_languages():
 
 
 @router.get("/models")
-async def get_available_models():
+async def get_available_models(stt_service: STTService = Depends(get_stt_service)):
     """
     Get list of available Whisper models.
 
@@ -245,12 +247,12 @@ async def get_available_models():
     """
     logger.debug("Getting available Whisper models")
 
-    models = whisper_service.get_available_models()
+    models = (
+        stt_service.get_available_models() if hasattr(stt_service, "get_available_models") else []
+    )
     # Use the actual loaded model, not just the settings value
     current_model = (
-        whisper_service.model_size
-        if hasattr(whisper_service, "model_size")
-        else settings.whisper_model
+        stt_service.model_size if hasattr(stt_service, "model_size") else settings.whisper_model
     )
 
     # Model details with updated information
@@ -322,17 +324,17 @@ async def get_available_models():
     }
 
     # Get CUDA information
-    cuda_info = (
-        whisper_service.get_cuda_info()
-        if hasattr(whisper_service, "get_cuda_info")
-        else {"available": False, "device": "unknown"}
-    )
+    cuda_info = {"available": False, "device": "unknown"}
+    if hasattr(stt_service, "get_cuda_info"):
+        cuda_info = stt_service.get_cuda_info()
+    elif hasattr(stt_service, "device"):
+        cuda_info = {"available": stt_service.device != "cpu", "device": stt_service.device}
 
     return JSONResponse(
         content={
             "models": [model_details.get(model, {"name": model}) for model in models],
             "current_model": current_model,
-            "device": whisper_service.device if hasattr(whisper_service, "device") else "unknown",
+            "device": stt_service.device if hasattr(stt_service, "device") else "unknown",
             "cuda": cuda_info,
             "multilingual": True,
             "notes": [
@@ -347,7 +349,9 @@ async def get_available_models():
 
 
 @router.get("/config")
-async def get_stt_config(include_status: bool = False):
+async def get_stt_config(
+    include_status: bool = False, stt_service: STTService = Depends(get_stt_service)
+):
     """
     Get current STT configuration including CUDA status and available models.
 
@@ -360,13 +364,13 @@ async def get_stt_config(include_status: bool = False):
         # Get CUDA information with error handling and timeout protection
         cuda_info = {"available": False, "device": "unknown"}
         try:
-            if hasattr(whisper_service, "get_cuda_info"):
+            if hasattr(stt_service, "get_cuda_info"):
                 # Run CUDA check in executor to avoid blocking
                 import asyncio
 
                 loop = asyncio.get_event_loop()
                 cuda_info = await asyncio.wait_for(
-                    loop.run_in_executor(None, whisper_service.get_cuda_info),
+                    loop.run_in_executor(None, stt_service.get_cuda_info),
                     timeout=2.0,  # 2 second timeout for CUDA detection
                 )
         except asyncio.TimeoutError:
@@ -378,7 +382,11 @@ async def get_stt_config(include_status: bool = False):
 
         # Get available models with error handling
         try:
-            models = whisper_service.get_available_models()
+            models = (
+                stt_service.get_available_models()
+                if hasattr(stt_service, "get_available_models")
+                else []
+            )
         except Exception as e:
             logger.error(f"Failed to get available models: {e}")
             models = ["base"]  # Fallback
@@ -386,8 +394,8 @@ async def get_stt_config(include_status: bool = False):
         # Use the actual loaded model, not just the settings value
         try:
             current_model = (
-                whisper_service.model_size
-                if hasattr(whisper_service, "model_size")
+                stt_service.model_size
+                if hasattr(stt_service, "model_size")
                 else settings.whisper_model
             )
         except Exception as e:
@@ -396,7 +404,7 @@ async def get_stt_config(include_status: bool = False):
 
         # Get device with error handling
         try:
-            device = whisper_service.device if hasattr(whisper_service, "device") else "unknown"
+            device = stt_service.device if hasattr(stt_service, "device") else "unknown"
         except Exception as e:
             logger.warning(f"Failed to get device: {e}")
             device = "unknown"
@@ -423,6 +431,10 @@ def _switch_model_background(new_model: str):
     """
     Background task to switch the Whisper model.
 
+    Note: Model switching with ProcessPoolExecutor requires restarting workers
+    or waiting for natural worker replacement. For now, this updates settings
+    and logs a warning that a restart may be needed for full effect.
+
     Args:
         new_model: Model to switch to
     """
@@ -432,23 +444,20 @@ def _switch_model_background(new_model: str):
         _model_switch_status["target_model"] = new_model
         _model_switch_status["error"] = None
 
-        # Check if model needs to be downloaded
-        is_cached = whisper_service.is_model_cached(new_model)
-        if not is_cached:
-            _model_switch_status["status"] = "downloading"
+        # Note: With ProcessPoolExecutor, model switching is complex because
+        # each worker process has its own cached model. For now, we update settings
+        # and note that workers will use the new model on next process restart.
+        # A full implementation would require ProcessPoolExecutor recreation.
 
-        # Switch model (this may take time if downloading)
-        success = whisper_service.switch_model(new_model)
-
-        if success:
-            settings.whisper_model = new_model
-            _model_switch_status["status"] = "idle"
-            _model_switch_status["target_model"] = None
-            logger.info(f"Successfully switched STT model to {new_model}")
-        else:
-            _model_switch_status["status"] = "idle"
-            _model_switch_status["error"] = f"Failed to switch to model '{new_model}'"
-            logger.error(f"Failed to switch STT model to {new_model}")
+        # Update settings
+        settings.whisper_model = new_model
+        _model_switch_status["status"] = "idle"
+        _model_switch_status["target_model"] = None
+        logger.info(
+            f"STT model setting updated to {new_model}. "
+            "Note: Existing worker processes will continue using the old model "
+            "until they are replaced. Consider restarting the service for immediate effect."
+        )
     except Exception as e:
         _model_switch_status["status"] = "idle"
         _model_switch_status["error"] = str(e)
@@ -476,20 +485,23 @@ async def update_stt_model(request: dict, background_tasks: BackgroundTasks):
         model: str
 
     try:
-        if settings.stt_provider.lower() == "whisper_webservice":
-            raise HTTPException(
-                status_code=409,
-                detail=(
-                    "STT model switching is managed by the Whisper webservice container. "
-                    "Restart that container with ASR_MODEL set to the desired model."
-                ),
-            )
-
         update_request = ModelUpdateRequest(**request)
         new_model = update_request.model
 
-        # Validate model
-        available_models = whisper_service.get_available_models()
+        # Note: Model validation is done against known models list
+        # With ProcessPoolExecutor, full model switching requires worker restart
+
+        # Validate model against known models
+        available_models = [
+            "tiny",
+            "base",
+            "small",
+            "medium",
+            "large",
+            "large-v2",
+            "large-v3",
+            "turbo",
+        ]
         if new_model not in available_models:
             raise HTTPException(
                 status_code=400,
@@ -503,11 +515,8 @@ async def update_stt_model(request: dict, background_tasks: BackgroundTasks):
                 detail=f"Model switch already in progress. Current status: {_model_switch_status['status']}",
             )
 
-        old_model = whisper_service.model_size
-
-        # Check if model is cached to determine if download is needed
-        is_cached = whisper_service.is_model_cached(new_model)
-        action = "switching" if is_cached else "downloading"
+        old_model = settings.whisper_model
+        action = "switching"  # Note: With ProcessPoolExecutor, full switch requires worker restart
 
         # Start background task
         background_tasks.add_task(_switch_model_background, new_model)
@@ -541,6 +550,76 @@ async def get_stt_switch_status():
         JSON object with switch status
     """
     return JSONResponse(content=_model_switch_status)
+
+
+@router.get("/cuda")
+async def get_cuda_info(stt_service: STTService = Depends(get_stt_service)):
+    """
+    Get CUDA/GPU availability information for Whisper.
+
+    This endpoint provides detailed CUDA information including:
+    - Whether CUDA is available
+    - Current device being used
+    - GPU device name (if available)
+    - GPU memory information (if available)
+
+    For external Whisper services, this queries the whisper container's API
+    to get actual CUDA status from the container running Whisper.
+
+    Returns:
+        JSON object with CUDA status and device information
+    """
+    logger.debug("Getting CUDA information")
+
+    try:
+        # Get CUDA info with timeout protection
+        import asyncio
+
+        cuda_info = {"available": False, "device": "unknown"}
+
+        if hasattr(stt_service, "get_cuda_info"):
+            try:
+                # For external service with async fetch method, use it directly
+                if hasattr(stt_service, "_fetch_cuda_info"):
+                    cuda_info = await asyncio.wait_for(
+                        stt_service._fetch_cuda_info(), timeout=5.0
+                    )
+                else:
+                    # For local service or external with sync method, run in executor
+                    loop = asyncio.get_event_loop()
+                    cuda_info = await asyncio.wait_for(
+                        loop.run_in_executor(None, stt_service.get_cuda_info),
+                        timeout=5.0,
+                    )
+            except asyncio.TimeoutError:
+                logger.warning("CUDA info check timed out, using defaults")
+                cuda_info = {"available": False, "device": "unknown", "timeout": True}
+            except Exception as e:
+                logger.warning(f"Failed to get CUDA info: {e}")
+                cuda_info = {"available": False, "device": "unknown", "error": str(e)}
+        elif hasattr(stt_service, "device"):
+            # Fallback: use device attribute
+            device = stt_service.device
+            cuda_info = {
+                "available": device != "cpu" and device != "unknown",
+                "device": device,
+                "device_name": None,
+                "memory_total_gb": None,
+                "memory_free_gb": None,
+                "source": "device_attribute",
+            }
+
+        # Add provider info
+        provider_info = {
+            "provider": settings.stt_provider,
+            "provider_name": stt_service.name if hasattr(stt_service, "name") else "unknown",
+        }
+
+        return JSONResponse(content={**cuda_info, **provider_info})
+
+    except Exception as e:
+        logger.error(f"Error getting CUDA info: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Failed to get CUDA information: {str(e)}")
 
 
 async def _save_audio_file(temp_path: str, original_filename: str) -> str | None:

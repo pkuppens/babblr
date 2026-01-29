@@ -204,6 +204,11 @@ class WhisperService(STTService):
         self.device = self._determine_device(device)
         self._load_model(model_size)
 
+    @property
+    def name(self) -> str:
+        """Name of the STT service implementation."""
+        return f"whisper_{self.device}"
+
     def is_model_cached(self, model_size: str) -> bool:
         """
         Check if a Whisper model is already cached (downloaded).
@@ -320,15 +325,15 @@ class WhisperService(STTService):
             return device
 
     async def transcribe(
-        self, audio_path: str, language: Optional[str] = None, timeout: int = 30
-    ) -> TranscriptionResult:
+        self, audio_path: str, language: Optional[str] = None, timeout: Optional[float] = None
+    ):
         """
         Transcribe audio file to text.
 
         Args:
             audio_path: Path to the audio file
             language: Optional language hint (e.g., 'es' or 'spanish')
-            timeout: Timeout in seconds (default: 30)
+            timeout: Optional timeout in seconds (default: 30.0)
 
         Returns:
             TranscriptionResult with text, language, confidence, and duration
@@ -338,17 +343,19 @@ class WhisperService(STTService):
             asyncio.TimeoutError: If transcription takes longer than timeout
         """
         if not WHISPER_AVAILABLE or self.model is None:
-            raise Exception(
+            from app.services.stt.base import STTError
+            raise STTError(
                 "Whisper is not installed or failed to load. "
                 "Install with: pip install openai-whisper"
             )
 
         try:
             start_time = time.time()
+            effective_timeout = timeout or 30.0
 
             # Run transcription with timeout
             result = await asyncio.wait_for(
-                self._transcribe_async(audio_path, language), timeout=timeout
+                self._transcribe_async(audio_path, language), timeout=effective_timeout
             )
 
             processing_time = time.time() - start_time
@@ -365,8 +372,13 @@ class WhisperService(STTService):
             return result
 
         except asyncio.TimeoutError:
-            logger.error("Transcription timed out after %d seconds", timeout)
-            raise Exception(f"Transcription timed out after {timeout} seconds")
+            effective_timeout = timeout or 30.0
+            logger.error("Transcription timed out after %.1f seconds", effective_timeout)
+            raise STTTimeoutError(f"Transcription timed out after {effective_timeout}s")
+        except (STTTimeoutError, STTError):
+            raise
+        except Exception as e:
+            raise STTError(f"Transcription failed: {e}") from e
 
     async def _transcribe_async(
         self, audio_path: str, language: Optional[str] = None
@@ -444,12 +456,12 @@ class WhisperService(STTService):
         else:
             duration = 0.0
 
+        from app.services.stt.base import TranscriptionResult
         return TranscriptionResult(
             text=text,
             language=detected_language,
             confidence=avg_confidence,
             duration=duration,
-            metadata=result,
         )
 
     def _map_language_code(self, language: Optional[str]) -> Optional[str]:
@@ -532,6 +544,32 @@ class WhisperService(STTService):
             )
 
         return info
+
+    async def health_check(self) -> bool:
+        """Check if Whisper service is available."""
+        try:
+            if not WHISPER_AVAILABLE or self.model is None:
+                return False
+            return True
+        except Exception as e:
+            logger.error(f"Whisper health check failed: {e}")
+            return False
+
+    async def close(self) -> None:
+        """Close resources and clean up model."""
+        if self.model is not None:
+            # Unload model to free memory
+            del self.model
+            self.model = None
+            # Force garbage collection to free GPU memory if using CUDA
+            if self.device == "cuda" and torch is not None:
+                torch.cuda.empty_cache()
+            logger.info("WhisperService closed and resources cleaned up")
+
+    async def warmup(self) -> None:
+        """Warmup service (model is already loaded in __init__)."""
+        # Model is already loaded during initialization, so this is a no-op
+        logger.debug("WhisperService warmup: model already loaded")
 
 
 class WhisperWebservice(STTService):

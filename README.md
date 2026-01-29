@@ -65,7 +65,7 @@ Run the entire stack with hot-reload using Docker Compose:
 cd docker
 cp .env.template .env
 # Edit .env if you want to use Claude/Gemini instead of Ollama
-docker-compose -f docker-compose.dev.yml up -d
+docker-compose -f docker-compose.base.yml -f docker-compose.dev.yml up -d
 ```
 
 This starts backend, frontend, PostgreSQL, and Ollama in containers with automatic code reloading.

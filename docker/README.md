@@ -192,6 +192,35 @@ docker-compose -f docker-compose.base.yml -f docker-compose.dev.yml exec fronten
 docker-compose -f docker-compose.base.yml -f docker-compose.dev.yml exec postgres /bin/sh
 ```
 
+### Managing Whisper Container Independently
+
+The Whisper container can be managed separately from the backend for easier testing and debugging:
+
+```bash
+# Start Whisper container only (CPU)
+docker-compose -f docker-compose.base.yml -f docker-compose.whisper.yml up -d
+
+# Start Whisper container only (GPU)
+docker-compose -f docker-compose.base.yml -f docker-compose.whisper.yml -f docker-compose.gpu.yml up -d
+
+# Stop Whisper container only
+docker-compose -f docker-compose.base.yml -f docker-compose.whisper.yml stop babblr-whisper
+
+# Restart Whisper container (useful for testing)
+docker-compose -f docker-compose.base.yml -f docker-compose.whisper.yml restart babblr-whisper
+
+# View Whisper logs
+docker-compose -f docker-compose.base.yml -f docker-compose.whisper.yml logs -f babblr-whisper
+
+# Check Whisper health (still in backend container)
+curl http://localhost:8000/health
+
+# Remove Whisper container (keeps volumes)
+docker-compose -f docker-compose.base.yml -f docker-compose.whisper.yml rm -f babblr-whisper
+```
+
+**Note**: The backend does NOT depend on the Whisper container. You can start/stop/restart Whisper independently without affecting the backend. See [WHISPER.md](WHISPER.md) for detailed Whisper container documentation.
+
 ## Environment Configuration
 
 The `.env` file controls LLM provider, API keys, and model selection:
