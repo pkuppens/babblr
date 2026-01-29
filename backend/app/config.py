@@ -43,7 +43,7 @@ class Settings(BaseSettings):
     llm_retry_max_delay: float = 30.0
 
     # Whisper settings
-    whisper_model: str = "base"
+    whisper_model: str = "large-v3"
     whisper_device: str = "auto"  # "auto", "cuda", or "cpu"
     stt_provider: str = Field(
         default="local",

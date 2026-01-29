@@ -62,7 +62,7 @@ ENV PYTHONUNBUFFERED=1 \
     BABBLR_API_HOST=0.0.0.0 \
     BABBLR_API_PORT=8000 \
     BABBLR_AUDIO_STORAGE_PATH=/data/audio \
-    WHISPER_MODEL=base
+    WHISPER_MODEL=large-v3
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \

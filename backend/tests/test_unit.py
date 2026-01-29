@@ -90,7 +90,7 @@ class TestConfig:
         # These should have consistent defaults regardless of .env
         assert settings.babblr_api_host == "127.0.0.1"
         assert settings.babblr_api_port == 8000
-        assert settings.whisper_model == "base"
+        assert settings.whisper_model == "large-v3"
         assert settings.whisper_device == "auto"
         assert settings.ollama_base_url == "http://localhost:11434"
         assert settings.ollama_model == "llama3.2:latest"

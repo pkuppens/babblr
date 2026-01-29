@@ -19,7 +19,7 @@ services:
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
       - GOOGLE_API_KEY=${GOOGLE_API_KEY:-}
       - BABBLR_AUDIO_STORAGE_PATH=/data/audio
-      - WHISPER_MODEL=${WHISPER_MODEL:-base}
+      - WHISPER_MODEL=${WHISPER_MODEL:-large-v3}
       - WHISPER_DEVICE=${WHISPER_DEVICE:-auto}
       - STT_PROVIDER=${STT_PROVIDER:-local}
       - STT_WEBSERVICE_URL=${STT_WEBSERVICE_URL:-http://babblr-whisper:9000}
