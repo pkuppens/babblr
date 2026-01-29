@@ -42,6 +42,20 @@ class Settings(BaseSettings):
     llm_retry_base_delay: float = 1.0
     llm_retry_max_delay: float = 30.0
 
+    # Text correction settings
+    # Maximum CEFR level to apply corrections (e.g., "A2" = correct A1, A2; "0" = no corrections)
+    correction_max_level: str = Field(
+        default="A2",
+        validation_alias=AliasChoices("correction_max_level", "max_correction_level"),
+    )
+
+    # Conversation history settings
+    # Maximum number of recent messages to include in LLM context (reduces latency)
+    conversation_max_history: int = Field(
+        default=5,
+        validation_alias=AliasChoices("conversation_max_history", "max_history_messages"),
+    )
+
     # Whisper settings
     whisper_model: str = "large-v3"
     whisper_device: str = "auto"  # "auto", "cuda", or "cpu"
