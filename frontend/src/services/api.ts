@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { handleError } from '../utils/errorHandler';
+import PerformanceMonitor from '../utils/performance';
 import type {
   Conversation,
   Message,
@@ -22,6 +23,50 @@ export const api = axios.create({
   },
   timeout: 30000, // 30 second timeout for all requests
 });
+
+// Performance monitoring interceptor
+let requestCounter = 0;
+api.interceptors.request.use((config) => {
+  // Make each request ID unique to avoid conflicts with concurrent requests
+  const uniqueId = ++requestCounter;
+  const requestId = `api.${config.method?.toUpperCase()}.${config.url}`;
+  const uniqueRequestId = `${requestId}#${uniqueId}`;
+
+  (config as any).metadata = {
+    requestId,
+    uniqueRequestId,
+    startTime: performance.now()
+  };
+  PerformanceMonitor.start(uniqueRequestId);
+  return config;
+});
+
+api.interceptors.response.use(
+  (response) => {
+    const config = response.config as any;
+    if (config.metadata) {
+      const { requestId, uniqueRequestId, startTime } = config.metadata;
+      const duration = performance.now() - startTime;
+      PerformanceMonitor.end(uniqueRequestId);
+
+      // Log backend timing from X-Response-Time header
+      const backendTime = response.headers['x-response-time'];
+      if (backendTime) {
+        console.debug(
+          `[PERF] ${requestId} - Backend: ${backendTime}, Network+Frontend: ${duration.toFixed(2)}ms`
+        );
+      }
+    }
+    return response;
+  },
+  (error) => {
+    const config = error.config as any;
+    if (config?.metadata) {
+      PerformanceMonitor.end(config.metadata.uniqueRequestId);
+    }
+    return Promise.reject(error);
+  }
+);
 
 export const conversationService = {
   async create(

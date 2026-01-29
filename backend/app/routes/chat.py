@@ -11,6 +11,7 @@ from app.models.models import Conversation, Message
 from app.models.schemas import ChatRequest, ChatResponse, InitialMessageRequest
 from app.services.conversation_service import get_conversation_service
 from app.services.llm.exceptions import LLMAuthenticationError, LLMError, RateLimitError
+from app.utils.performance import async_perf_timer
 
 logger = logging.getLogger(__name__)
 
@@ -67,13 +68,14 @@ async def generate_initial_message(
         conversation_service = get_conversation_service()
 
         # Generate initial message (returns message and translation)
-        initial_message, translation = await conversation_service.generate_initial_message(
-            language=request.language,
-            difficulty_level=request.difficulty_level,
-            topic=topic_name,
-            topic_description=topic_description,
-            roleplay_context=roleplay_context,
-        )
+        async with async_perf_timer("initial_message.generate_llm", logging.INFO):
+            initial_message, translation = await conversation_service.generate_initial_message(
+                language=request.language,
+                difficulty_level=request.difficulty_level,
+                topic=topic_name,
+                topic_description=topic_description,
+                roleplay_context=roleplay_context,
+            )
 
         # Save assistant message (only the target language message, not translation)
         assistant_message = Message(
@@ -141,8 +143,10 @@ async def chat(request: ChatRequest, db: AsyncSession = Depends(get_db)):
         messages = messages_result.scalars().all()
 
         # Convert messages to dict format, ensuring content is string (not Column)
+        # Limit to recent messages to reduce LLM latency
+        recent_messages = messages[-settings.conversation_max_history:] if len(messages) > settings.conversation_max_history else messages
         conversation_history = [
-            {"role": str(msg.role), "content": str(msg.content)} for msg in messages
+            {"role": str(msg.role), "content": str(msg.content)} for msg in recent_messages
         ]
 
         # Get conversation service (uses configured provider, defaults to Ollama)
@@ -172,22 +176,45 @@ async def chat(request: ChatRequest, db: AsyncSession = Depends(get_db)):
             except Exception as e:
                 logger.warning(f"Failed to load topic information: {e}")
 
-        # First, correct the user's message if needed
-        corrected_text, corrections = await conversation_service.correct_text(
-            request.user_message, request.language, request.difficulty_level
-        )
+        # First, correct the user's message if needed (only if below correction threshold)
+        corrected_text = request.user_message
+        corrections = None
+
+        # Apply corrections if difficulty level is at or below configured threshold
+        # "0" = no corrections, "A1" = only A1, "A2" = A1 and A2, etc.
+        # CEFR levels in order: A1, A2, B1, B2, C1, C2
+        cefr_order = ["A1", "A2", "B1", "B2", "C1", "C2"]
+        try:
+            user_level_index = cefr_order.index(request.difficulty_level)
+            max_level_index = cefr_order.index(settings.correction_max_level) if settings.correction_max_level != "0" else -1
+            should_correct = settings.correction_max_level != "0" and user_level_index <= max_level_index
+        except ValueError:
+            # If level not found, default to correcting
+            should_correct = settings.correction_max_level != "0"
+
+        if should_correct:
+            async with async_perf_timer("chat.correct_text", logging.INFO):
+                corrected_text, corrections = await conversation_service.correct_text(
+                    request.user_message, request.language, request.difficulty_level
+                )
+        else:
+            logger.debug(
+                f"Skipping correction: difficulty_level={request.difficulty_level}, "
+                f"max_level={settings.correction_max_level}"
+            )
 
         # Save user message (with original text) - save BEFORE generating response
         # so it's in the database, but don't include it in conversation_history
         # since generate_response will add it
-        user_message = Message(
-            conversation_id=request.conversation_id,
-            role="user",
-            content=request.user_message,
-            corrections=json.dumps(corrections) if corrections else None,
-        )
-        db.add(user_message)
-        await db.commit()
+        async with async_perf_timer("chat.save_user_message", logging.DEBUG):
+            user_message = Message(
+                conversation_id=request.conversation_id,
+                role="user",
+                content=request.user_message,
+                corrections=json.dumps(corrections) if corrections else None,
+            )
+            db.add(user_message)
+            await db.commit()
 
         # Log conversation history for debugging
         logger.debug(
@@ -197,14 +224,15 @@ async def chat(request: ChatRequest, db: AsyncSession = Depends(get_db)):
 
         # Generate AI response with topic context and roleplay persona
         # Pass corrected_text as user_message - generate_response will add it to the history
-        assistant_response = await conversation_service.generate_response(
-            corrected_text if corrections else request.user_message,
-            request.language,
-            request.difficulty_level,
-            conversation_history,
-            topic=topic_name,
-            roleplay_context=roleplay_context,
-        )
+        async with async_perf_timer("chat.generate_response_llm", logging.INFO):
+            assistant_response = await conversation_service.generate_response(
+                corrected_text if corrections else request.user_message,
+                request.language,
+                request.difficulty_level,
+                conversation_history,
+                topic=topic_name,
+                roleplay_context=roleplay_context,
+            )
 
         # Save assistant message
         assistant_message = Message(

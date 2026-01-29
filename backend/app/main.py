@@ -1,8 +1,9 @@
 import logging
+import time
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, RedirectResponse
 
@@ -115,6 +116,33 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+# Performance monitoring middleware
+@app.middleware("http")
+async def performance_middleware(request: Request, call_next):
+    """Log request timing for performance debugging."""
+    start_time = time.perf_counter()
+
+    # Log request start
+    logger.debug(
+        f"[PERF] REQUEST START - {request.method} {request.url.path}"
+    )
+
+    # Process request
+    response = await call_next(request)
+
+    # Calculate and log timing
+    elapsed_ms = (time.perf_counter() - start_time) * 1000
+    logger.info(
+        f"[PERF] REQUEST COMPLETE - {request.method} {request.url.path} "
+        f"- {response.status_code} - {elapsed_ms:.2f}ms"
+    )
+
+    # Add timing header for frontend debugging
+    response.headers["X-Response-Time"] = f"{elapsed_ms:.2f}ms"
+
+    return response
 
 # Include routers
 app.include_router(conversations.router)
