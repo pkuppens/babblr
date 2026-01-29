@@ -37,6 +37,19 @@ class PerformanceTimer:
         logger.log(self.log_level, f"[PERF] {self.name} - DONE in {elapsed_ms:.2f}ms")
         return elapsed_ms
 
+    @property
+    def elapsed_ms(self) -> float:
+        """Get elapsed time in milliseconds.
+
+        Returns current elapsed time if timer is still running,
+        or final elapsed time if timer has stopped.
+        """
+        if self.start_time is None:
+            return 0.0
+
+        end = self.end_time if self.end_time is not None else time.perf_counter()
+        return (end - self.start_time) * 1000
+
 
 @contextmanager
 def perf_timer(name: str, log_level: int = logging.DEBUG):

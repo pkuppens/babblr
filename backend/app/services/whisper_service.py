@@ -344,10 +344,13 @@ class WhisperService(STTService):
         """
         if not WHISPER_AVAILABLE or self.model is None:
             from app.services.stt.base import STTError
+
             raise STTError(
                 "Whisper is not installed or failed to load. "
                 "Install with: pip install openai-whisper"
             )
+
+        from app.services.stt.base import STTError, STTTimeoutError
 
         try:
             start_time = time.time()
@@ -457,6 +460,7 @@ class WhisperService(STTService):
             duration = 0.0
 
         from app.services.stt.base import TranscriptionResult
+
         return TranscriptionResult(
             text=text,
             language=detected_language,
