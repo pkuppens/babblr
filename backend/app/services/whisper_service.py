@@ -19,6 +19,8 @@ from typing import Any, Dict, List, Optional
 import httpx
 import numpy as np
 
+from app.services.stt.base import TranscriptionResult as BaseTranscriptionResult
+
 logger = logging.getLogger(__name__)
 
 # Check if Whisper is available
@@ -113,31 +115,16 @@ def _load_audio(audio_path: str, sr: int = WHISPER_SAMPLE_RATE) -> np.ndarray:
     return audio
 
 
-class TranscriptionResult:
-    """Result of a transcription operation."""
-
-    def __init__(
-        self,
-        text: str,
-        language: str,
-        confidence: float,
-        duration: float,
-        metadata: Optional[Dict[str, Any]] = None,
-    ):
-        self.text = text
-        self.language = language
-        self.confidence = confidence
-        self.duration = duration
-        self.metadata = metadata or {}
-
-
 class STTService(ABC):
     """Abstract base class for speech-to-text services."""
 
     @abstractmethod
     async def transcribe(
-        self, audio_path: str, language: Optional[str] = None, timeout: int = 30
-    ) -> TranscriptionResult:
+        self,
+        audio_path: str | Path,
+        language: Optional[str] = None,
+        timeout: int = 30,
+    ) -> BaseTranscriptionResult:
         """
         Transcribe audio file to text.
 
@@ -325,8 +312,11 @@ class WhisperService(STTService):
             return device
 
     async def transcribe(
-        self, audio_path: str, language: Optional[str] = None, timeout: Optional[float] = None
-    ):
+        self,
+        audio_path: str | Path,
+        language: Optional[str] = None,
+        timeout: Optional[float] = None,
+    ) -> BaseTranscriptionResult:
         """
         Transcribe audio file to text.
 
@@ -352,13 +342,15 @@ class WhisperService(STTService):
 
         from app.services.stt.base import STTError, STTTimeoutError
 
+        audio_path_str = os.fspath(audio_path)
+
         try:
             start_time = time.time()
             effective_timeout = timeout or 30.0
 
             # Run transcription with timeout
             result = await asyncio.wait_for(
-                self._transcribe_async(audio_path, language), timeout=effective_timeout
+                self._transcribe_async(audio_path_str, language), timeout=effective_timeout
             )
 
             processing_time = time.time() - start_time
@@ -385,7 +377,7 @@ class WhisperService(STTService):
 
     async def _transcribe_async(
         self, audio_path: str, language: Optional[str] = None
-    ) -> TranscriptionResult:
+    ) -> BaseTranscriptionResult:
         """
         Run Whisper transcription in a thread pool to avoid blocking.
 
@@ -407,7 +399,7 @@ class WhisperService(STTService):
 
     def _do_transcription(
         self, audio_path: str, language_code: Optional[str]
-    ) -> TranscriptionResult:
+    ) -> BaseTranscriptionResult:
         """
         Perform the actual transcription (runs in thread pool).
 
@@ -459,9 +451,7 @@ class WhisperService(STTService):
         else:
             duration = 0.0
 
-        from app.services.stt.base import TranscriptionResult
-
-        return TranscriptionResult(
+        return BaseTranscriptionResult(
             text=text,
             language=detected_language,
             confidence=avg_confidence,
@@ -616,8 +606,11 @@ class WhisperWebservice(STTService):
         return WhisperService.SUPPORTED_LANGUAGES.get(language_lower, language_lower)
 
     async def transcribe(
-        self, audio_path: str, language: Optional[str] = None, timeout: int = 30
-    ) -> TranscriptionResult:
+        self,
+        audio_path: str | Path,
+        language: Optional[str] = None,
+        timeout: int = 30,
+    ) -> BaseTranscriptionResult:
         """Transcribe audio by calling a remote Whisper ASR webservice.
 
         Args:
@@ -632,8 +625,9 @@ class WhisperWebservice(STTService):
             FileNotFoundError: If the audio file does not exist.
             RuntimeError: If the remote service returns an error response.
         """
-        if not os.path.exists(audio_path):
-            raise FileNotFoundError(f"Audio file not found: {audio_path}")
+        audio_path_str = os.fspath(audio_path)
+        if not os.path.exists(audio_path_str):
+            raise FileNotFoundError(f"Audio file not found: {audio_path_str}")
 
         language_code = self._map_language_code(language)
         params: dict[str, Any] = {"task": "transcribe", "output": "json"}
@@ -641,11 +635,11 @@ class WhisperWebservice(STTService):
             params["language"] = language_code
 
         effective_timeout = max(timeout, self.timeout)
-        file_name = Path(audio_path).name
+        file_name = Path(audio_path_str).name
 
         try:
             async with httpx.AsyncClient(timeout=effective_timeout) as client:
-                with open(audio_path, "rb") as audio_file:
+                with open(audio_path_str, "rb") as audio_file:
                     files = {"audio_file": (file_name, audio_file, "application/octet-stream")}
                     response = await client.post(f"{self.base_url}/asr", params=params, files=files)
                     response.raise_for_status()
@@ -667,12 +661,11 @@ class WhisperWebservice(STTService):
             text = response.text.strip()
             detected_language = language_code or "unknown"
 
-        return TranscriptionResult(
+        return BaseTranscriptionResult(
             text=text,
             language=detected_language,
             confidence=WhisperService.DEFAULT_CONFIDENCE,
             duration=0.0,
-            metadata={"remote": True, "provider": "whisper_webservice"},
         )
 
     def get_supported_languages(self) -> List[str]:

@@ -7,7 +7,7 @@ Run with: pytest tests/test_api_endpoints.py -v
 
 from unittest.mock import AsyncMock, patch
 
-from app.services.whisper_service import TranscriptionResult
+from app.services.stt.base import TranscriptionResult
 
 
 class TestHealthEndpoint:
@@ -221,9 +221,10 @@ class TestChatEndpoint:
         )
         conv_id = conv_response.json()["id"]
 
-        # Mock the conversation service
+        # Mock the conversation service with correct methods
         mock_conv_service = AsyncMock()
-        mock_conv_service.chat.return_value = ("Hola, ¿cómo estás?", None)
+        mock_conv_service.generate_response = AsyncMock(return_value="Hola, ¿cómo estás?")
+        mock_conv_service.correct_text = AsyncMock(return_value=("Hola", {}))
         mock_service.return_value = mock_conv_service
 
         # Send chat message
@@ -240,7 +241,8 @@ class TestChatEndpoint:
         # Should succeed with mocked service
         assert response.status_code == 200
 
-    def test_chat_endpoint_response_structure(self, client):
+    @patch("app.services.conversation_service.get_conversation_service")
+    def test_chat_endpoint_response_structure(self, mock_service, client):
         """Test chat response has expected fields."""
         # Create conversation
         conv_response = client.post(
@@ -248,24 +250,25 @@ class TestChatEndpoint:
         )
         conv_id = conv_response.json()["id"]
 
-        with patch("app.services.conversation_service.get_conversation_service") as mock_service:
-            mock_conv_service = AsyncMock()
-            mock_conv_service.chat.return_value = ("Bonjour, comment allez-vous?", None)
-            mock_service.return_value = mock_conv_service
+        # Mock the conversation service with correct methods
+        mock_conv_service = AsyncMock()
+        mock_conv_service.generate_response = AsyncMock(return_value="Bonjour, comment allez-vous?")
+        mock_conv_service.correct_text = AsyncMock(return_value=("Bonjour", {}))
+        mock_service.return_value = mock_conv_service
 
-            response = client.post(
-                "/chat",
-                json={
-                    "conversation_id": conv_id,
-                    "user_message": "Bonjour",
-                    "language": "french",
-                    "difficulty_level": "B1",
-                },
-            )
+        response = client.post(
+            "/chat",
+            json={
+                "conversation_id": conv_id,
+                "user_message": "Bonjour",
+                "language": "french",
+                "difficulty_level": "B1",
+            },
+        )
 
-            assert response.status_code == 200
-            data = response.json()
-            assert "assistant_message" in data
+        assert response.status_code == 200
+        data = response.json()
+        assert "assistant_message" in data
 
     def test_chat_requires_conversation_id(self, client):
         """Test chat endpoint requires conversation_id."""
@@ -302,37 +305,49 @@ class TestSTTEndpoint:
         response = client.post("/stt/transcribe", data={})
         assert response.status_code in [422, 400]
 
-    @patch("app.services.whisper_service.whisper_service.transcribe")
-    def test_stt_endpoint_with_mock_audio(self, mock_transcribe, client):
+    def test_stt_endpoint_with_mock_audio(self, client):
         """Test STT endpoint with mocked transcription."""
+        from app.main import app
+
         result = TranscriptionResult(
             text="Hola mundo",
             language="es",
             confidence=0.95,
             duration=2.5,
         )
-        mock_transcribe.return_value = result
 
-        # Create a simple test audio file
-        audio_content = b"\xff\xfb" + b"\x00" * 100  # Fake MP3 header
-        response = client.post(
-            "/stt/transcribe",
-            files={"audio": ("test.mp3", audio_content, "audio/mpeg")},
-            data={"language": "spanish"},
-        )
+        # Patch the service instance's transcribe method
+        with patch.object(
+            app.state.stt_service, "transcribe", new_callable=AsyncMock
+        ) as mock_transcribe:
+            mock_transcribe.return_value = result
 
-        # Should succeed or fail gracefully based on audio validation
-        assert response.status_code in [200, 400]
+            # Create a simple test audio file
+            audio_content = b"\xff\xfb" + b"\x00" * 100  # Fake MP3 header
+            response = client.post(
+                "/stt/transcribe",
+                files={"audio": ("test.mp3", audio_content, "audio/mpeg")},
+                data={"language": "spanish"},
+            )
+
+            # Should succeed or fail gracefully based on audio validation
+            assert response.status_code in [200, 400]
 
     def test_stt_response_structure(self, client):
         """Test STT response structure matches schema."""
-        with patch("app.services.whisper_service.whisper_service.transcribe") as mock_transcribe:
-            result = TranscriptionResult(
-                text="Test transcription",
-                language="en",
-                confidence=0.92,
-                duration=3.0,
-            )
+        from app.main import app
+
+        result = TranscriptionResult(
+            text="Test transcription",
+            language="en",
+            confidence=0.92,
+            duration=3.0,
+        )
+
+        # Patch the service instance's transcribe method
+        with patch.object(
+            app.state.stt_service, "transcribe", new_callable=AsyncMock
+        ) as mock_transcribe:
             mock_transcribe.return_value = result
 
             audio_content = b"\xff\xfb" + b"\x00" * 100

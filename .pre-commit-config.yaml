@@ -45,9 +45,12 @@ repos:
         pass_filenames: false
         always_run: true
 
+      # Cap workers to 2: unit tests include WhisperService (torch + Whisper model).
+      # -n auto would spawn one worker per CPU; multiple workers loading models can lock the system.
+      # --timeout=120: kill hung tests after 2 min (guardrail against programming errors).
       - id: backend-tests
         name: backend-tests
-        entry: uv run --no-sync --directory backend python -m pytest tests/ -v --tb=short -m 'not integration' -n auto
+        entry: uv run --no-sync --directory backend python -m pytest tests/ -v --tb=short -m 'not integration' -n 2 --timeout=120
         language: system
         types: [python]
         files: ^backend/

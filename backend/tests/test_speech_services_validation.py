@@ -31,7 +31,7 @@ class TestSTTValidation:
     @pytest.mark.asyncio
     async def test_stt_transcribe_mock(self):
         """Unit test: STT transcription with mocked Whisper."""
-        from app.services.whisper_service import TranscriptionResult
+        from app.services.stt.base import TranscriptionResult
 
         # Mock transcription result
         mock_result = TranscriptionResult(
@@ -50,7 +50,7 @@ class TestSTTValidation:
     @pytest.mark.asyncio
     async def test_stt_spanish_transcription_mock(self):
         """Unit test: Spanish language transcription (mocked)."""
-        from app.services.whisper_service import TranscriptionResult
+        from app.services.stt.base import TranscriptionResult
 
         spanish_result = TranscriptionResult(
             text="Buenos días. Mi nombre es María.",
@@ -66,7 +66,7 @@ class TestSTTValidation:
     @pytest.mark.asyncio
     async def test_stt_french_transcription_mock(self):
         """Unit test: French language transcription (mocked)."""
-        from app.services.whisper_service import TranscriptionResult
+        from app.services.stt.base import TranscriptionResult
 
         french_result = TranscriptionResult(
             text="Bonjour, comment allez-vous?",
@@ -81,7 +81,7 @@ class TestSTTValidation:
     @pytest.mark.asyncio
     async def test_stt_german_transcription_mock(self):
         """Unit test: German language transcription (mocked)."""
-        from app.services.whisper_service import TranscriptionResult
+        from app.services.stt.base import TranscriptionResult
 
         german_result = TranscriptionResult(
             text="Guten Tag, wie geht es Ihnen?",
@@ -96,7 +96,7 @@ class TestSTTValidation:
     @pytest.mark.asyncio
     async def test_stt_italian_transcription_mock(self):
         """Unit test: Italian language transcription (mocked)."""
-        from app.services.whisper_service import TranscriptionResult
+        from app.services.stt.base import TranscriptionResult
 
         italian_result = TranscriptionResult(
             text="Ciao, come stai?",
@@ -111,7 +111,7 @@ class TestSTTValidation:
     @pytest.mark.asyncio
     async def test_stt_dutch_transcription_mock(self):
         """Unit test: Dutch language transcription (mocked)."""
-        from app.services.whisper_service import TranscriptionResult
+        from app.services.stt.base import TranscriptionResult
 
         dutch_result = TranscriptionResult(
             text="Hallo, hoe gaat het met je?",
@@ -126,7 +126,7 @@ class TestSTTValidation:
     @pytest.mark.asyncio
     async def test_stt_confidence_score(self):
         """Unit test: Confidence score validation."""
-        from app.services.whisper_service import TranscriptionResult
+        from app.services.stt.base import TranscriptionResult
 
         result = TranscriptionResult(
             text="Test",
@@ -143,7 +143,7 @@ class TestSTTValidation:
     @pytest.mark.asyncio
     async def test_stt_duration_tracking(self):
         """Unit test: Audio duration is properly tracked."""
-        from app.services.whisper_service import TranscriptionResult
+        from app.services.stt.base import TranscriptionResult
 
         result = TranscriptionResult(
             text="Audio sample",
@@ -306,8 +306,8 @@ class TestSpeechServicesIntegration:
     async def test_stt_to_tts_pipeline_mock(self):
         """Unit test: STT output can be used as TTS input (mocked)."""
         from app.models.schemas import TTSRequest
+        from app.services.stt.base import TranscriptionResult
         from app.services.tts_service import tts_service
-        from app.services.whisper_service import TranscriptionResult
 
         # Step 1: Mock STT transcription
         stt_result = TranscriptionResult(
@@ -339,8 +339,8 @@ class TestSpeechServicesIntegration:
     async def test_conversation_speech_flow_mock(self):
         """Unit test: Full conversation with STT input and TTS output (mocked)."""
         from app.models.schemas import TTSRequest
+        from app.services.stt.base import TranscriptionResult
         from app.services.tts_service import tts_service
-        from app.services.whisper_service import TranscriptionResult
 
         # User speaks (STT mocked)
         user_input = TranscriptionResult(

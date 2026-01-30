@@ -102,9 +102,12 @@ ensure you installed the dev dependencies (so `pytest-asyncio` is available) and
 You can run tests in parallel using `pytest-xdist`:
 
 ```bash
-# Use one worker per CPU core (recommended)
+# Use one worker per CPU core (CI / powerful machines)
 pytest -n auto
 
-# Use a fixed number of workers
+# Use a fixed number of workers (safer when tests load heavy resources)
+pytest -n 2
 pytest -n 4
 ```
+
+Pre-commit runs backend tests with `-n 2` (not `-n auto`) because some unit tests load PyTorch and the Whisper model. Using one worker per CPU can spawn many processes each loading a model and lock the system.

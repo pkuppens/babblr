@@ -16,6 +16,11 @@ import type {
 
 const API_BASE_URL = 'http://localhost:8000';
 
+/** Axios request config extended with performance metadata (used by interceptors). */
+interface RequestConfigWithMetadata extends axios.AxiosRequestConfig {
+  metadata?: { requestId: string; uniqueRequestId: string; startTime: number };
+}
+
 export const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
@@ -26,24 +31,24 @@ export const api = axios.create({
 
 // Performance monitoring interceptor
 let requestCounter = 0;
-api.interceptors.request.use((config) => {
+api.interceptors.request.use(config => {
   // Make each request ID unique to avoid conflicts with concurrent requests
   const uniqueId = ++requestCounter;
   const requestId = `api.${config.method?.toUpperCase()}.${config.url}`;
   const uniqueRequestId = `${requestId}#${uniqueId}`;
 
-  (config as any).metadata = {
+  (config as RequestConfigWithMetadata).metadata = {
     requestId,
     uniqueRequestId,
-    startTime: performance.now()
+    startTime: performance.now(),
   };
   PerformanceMonitor.start(uniqueRequestId);
   return config;
 });
 
 api.interceptors.response.use(
-  (response) => {
-    const config = response.config as any;
+  response => {
+    const config = response.config as RequestConfigWithMetadata;
     if (config.metadata) {
       const { requestId, uniqueRequestId, startTime } = config.metadata;
       const duration = performance.now() - startTime;
@@ -59,8 +64,8 @@ api.interceptors.response.use(
     }
     return response;
   },
-  (error) => {
-    const config = error.config as any;
+  error => {
+    const config = error.config as RequestConfigWithMetadata | undefined;
     if (config?.metadata) {
       PerformanceMonitor.end(config.metadata.uniqueRequestId);
     }

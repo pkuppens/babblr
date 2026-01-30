@@ -218,6 +218,11 @@ async def health_check():
                     if hasattr(stt_service, "get_available_models")
                     else []
                 ),
+                "supported_locales": (
+                    stt_service.get_supported_languages()
+                    if hasattr(stt_service, "get_supported_languages")
+                    else []
+                ),
             }
             # Add CUDA info if available (for LocalWhisperService)
             if hasattr(stt_service, "get_cuda_info"):

@@ -57,6 +57,10 @@ class MockSTTService:
         """Return list of available models."""
         return ["mock"]
 
+    def get_supported_languages(self) -> list[str]:
+        """Return list of supported language codes."""
+        return ["es", "it", "de", "fr", "nl", "en"]
+
     async def warmup(self) -> None:
         """Warmup mock service (no-op)."""
         pass
