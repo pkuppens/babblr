@@ -6,18 +6,20 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { grammarService, api } from './api';
 
-// Mock axios
-vi.mock('axios', () => {
-  return {
-    default: {
-      create: vi.fn(() => ({
-        get: vi.fn(),
-        post: vi.fn(),
-        put: vi.fn(),
-      })),
-    },
-  };
-});
+// Mock axios so api.ts gets an instance with get/post/put and interceptors (avoids api.interceptors.request.use failing)
+vi.mock('axios', () => ({
+  default: {
+    create: vi.fn(() => ({
+      get: vi.fn(),
+      post: vi.fn(),
+      put: vi.fn(),
+      interceptors: {
+        request: { use: vi.fn() },
+        response: { use: vi.fn() },
+      },
+    })),
+  },
+}));
 
 describe('grammarService', () => {
   beforeEach(() => {

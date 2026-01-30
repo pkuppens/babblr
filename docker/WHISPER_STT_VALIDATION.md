@@ -82,7 +82,7 @@ Expected response:
 #### Test 3: Transcription Test ✅ PASSED
 - **Audio File**: `tmp/stt_20260106224435.webm`
 - **Expected Text**: "Ich möchte gern Deutsch lernen." (German)
-- **Actual Result**: 
+- **Actual Result**:
   - **Text**: "Ik mocht gern Duits lernen."
   - **Language Detected**: `nl` (Dutch)
   - **Transcription Time**: 7.62 seconds

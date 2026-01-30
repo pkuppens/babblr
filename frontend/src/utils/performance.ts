@@ -81,7 +81,7 @@ export class PerformanceMonitor {
    * @param event - Event name
    * @param data - Optional event data
    */
-  static logEvent(event: string, data?: any): void {
+  static logEvent(event: string, data?: unknown): void {
     if (!PERF_ENABLED) return;
 
     const timestamp = performance.now().toFixed(2);
@@ -130,10 +130,14 @@ export class PerformanceMonitor {
  * Decorator for measuring React component method timing.
  * Note: Only works with class components, not hooks.
  */
-export function measureMethod(target: any, propertyName: string, descriptor: PropertyDescriptor) {
+export function measureMethod(
+  target: object,
+  propertyName: string,
+  descriptor: PropertyDescriptor
+) {
   const originalMethod = descriptor.value;
 
-  descriptor.value = async function (...args: any[]) {
+  descriptor.value = async function (...args: unknown[]) {
     const name = `${target.constructor.name}.${propertyName}`;
     return await PerformanceMonitor.measure(name, () => originalMethod.apply(this, args));
   };
@@ -143,7 +147,7 @@ export function measureMethod(target: any, propertyName: string, descriptor: Pro
 
 // Expose to window for Chrome DevTools Console access
 if (typeof window !== 'undefined') {
-  (window as any).BabblrPerf = PerformanceMonitor;
+  (window as Window & { BabblrPerf?: typeof PerformanceMonitor }).BabblrPerf = PerformanceMonitor;
 }
 
 export default PerformanceMonitor;

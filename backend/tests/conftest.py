@@ -17,6 +17,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from app.database.db import Base, get_db
 from app.main import app
+from app.services.stt.mock_whisper import MockSTTService
 
 # =============================================================================
 # pytest configuration for --production flag
@@ -38,6 +39,23 @@ def pytest_configure(config):
     config.addinivalue_line(
         "markers", "production: mark test as production (requires running backends/APIs)"
     )
+
+
+@pytest.fixture(autouse=True)
+def setup_stt_service():
+    """Set up mock STT service for all tests."""
+    # Create mock STT service
+    mock_stt = MockSTTService()
+    # Add attributes that health endpoint expects
+    mock_stt.model_size = "base"
+    mock_stt.device = "cpu"
+
+    # Set in app state
+    app.state.stt_service = mock_stt
+    yield
+    # Cleanup
+    if hasattr(app.state, "stt_service"):
+        del app.state.stt_service
 
 
 @pytest.fixture

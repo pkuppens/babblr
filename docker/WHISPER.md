@@ -16,11 +16,11 @@ Notes:
 
 ## Overview
 
-- Container image: to be developed as separate component.
-- Service name: `babblr-whisper`
-- API endpoint: `http://babblr-whisper:9000` (internal) or `http://localhost:9000` (host)
-- **Independent**: The Whisper container can be started, stopped, and restarted without affecting the backend
-- The application may still need a proper interface (Protocol) and bridge for dependency injection.
+* Container image: to be developed as separate component.
+* Service name: `babblr-whisper`
+* API endpoint: `http://babblr-whisper:9000` (internal) or `http://localhost:9000` (host)
+* **Independent**: The Whisper container can be started, stopped, and restarted without affecting the backend
+* The application may still need a proper interface (Protocol) and bridge for dependency injection.
 
 ## Quick Start
 
@@ -76,9 +76,9 @@ WHISPER_CONTAINER_DEVICE=cuda  # or 'cpu' if no GPU
 ```
 
 **Important**: The backend does NOT depend on the Whisper container. You can:
-- Start the backend without Whisper (it will use local Whisper if `STT_PROVIDER=local`)
-- Start Whisper independently and restart it without affecting the backend
-- Switch between local and external Whisper by changing `STT_PROVIDER` and restarting only the backend
+* Start the backend without Whisper (it will use local Whisper if `STT_PROVIDER=local`)
+* Start Whisper independently and restart it without affecting the backend
+* Switch between local and external Whisper by changing `STT_PROVIDER` and restarting only the backend
 
 ### Restart Backend to Use Whisper Container
 
@@ -103,10 +103,10 @@ curl -X POST "http://localhost:9000/asr?task=transcribe&output=txt" \
 
 The Whisper container is **completely independent** from the backend:
 
-- ✅ Backend can start without Whisper container (uses local Whisper)
-- ✅ Whisper can be restarted without restarting backend
-- ✅ Whisper can be stopped/started for testing without affecting backend
-- ✅ Backend gracefully handles Whisper container being unavailable (returns error on transcription)
+* ✅ Backend can start without Whisper container (uses local Whisper)
+* ✅ Whisper can be restarted without restarting backend
+* ✅ Whisper can be stopped/started for testing without affecting backend
+* ✅ Backend gracefully handles Whisper container being unavailable (returns error on transcription)
 
 ### Example: Testing Whisper Changes
 
@@ -130,8 +130,8 @@ docker-compose -f docker-compose.base.yml -f docker-compose.whisper.yml logs -f 
 
 ## Notes
 
-- Model switching is handled by the whisper container. To change models, restart
+* Model switching is handled by the whisper container. To change models, restart
   `babblr-whisper` with `WHISPER_CONTAINER_MODEL` set to the target model.
-- When the container runs with GPU, set `WHISPER_CONTAINER_DEVICE=cuda` in `.env`.
-- The model cache is stored in the shared `babblr-volume-whisper-models` volume.
-- The backend connects to Whisper via Docker network (`babblr-whisper:9000`), so both containers must be on the same network (they share `babblr-network` from `docker-compose.base.yml`).
+* When the container runs with GPU, set `WHISPER_CONTAINER_DEVICE=cuda` in `.env`.
+* The model cache is stored in the shared `babblr-volume-whisper-models` volume.
+* The backend connects to Whisper via Docker network (`babblr-whisper:9000`), so both containers must be on the same network (they share `babblr-network` from `docker-compose.base.yml`).
