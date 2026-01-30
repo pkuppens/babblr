@@ -95,6 +95,7 @@ jobs:
   backend-test-unit:
     name: Backend Unit Tests (Python ${{ matrix.python-version }})
     runs-on: ubuntu-latest
+    timeout-minutes: 15  # 15 minutes timeout (900 seconds) - allows for parallel test execution with pytest-timeout
     needs: backend-lint
     strategy:
       fail-fast: true
