@@ -93,7 +93,7 @@ jobs:
 
   # Backend unit tests - runs after lint passes (single Python version for efficiency and stable CI)
   backend-test-unit:
-    name: Backend Unit Tests (Python ${{ env.RELEASE_PYTHON_VERSION }})
+    name: Backend Unit Tests (Python 3.12)
     runs-on: ubuntu-latest
     timeout-minutes: 15
     needs: backend-lint
