@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, { type AxiosRequestConfig } from 'axios';
 import { handleError } from '../utils/errorHandler';
 import PerformanceMonitor from '../utils/performance';
 import type {
@@ -17,7 +17,7 @@ import type {
 const API_BASE_URL = 'http://localhost:8000';
 
 /** Axios request config extended with performance metadata (used by interceptors). */
-interface RequestConfigWithMetadata extends axios.AxiosRequestConfig {
+interface RequestConfigWithMetadata extends AxiosRequestConfig {
   metadata?: { requestId: string; uniqueRequestId: string; startTime: number };
 }
 

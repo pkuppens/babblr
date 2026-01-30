@@ -411,4 +411,3 @@ Once comfortable with Docker Compose:
 - [Docker Compose Documentation](https://docs.docker.com/compose/)
 - [Backend README](../backend/README.md)
 - [Frontend README](../frontend/README.md)
-- [DevOps Transformation Plan](../tmp/devops/00-OVERVIEW.md)
