@@ -154,7 +154,9 @@ jobs:
         run: |
           # Run unit tests (excluding integration tests that require running backend)
           # Use -n auto for parallel execution (adapts to available cores)
-          uv run pytest tests/test_unit.py -v --tb=short -n auto
+          # -vv: verbose output showing test names and status
+          # --durations=10: show 10 slowest tests for performance debugging
+          uv run pytest tests/test_unit.py -vv --tb=short -n auto --durations=10
 
   # Frontend linting and tests
   frontend-test:
