@@ -83,6 +83,15 @@ repos:
         pass_filenames: false
         always_run: false
 
+      # Node dependency audit - matches security workflow (npm audit --audit-level=moderate)
+      # Runs on every commit so you catch the same failures locally before push.
+      - id: frontend-npm-audit
+        name: frontend-npm-audit
+        entry: bash -lc "npm --prefix frontend audit --audit-level=moderate"
+        language: system
+        pass_filenames: false
+        always_run: true
+
   # Markdown checks (lint + broken internal links/anchors)
   - repo: local
     hooks:

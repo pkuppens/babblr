@@ -298,6 +298,7 @@ cd frontend
 npm run lint
 npm run format -- --check
 npm run test
+npm audit --audit-level=moderate
 ```
 
 ### CI Failure Debugging
