@@ -43,15 +43,14 @@ runs:
       run: |
         case "${{ inputs.test-type }}" in
           unit)
-            # -vv: verbose output showing test names and status
-            # --durations=10: show 10 slowest tests for performance debugging
-            uv run pytest tests/test_unit.py -vv --tb=short -n auto --durations=10
+            # Sequential, verbose: clear pass/fail per test
+            uv run pytest tests/test_unit.py -vv --tb=short
             ;;
           integration)
-            uv run pytest tests/test_integration.py -vv --tb=short --durations=10
+            uv run pytest tests/test_integration.py -vv --tb=short
             ;;
           llm_providers)
-            uv run pytest tests/test_llm_providers.py -vv --tb=short --durations=10
+            uv run pytest tests/test_llm_providers.py -vv --tb=short
             ;;
           *)
             echo "Unknown test type: ${{ inputs.test-type }}"

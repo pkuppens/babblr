@@ -91,24 +91,20 @@ jobs:
         run: |
           uv run pyright
 
-  # Backend unit tests - runs after lint passes
+  # Backend unit tests - runs after lint passes (single Python version for efficiency and stable CI)
   backend-test-unit:
-    name: Backend Unit Tests (Python ${{ matrix.python-version }})
+    name: Backend Unit Tests (Python ${{ env.RELEASE_PYTHON_VERSION }})
     runs-on: ubuntu-latest
-    timeout-minutes: 15  # 15 minutes timeout (900 seconds) - allows for parallel test execution with pytest-timeout
+    timeout-minutes: 15
     needs: backend-lint
-    strategy:
-      fail-fast: true
-      matrix:
-        python-version: ${{ fromJSON('["3.11", "3.12"]') }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
 
-      - name: Set up Python ${{ matrix.python-version }}
+      - name: Set up Python ${{ env.RELEASE_PYTHON_VERSION }}
         uses: actions/setup-python@v6
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: ${{ env.RELEASE_PYTHON_VERSION }}
 
       - name: Install uv
         run: |
@@ -121,10 +117,10 @@ jobs:
           path: |
             ~/.cache/uv
             ~/.local/share/uv
-          key: uv-test-${{ runner.os }}-py${{ matrix.python-version }}-${{ hashFiles('backend/uv.lock') }}-${{ hashFiles('backend/pyproject.toml') }}
+          key: uv-test-${{ runner.os }}-py${{ env.RELEASE_PYTHON_VERSION }}-${{ hashFiles('backend/uv.lock') }}-${{ hashFiles('backend/pyproject.toml') }}
           restore-keys: |
-            uv-test-${{ runner.os }}-py${{ matrix.python-version }}-${{ hashFiles('backend/uv.lock') }}-
-            uv-test-${{ runner.os }}-py${{ matrix.python-version }}-
+            uv-test-${{ runner.os }}-py${{ env.RELEASE_PYTHON_VERSION }}-${{ hashFiles('backend/uv.lock') }}-
+            uv-test-${{ runner.os }}-py${{ env.RELEASE_PYTHON_VERSION }}-
 
       - name: Cache Whisper models
         if: env.CACHE_WHISPER_MODELS == 'true'
@@ -145,18 +141,15 @@ jobs:
         uses: actions/cache@v4
         with:
           path: backend/.pytest_cache
-          key: pytest-${{ runner.os }}-py${{ matrix.python-version }}-${{ hashFiles('backend/tests/**/*.py') }}
+          key: pytest-${{ runner.os }}-py${{ env.RELEASE_PYTHON_VERSION }}-${{ hashFiles('backend/tests/**/*.py') }}
           restore-keys: |
-            pytest-${{ runner.os }}-py${{ matrix.python-version }}-
+            pytest-${{ runner.os }}-py${{ env.RELEASE_PYTHON_VERSION }}-
 
       - name: Run unit tests
         working-directory: backend
         run: |
-          # Run unit tests (excluding integration tests that require running backend)
-          # Use -n auto for parallel execution (adapts to available cores)
-          # -vv: verbose output showing test names and status
-          # --durations=10: show 10 slowest tests for performance debugging
-          uv run pytest tests/test_unit.py -vv --tb=short -n auto --durations=10
+          # Sequential run, verbose: clear pass/fail per test, no duration report
+          uv run pytest tests/test_unit.py -vv --tb=short
 
   # Frontend linting and tests
   frontend-test:
