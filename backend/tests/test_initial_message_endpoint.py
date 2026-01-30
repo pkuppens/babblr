@@ -6,7 +6,7 @@ This test makes real HTTP requests to verify the endpoint works correctly.
 import logging
 
 import pytest
-from fastapi.testclient import TestClient
+from httpx import AsyncClient
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 @pytest.mark.integration
 @pytest.mark.asyncio
-async def test_initial_message_endpoint_with_payload(client: TestClient, db: AsyncSession):
+async def test_initial_message_endpoint_with_payload(async_client: AsyncClient, db: AsyncSession):
     """Test the initial message endpoint with a real payload.
 
     This test makes real HTTP requests that require Ollama to be running,
@@ -41,7 +41,7 @@ async def test_initial_message_endpoint_with_payload(client: TestClient, db: Asy
         "topic_id": "restaurant",
     }
 
-    response = client.post("/chat/initial-message", json=payload)
+    response = await async_client.post("/chat/initial-message", json=payload)
 
     # Debug: Log response if it fails
     if response.status_code != 200:
@@ -63,10 +63,11 @@ async def test_initial_message_endpoint_with_payload(client: TestClient, db: Asy
     assert messages[0].content == data["assistant_message"]
 
 
-def test_initial_message_validation_errors(client: TestClient):
+@pytest.mark.asyncio
+async def test_initial_message_validation_errors(async_client: AsyncClient):
     """Test that validation errors are returned correctly."""
     # Missing conversation_id
-    response = client.post(
+    response = await async_client.post(
         "/chat/initial-message",
         json={
             "language": "spanish",
@@ -79,7 +80,7 @@ def test_initial_message_validation_errors(client: TestClient):
     assert "detail" in errors
 
     # Missing language
-    response = client.post(
+    response = await async_client.post(
         "/chat/initial-message",
         json={
             "conversation_id": 1,
@@ -90,7 +91,7 @@ def test_initial_message_validation_errors(client: TestClient):
     assert response.status_code == 422
 
     # Missing topic_id
-    response = client.post(
+    response = await async_client.post(
         "/chat/initial-message",
         json={
             "conversation_id": 1,
@@ -103,7 +104,7 @@ def test_initial_message_validation_errors(client: TestClient):
 
 @pytest.mark.integration
 @pytest.mark.asyncio
-async def test_initial_message_restaurant_topic(client: TestClient, db: AsyncSession):
+async def test_initial_message_restaurant_topic(async_client: AsyncClient, db: AsyncSession):
     """Test initial message for restaurant topic returns relevant content."""
     conversation = Conversation(
         language="spanish",
@@ -114,7 +115,7 @@ async def test_initial_message_restaurant_topic(client: TestClient, db: AsyncSes
     await db.commit()
     await db.refresh(conversation)
 
-    response = client.post(
+    response = await async_client.post(
         "/chat/initial-message",
         json={
             "conversation_id": conversation.id,
