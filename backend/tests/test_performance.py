@@ -147,6 +147,8 @@ class TestAsyncPerfTimer:
                     raise ValueError("Test error")
 
             # Should still log the timing despite the exception
+            # Note: This assertion is outside the pytest.raises context manager, so it's reachable
+            # CodeQL may flag this as unreachable, but it's a false positive
             assert "[PERF] failing_operation - " in caplog.text
 
     @pytest.mark.asyncio
