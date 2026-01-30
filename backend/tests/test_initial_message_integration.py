@@ -8,7 +8,7 @@ This test verifies that the endpoint:
 """
 
 import pytest
-from fastapi.testclient import TestClient
+from httpx import AsyncClient
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -17,7 +17,7 @@ from app.models.models import Conversation, Message
 
 @pytest.mark.integration
 @pytest.mark.asyncio
-async def test_initial_message_creates_tutor_message(client: TestClient, db: AsyncSession):
+async def test_initial_message_creates_tutor_message(async_client: AsyncClient, db: AsyncSession):
     """Test that initial message endpoint creates a tutor message in the database."""
     # Create a conversation first
     conversation = Conversation(
@@ -30,7 +30,7 @@ async def test_initial_message_creates_tutor_message(client: TestClient, db: Asy
     await db.refresh(conversation)
 
     # Call the initial message endpoint
-    response = client.post(
+    response = await async_client.post(
         "/chat/initial-message",
         json={
             "conversation_id": conversation.id,
@@ -62,7 +62,7 @@ async def test_initial_message_creates_tutor_message(client: TestClient, db: Asy
 
 @pytest.mark.integration
 @pytest.mark.asyncio
-async def test_initial_message_restaurant_topic(client: TestClient, db: AsyncSession):
+async def test_initial_message_restaurant_topic(async_client: AsyncClient, db: AsyncSession):
     """Test that initial message for restaurant topic is contextually relevant."""
     # Create conversation with restaurant topic
     conversation = Conversation(
@@ -75,7 +75,7 @@ async def test_initial_message_restaurant_topic(client: TestClient, db: AsyncSes
     await db.refresh(conversation)
 
     # Call endpoint
-    response = client.post(
+    response = await async_client.post(
         "/chat/initial-message",
         json={
             "conversation_id": conversation.id,
@@ -109,7 +109,7 @@ async def test_initial_message_restaurant_topic(client: TestClient, db: AsyncSes
 
 @pytest.mark.integration
 @pytest.mark.asyncio
-async def test_initial_message_travel_topic(client: TestClient, db: AsyncSession):
+async def test_initial_message_travel_topic(async_client: AsyncClient, db: AsyncSession):
     """Test that initial message for travel topic is contextually relevant."""
     conversation = Conversation(
         language="spanish",
@@ -120,7 +120,7 @@ async def test_initial_message_travel_topic(client: TestClient, db: AsyncSession
     await db.commit()
     await db.refresh(conversation)
 
-    response = client.post(
+    response = await async_client.post(
         "/chat/initial-message",
         json={
             "conversation_id": conversation.id,
@@ -152,9 +152,9 @@ async def test_initial_message_travel_topic(client: TestClient, db: AsyncSession
 
 
 @pytest.mark.asyncio
-async def test_initial_message_invalid_conversation(client: TestClient, db: AsyncSession):
+async def test_initial_message_invalid_conversation(async_client: AsyncClient, db: AsyncSession):
     """Test that endpoint returns 404 for non-existent conversation."""
-    response = client.post(
+    response = await async_client.post(
         "/chat/initial-message",
         json={
             "conversation_id": 99999,
@@ -169,7 +169,7 @@ async def test_initial_message_invalid_conversation(client: TestClient, db: Asyn
 
 
 @pytest.mark.asyncio
-async def test_initial_message_invalid_topic(client: TestClient, db: AsyncSession):
+async def test_initial_message_invalid_topic(async_client: AsyncClient, db: AsyncSession):
     """Test that endpoint returns 404 for non-existent topic."""
     conversation = Conversation(
         language="spanish",
@@ -180,7 +180,7 @@ async def test_initial_message_invalid_topic(client: TestClient, db: AsyncSessio
     await db.commit()
     await db.refresh(conversation)
 
-    response = client.post(
+    response = await async_client.post(
         "/chat/initial-message",
         json={
             "conversation_id": conversation.id,
@@ -195,10 +195,10 @@ async def test_initial_message_invalid_topic(client: TestClient, db: AsyncSessio
 
 
 @pytest.mark.asyncio
-async def test_initial_message_validates_request_body(client: TestClient, db: AsyncSession):
+async def test_initial_message_validates_request_body(async_client: AsyncClient, db: AsyncSession):
     """Test that endpoint validates required fields in request body."""
     # Missing conversation_id
-    response = client.post(
+    response = await async_client.post(
         "/chat/initial-message",
         json={
             "language": "spanish",
@@ -209,7 +209,7 @@ async def test_initial_message_validates_request_body(client: TestClient, db: As
     assert response.status_code == 422  # Validation error
 
     # Missing language
-    response = client.post(
+    response = await async_client.post(
         "/chat/initial-message",
         json={
             "conversation_id": 1,
@@ -220,7 +220,7 @@ async def test_initial_message_validates_request_body(client: TestClient, db: As
     assert response.status_code == 422
 
     # Missing topic_id
-    response = client.post(
+    response = await async_client.post(
         "/chat/initial-message",
         json={
             "conversation_id": 1,
@@ -233,7 +233,9 @@ async def test_initial_message_validates_request_body(client: TestClient, db: As
 
 @pytest.mark.integration
 @pytest.mark.asyncio
-async def test_initial_message_updates_conversation_timestamp(client: TestClient, db: AsyncSession):
+async def test_initial_message_updates_conversation_timestamp(
+    async_client: AsyncClient, db: AsyncSession
+):
     """Test that generating initial message updates conversation timestamp."""
     # Create conversation with old timestamp
     from datetime import datetime, timedelta, timezone
@@ -252,7 +254,7 @@ async def test_initial_message_updates_conversation_timestamp(client: TestClient
     original_updated_at = conversation.updated_at
 
     # Generate initial message
-    response = client.post(
+    response = await async_client.post(
         "/chat/initial-message",
         json={
             "conversation_id": conversation.id,
@@ -271,7 +273,7 @@ async def test_initial_message_updates_conversation_timestamp(client: TestClient
 
 @pytest.mark.integration
 @pytest.mark.asyncio
-async def test_initial_message_different_languages(client: TestClient, db: AsyncSession):
+async def test_initial_message_different_languages(async_client: AsyncClient, db: AsyncSession):
     """Test that initial message works for different languages."""
     languages = ["spanish", "italian", "german", "french", "dutch"]
 
@@ -285,7 +287,7 @@ async def test_initial_message_different_languages(client: TestClient, db: Async
         await db.commit()
         await db.refresh(conversation)
 
-        response = client.post(
+        response = await async_client.post(
             "/chat/initial-message",
             json={
                 "conversation_id": conversation.id,
@@ -306,7 +308,9 @@ async def test_initial_message_different_languages(client: TestClient, db: Async
 
 @pytest.mark.integration
 @pytest.mark.asyncio
-async def test_initial_message_different_difficulty_levels(client: TestClient, db: AsyncSession):
+async def test_initial_message_different_difficulty_levels(
+    async_client: AsyncClient, db: AsyncSession
+):
     """Test that initial message adapts to different difficulty levels."""
     levels = ["A1", "A2", "B1", "B2"]
 
@@ -320,7 +324,7 @@ async def test_initial_message_different_difficulty_levels(client: TestClient, d
         await db.commit()
         await db.refresh(conversation)
 
-        response = client.post(
+        response = await async_client.post(
             "/chat/initial-message",
             json={
                 "conversation_id": conversation.id,
