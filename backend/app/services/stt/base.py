@@ -36,7 +36,7 @@ class STTService(Protocol):
     @property
     def name(self) -> str:
         """Name of the STT service implementation."""
-        ...
+        ...  # Protocol method - ellipsis required for abstract method definition
 
     async def transcribe(
         self,
@@ -57,7 +57,7 @@ class STTService(Protocol):
         Raises:
             STTError: If transcription fails
         """
-        ...
+        ...  # Protocol method - ellipsis required for abstract method definition
 
     async def health_check(self) -> bool:
         """Check if STT service is available.
@@ -65,11 +65,11 @@ class STTService(Protocol):
         Returns:
             True if service is healthy, False otherwise
         """
-        ...
+        ...  # Protocol method - ellipsis required for abstract method definition
 
     async def close(self) -> None:
         """Close resources (HTTP clients, process pools, etc.)."""
-        ...
+        ...  # Protocol method - ellipsis required for abstract method definition
 
 
 class STTError(Exception):

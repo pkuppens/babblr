@@ -208,8 +208,10 @@ async def chat(request: ChatRequest, db: AsyncSession = Depends(get_db)):
                     request.user_message, request.language, request.difficulty_level
                 )
         else:
+            # Sanitize user input for logging (difficulty_level is validated but still user-provided)
+            sanitized_level = request.difficulty_level.replace("\n", "\\n").replace("\r", "\\r")
             logger.debug(
-                f"Skipping correction: difficulty_level={request.difficulty_level}, "
+                f"Skipping correction: difficulty_level={sanitized_level}, "
                 f"max_level={settings.correction_max_level}"
             )
 
