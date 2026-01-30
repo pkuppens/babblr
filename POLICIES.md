@@ -64,6 +64,88 @@ Types:
 
 Example: `#123: feat: add user authentication endpoint`
 
+### Branch Lifecycle Management
+
+**CRITICAL**: Follow this workflow to avoid merge conflicts and maintain clean history.
+
+#### Before Creating a Pull Request
+
+Minimize differences with main to reduce merge conflicts:
+
+```bash
+# 1. Ensure your local main is up to date
+git checkout main
+git pull origin main
+
+# 2. Switch back to your feature branch
+git checkout feature/123-your-feature
+
+# 3. Rebase onto latest main (rewrites your commits on top of main)
+git rebase main
+
+# 4. If conflicts occur, resolve them, then:
+git add .
+git rebase --continue
+
+# 5. Force push to update your PR (only do this BEFORE merge)
+git push --force-with-lease origin feature/123-your-feature
+```
+
+**Important**: Only rebase/force-push BEFORE the PR is merged. Never rebase after merging.
+
+#### After Pull Request is Merged
+
+Clean up immediately to prevent confusion:
+
+```bash
+# 1. Switch to main
+git checkout main
+
+# 2. Pull the merged changes
+git pull origin main
+
+# 3. Delete local feature branch
+git branch -d feature/123-your-feature
+
+# 4. Delete remote feature branch (if not auto-deleted by GitHub)
+git push origin --delete feature/123-your-feature
+
+# 5. Prune stale remote-tracking branches
+git fetch --prune
+```
+
+**Recommended**: Use GitHub CLI to merge and delete in one command:
+
+```bash
+gh pr merge <PR-number> --squash --delete-branch
+```
+
+#### Common Mistakes to Avoid
+
+❌ **Never rebase after merging** - The PR is already merged; rebasing creates duplicate commits with different SHAs
+❌ **Never work on outdated main** - Always `git pull` before creating new branches
+❌ **Never leave merged branches** - Delete them immediately to avoid confusion
+❌ **Never force-push after merge** - This can break history for others
+
+✅ **Always keep local main in sync** - Run `git checkout main && git pull` regularly
+✅ **Always rebase before creating PR** - Ensures clean, conflict-free merge
+✅ **Always delete branches after merge** - Keeps repository clean
+
+#### Quick Reference
+
+```bash
+# Before PR: Update feature branch with latest main
+git checkout main && git pull
+git checkout feature/branch && git rebase main
+git push --force-with-lease
+
+# After merge: Clean up
+git checkout main && git pull
+git branch -d feature/branch
+git push origin --delete feature/branch
+git fetch --prune
+```
+
 ## Pull Requests
 
 ### Requirements
