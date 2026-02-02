@@ -9,5 +9,5 @@ sqlalchemy==2.0.46
 aiosqlite==0.22.1
 pydantic==2.12.5
 pydantic-settings==2.12.0
-edge-tts==6.1.18
+edge-tts==7.2.7
 tzdata==2025.3
