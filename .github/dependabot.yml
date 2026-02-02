@@ -2,9 +2,11 @@
 # See: https://docs.github.com/en/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
 #
 # Review Strategy:
-# - All dependency updates are reviewed by @pkuppens before merging
-# - Updates are evaluated for: breaking changes, security implications, test compatibility
-# - Timing of merges is coordinated with development cycles
+# - Maximum simplification: ONE PR per ecosystem weekly (3 PRs total)
+# - All backend updates → 1 PR on Monday 03:00 UTC
+# - All frontend updates → 1 PR on Monday 03:00 UTC
+# - All GitHub Actions updates → 1 PR on Monday 03:00 UTC
+# - Updates reviewed and manually merged with attribution to @pkuppens
 # - Failed/problematic updates are deferred and tracked in CHANGELOG.md
 
 version: 2
@@ -17,7 +19,7 @@ updates:
       day: "monday"
       time: "03:00"
       timezone: "UTC"
-    open-pull-requests-limit: 10
+    open-pull-requests-limit: 1
     commit-message:
       prefix: "deps(backend)"
       prefix-development: "deps-dev(backend)"
@@ -30,20 +32,10 @@ updates:
     assignees:
       - "pkuppens"
     groups:
-      # Group all patch updates together to reduce PR noise
-      patch-updates:
-        update-types:
-          - "patch"
-      # Group minor updates together
-      minor-updates:
-        update-types:
-          - "minor"
-      # Group development dependencies
-      dev-dependencies:
-        dependency-type: "development"
-        update-types:
-          - "minor"
-          - "patch"
+      # Group ALL backend updates into a single weekly PR
+      weekly-updates:
+        patterns:
+          - "*"
 
   # Node.js dependencies (frontend)
   - package-ecosystem: "npm"
@@ -53,7 +45,7 @@ updates:
       day: "monday"
       time: "03:00"
       timezone: "UTC"
-    open-pull-requests-limit: 10
+    open-pull-requests-limit: 1
     commit-message:
       prefix: "deps(frontend)"
       prefix-development: "deps-dev(frontend)"
@@ -66,46 +58,10 @@ updates:
     assignees:
       - "pkuppens"
     groups:
-      # Group TypeScript/ESLint tools together (they update in sync)
-      typescript-eslint:
+      # Group ALL frontend updates into a single weekly PR
+      weekly-updates:
         patterns:
-          - "@typescript-eslint/*"
-          - "typescript-eslint"
-          - "eslint*"
-      # Group React ecosystem updates
-      react-ecosystem:
-        patterns:
-          - "react"
-          - "react-dom"
-          - "@types/react*"
-      # Group testing libraries
-      testing:
-        patterns:
-          - "@testing-library/*"
-          - "vitest"
-          - "@vitest/*"
-          - "jest"
-      # Group all patch updates
-      patch-updates:
-        update-types:
-          - "patch"
-        exclude-patterns:
-          - "@typescript-eslint/*"
-          - "typescript-eslint"
-          - "eslint*"
-          - "react*"
-          - "@types/react*"
-          - "@testing-library/*"
-      # Group minor dev dependency updates
-      dev-minor-updates:
-        dependency-type: "development"
-        update-types:
-          - "minor"
-        exclude-patterns:
-          - "@typescript-eslint/*"
-          - "typescript-eslint"
-          - "eslint*"
-          - "@testing-library/*"
+          - "*"
     # Ignore patterns for problematic updates
     ignore:
       # React major versions need careful migration
@@ -134,7 +90,7 @@ updates:
     assignees:
       - "pkuppens"
     groups:
-      # Group all GitHub Actions updates together
-      github-actions:
+      # Group ALL GitHub Actions updates into a single weekly PR
+      weekly-updates:
         patterns:
           - "*"
