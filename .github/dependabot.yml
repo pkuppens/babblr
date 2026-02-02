@@ -1,5 +1,11 @@
 # Dependabot configuration for automated dependency updates
 # See: https://docs.github.com/en/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
+#
+# Review Strategy:
+# - All dependency updates are reviewed by @pkuppens before merging
+# - Updates are evaluated for: breaking changes, security implications, test compatibility
+# - Timing of merges is coordinated with development cycles
+# - Failed/problematic updates are deferred and tracked in CHANGELOG.md
 
 version: 2
 updates:
