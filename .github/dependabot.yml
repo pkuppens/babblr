@@ -15,12 +15,12 @@ updates:
     schedule:
       interval: "weekly"
       day: "monday"
-      time: "00:00"
+      time: "03:00"
       timezone: "UTC"
     open-pull-requests-limit: 10
     commit-message:
-      prefix: "deps"
-      prefix-development: "deps-dev"
+      prefix: "deps(backend)"
+      prefix-development: "deps-dev(backend)"
       include: "scope"
     labels:
       - "dependencies"
@@ -29,6 +29,21 @@ updates:
       - "pkuppens"
     assignees:
       - "pkuppens"
+    groups:
+      # Group all patch updates together to reduce PR noise
+      patch-updates:
+        update-types:
+          - "patch"
+      # Group minor updates together
+      minor-updates:
+        update-types:
+          - "minor"
+      # Group development dependencies
+      dev-dependencies:
+        dependency-type: "development"
+        update-types:
+          - "minor"
+          - "patch"
 
   # Node.js dependencies (frontend)
   - package-ecosystem: "npm"
@@ -36,12 +51,12 @@ updates:
     schedule:
       interval: "weekly"
       day: "monday"
-      time: "00:00"
+      time: "03:00"
       timezone: "UTC"
     open-pull-requests-limit: 10
     commit-message:
-      prefix: "deps"
-      prefix-development: "deps-dev"
+      prefix: "deps(frontend)"
+      prefix-development: "deps-dev(frontend)"
       include: "scope"
     labels:
       - "dependencies"
@@ -50,6 +65,54 @@ updates:
       - "pkuppens"
     assignees:
       - "pkuppens"
+    groups:
+      # Group TypeScript/ESLint tools together (they update in sync)
+      typescript-eslint:
+        patterns:
+          - "@typescript-eslint/*"
+          - "typescript-eslint"
+          - "eslint*"
+      # Group React ecosystem updates
+      react-ecosystem:
+        patterns:
+          - "react"
+          - "react-dom"
+          - "@types/react*"
+      # Group testing libraries
+      testing:
+        patterns:
+          - "@testing-library/*"
+          - "vitest"
+          - "@vitest/*"
+          - "jest"
+      # Group all patch updates
+      patch-updates:
+        update-types:
+          - "patch"
+        exclude-patterns:
+          - "@typescript-eslint/*"
+          - "typescript-eslint"
+          - "eslint*"
+          - "react*"
+          - "@types/react*"
+          - "@testing-library/*"
+      # Group minor dev dependency updates
+      dev-minor-updates:
+        dependency-type: "development"
+        update-types:
+          - "minor"
+        exclude-patterns:
+          - "@typescript-eslint/*"
+          - "typescript-eslint"
+          - "eslint*"
+          - "@testing-library/*"
+    # Ignore patterns for problematic updates
+    ignore:
+      # React major versions need careful migration
+      - dependency-name: "react"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "react-dom"
+        update-types: ["version-update:semver-major"]
 
   # GitHub Actions dependencies
   - package-ecosystem: "github-actions"
@@ -57,7 +120,7 @@ updates:
     schedule:
       interval: "weekly"
       day: "monday"
-      time: "00:00"
+      time: "03:00"
       timezone: "UTC"
     open-pull-requests-limit: 5
     commit-message:
@@ -70,3 +133,8 @@ updates:
       - "pkuppens"
     assignees:
       - "pkuppens"
+    groups:
+      # Group all GitHub Actions updates together
+      github-actions:
+        patterns:
+          - "*"
