@@ -40,14 +40,14 @@
 | [Metric name] | [Baseline] | [Goal] | [How to measure] |
 
 ### Strategic Alignment
-[How does this feature align with Babblr's mission, vision, and product principles? Reference [00-vision/mission-vision.md](../00-vision/mission-vision.md)]
+[How does this feature align with Babblr's mission, vision, and product principles? Reference [00-vision/mission-vision.md](00-vision/mission-vision.md)]
 
 ---
 
 ## 2. Background and Context
 
 ### User Need
-[What user need does this address? Reference relevant stakeholder docs in [01-stakeholders/](../01-stakeholders/)]
+[What user need does this address? Reference relevant stakeholder docs in [01-stakeholders/](01-stakeholders/)]
 
 ### User Research
 [Summarize any user research, interviews, surveys, or feedback that informed this feature]
@@ -76,7 +76,7 @@
 - Then [expected result]
 
 ### Additional User Stories
-[List all related user stories. Reference [02-user-stories/](../02-user-stories/) if already documented there]
+[List all related user stories. Reference [02-user-stories/](02-user-stories/) if already documented there]
 
 1. Story ID: [Link to story in backlog]
 2. Story ID: [Link to story in backlog]
@@ -140,7 +140,7 @@ graph TD
 ## 6. Technical Design
 
 ### Architecture
-[High-level technical approach. Reference [06-technical/architecture-requirements.md](../06-technical/architecture-requirements.md)]
+[High-level technical approach. Reference [06-technical/architecture-requirements.md](06-technical/architecture-requirements.md)]
 
 ### API Specifications
 [Define API endpoints, request/response schemas]
@@ -164,7 +164,7 @@ graph TD
 ```
 
 ### Data Model
-[Describe database schema changes. Reference [docs/DATABASE_SCHEMA.md](../../DATABASE_SCHEMA.md) for existing schema]
+[Describe database schema changes. Reference [docs/DATABASE_SCHEMA.md](../DATABASE_SCHEMA.md) for existing schema]
 
 **New Tables**:
 ```sql
@@ -179,17 +179,17 @@ CREATE TABLE [table_name] (
 [Describe any changes to existing tables]
 
 ### External Dependencies
-[List external APIs, libraries, or services required. Reference [04-requirements/integration-requirements.md](../04-requirements/integration-requirements.md)]
+[List external APIs, libraries, or services required. Reference [04-requirements/integration-requirements.md](04-requirements/integration-requirements.md)]
 
 | Dependency | Purpose | Version | Documentation |
 |------------|---------|---------|---------------|
 | [Library/API] | [Why needed] | [Version] | [Link] |
 
 ### Security Considerations
-[How will this feature handle authentication, authorization, data privacy? Reference [06-technical/security-requirements.md](../06-technical/security-requirements.md)]
+[How will this feature handle authentication, authorization, data privacy? Reference [06-technical/security-requirements.md](06-technical/security-requirements.md)]
 
 ### Performance Considerations
-[Expected load, response times, scalability. Reference [06-technical/performance-requirements.md](../06-technical/performance-requirements.md)]
+[Expected load, response times, scalability. Reference [06-technical/performance-requirements.md](06-technical/performance-requirements.md)]
 
 ---
 
@@ -205,6 +205,7 @@ CREATE TABLE [table_name] (
 [What user flows need E2E coverage?]
 
 ### Test Cases
+
 | Test Case ID | Description | Expected Result | Priority |
 |--------------|-------------|-----------------|----------|
 | TC-[X.1] | [Test scenario] | [Expected outcome] | [P0/P1/P2] |
