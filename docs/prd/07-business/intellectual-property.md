@@ -38,6 +38,7 @@ IP protection strategy (copyrights, trademarks, patents).
 ## Third-Party IP
 
 ### Dependencies
+
 | Library | License | Usage |
 |---------|---------|-------|
 | OpenAI Whisper | MIT | STT |
