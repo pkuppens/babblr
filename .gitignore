@@ -251,3 +251,4 @@ docker/.env
 docker/.env.local
 docker/.env.*.local
 
+/nul
