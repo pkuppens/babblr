@@ -44,15 +44,18 @@ runs:
         case "${{ inputs.test-type }}" in
           unit)
             # Parallel with 2 workers (optimal for CI), verbose output for progress tracking
-            uv run pytest tests/test_unit.py -vv --tb=short -n 2
+            # --timeout=120: kill hung tests after 2 min (guardrail against programming errors)
+            uv run pytest tests/test_unit.py -vv --tb=short -n 2 --timeout=120
             ;;
           integration)
             # Parallel with 2 workers, verbose output for progress tracking
-            uv run pytest tests/test_integration.py -vv --tb=short -n 2
+            # --timeout=120: kill hung tests after 2 min (guardrail against programming errors)
+            uv run pytest tests/test_integration.py -vv --tb=short -n 2 --timeout=120
             ;;
           llm_providers)
             # Parallel with 2 workers, verbose output for progress tracking
-            uv run pytest tests/test_llm_providers.py -vv --tb=short -n 2
+            # --timeout=120: kill hung tests after 2 min (guardrail against programming errors)
+            uv run pytest tests/test_llm_providers.py -vv --tb=short -n 2 --timeout=120
             ;;
           *)
             echo "Unknown test type: ${{ inputs.test-type }}"
