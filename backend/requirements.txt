@@ -1,7 +1,7 @@
-fastapi==0.128.0
+fastapi==0.128.5
 uvicorn[standard]==0.40.0
 python-multipart==0.0.22
-anthropic==0.77.0
+anthropic==0.79.0
 openai-whisper==20250625
 imageio-ffmpeg==0.6.0
 python-dotenv==1.2.1
