@@ -82,6 +82,23 @@ pre-commit run --all-files
 git add -A && git commit -m "#<issue>: chore: apply pre-commit fixes"
 ```
 
+## Branch Cleanup
+
+```bash
+# Validate what can be cleaned (dry-run)
+./scripts/cleanup-merged-branches.sh
+
+# Execute cleanup
+./scripts/cleanup-merged-branches.sh --execute
+```
+
+Cleans up:
+- Merged local and remote branches
+- GitHub Actions runs for deleted branches
+- Superseded workflow runs
+
+See `/cleanup` command for details.
+
 ## Safety Rules
 
 - NEVER commit directly to `main`
