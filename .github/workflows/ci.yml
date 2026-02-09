@@ -148,9 +148,9 @@ jobs:
       - name: Run unit tests
         working-directory: backend
         run: |
-          # Parallel run with 2 workers (optimal for CI), verbose output for progress tracking
-          # --timeout=120: kill hung tests after 2 min (guardrail against programming errors)
-          uv run pytest tests/test_unit.py -vv --tb=short -n 2 --timeout=120
+          # Sequential run with verbose output for progress tracking
+          # (parallelization with -n causes pytest-xdist to hang in CI environment)
+          uv run pytest tests/test_unit.py -vv --tb=short
 
   # Frontend linting and tests
   frontend-test:
