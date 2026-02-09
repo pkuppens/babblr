@@ -212,7 +212,7 @@ class TestConversationEndpoints:
 class TestChatEndpoint:
     """Test POST /chat endpoint - verify conversation flow."""
 
-    @patch("app.services.conversation_service.get_conversation_service")
+    @patch("app.routes.chat.get_conversation_service")
     def test_chat_endpoint_structure(self, mock_service, client):
         """Test /chat endpoint accepts correct request structure."""
         # Create conversation first
@@ -224,7 +224,7 @@ class TestChatEndpoint:
         # Mock the conversation service with correct methods
         mock_conv_service = AsyncMock()
         mock_conv_service.generate_response = AsyncMock(return_value="Hola, ¿cómo estás?")
-        mock_conv_service.correct_text = AsyncMock(return_value=("Hola", {}))
+        mock_conv_service.correct_text = AsyncMock(return_value=("Hola", []))
         mock_service.return_value = mock_conv_service
 
         # Send chat message
@@ -241,7 +241,7 @@ class TestChatEndpoint:
         # Should succeed with mocked service
         assert response.status_code == 200
 
-    @patch("app.services.conversation_service.get_conversation_service")
+    @patch("app.routes.chat.get_conversation_service")
     def test_chat_endpoint_response_structure(self, mock_service, client):
         """Test chat response has expected fields."""
         # Create conversation
@@ -253,7 +253,7 @@ class TestChatEndpoint:
         # Mock the conversation service with correct methods
         mock_conv_service = AsyncMock()
         mock_conv_service.generate_response = AsyncMock(return_value="Bonjour, comment allez-vous?")
-        mock_conv_service.correct_text = AsyncMock(return_value=("Bonjour", {}))
+        mock_conv_service.correct_text = AsyncMock(return_value=("Bonjour", []))
         mock_service.return_value = mock_conv_service
 
         response = client.post(
