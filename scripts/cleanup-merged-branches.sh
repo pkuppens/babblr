@@ -228,8 +228,9 @@ print_info "STEP 4: Checking for superseded workflow runs..."
 print_info "Strategy: Keep only most recent completed run per workflow+branch combination"
 
 # Get all workflow runs and save to temp file
-# Use current directory for temp file to avoid path translation issues between Git Bash and Python
-TEMP_RUNS_FILE=".cleanup_runs_temp_$$.json"
+# Use a temp file in the current directory to avoid Git Bash/Windows Python path translation issues
+# The file will be cleaned up at the end of the script
+TEMP_RUNS_FILE="cleanup_runs_temp_$$.json"
 gh run list --limit 1000 --json databaseId,status,conclusion,workflowName,headBranch,createdAt > "$TEMP_RUNS_FILE"
 
 # Find runs to keep (most recent per workflow+branch)
