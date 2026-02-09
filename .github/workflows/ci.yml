@@ -148,7 +148,8 @@ jobs:
       - name: Run unit tests
         working-directory: backend
         run: |
-          # Sequential run, verbose: clear pass/fail per test, no duration report
+          # Sequential run with verbose output for progress tracking
+          # (parallelization with -n causes pytest-xdist to hang in CI environment)
           uv run pytest tests/test_unit.py -vv --tb=short
 
   # Frontend linting and tests

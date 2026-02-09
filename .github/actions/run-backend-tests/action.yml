@@ -43,13 +43,15 @@ runs:
       run: |
         case "${{ inputs.test-type }}" in
           unit)
-            # Sequential, verbose: clear pass/fail per test
+            # Sequential run with verbose output (parallel -n causes pytest-xdist to hang in CI)
             uv run pytest tests/test_unit.py -vv --tb=short
             ;;
           integration)
+            # Sequential run with verbose output (parallel -n causes pytest-xdist to hang in CI)
             uv run pytest tests/test_integration.py -vv --tb=short
             ;;
           llm_providers)
+            # Sequential run with verbose output (parallel -n causes pytest-xdist to hang in CI)
             uv run pytest tests/test_llm_providers.py -vv --tb=short
             ;;
           *)

@@ -60,13 +60,18 @@ Babblr is a desktop language learning app for conversational practice with an AI
 uv run uvicorn app.main:app --reload  # Or directly
 
 # Run tests
-uv run pytest tests/test_unit.py -v           # Unit tests (no server needed)
-uv run pytest tests/test_llm_providers.py -v  # LLM provider tests
-uv run pytest tests/test_integration.py -v    # Integration tests (server must be running)
-uv run pytest tests/ -v                        # All tests
+uv run pytest tests/test_unit.py -vv --tb=short -n 8           # Unit tests (no server needed)
+uv run pytest tests/test_llm_providers.py -vv --tb=short -n 8  # LLM provider tests
+uv run pytest tests/test_integration.py -vv --tb=short -n 8    # Integration tests (server must be running)
+uv run pytest tests/ -vv --tb=short -n 8                        # All tests
 
-# Single test
-uv run pytest tests/test_unit.py::test_function_name -v
+# Single test (no parallelization needed)
+uv run pytest tests/test_unit.py::test_function_name -vv --tb=short
+
+# Test flags explained:
+# -vv: Very verbose output (shows test names and progress)
+# --tb=short: Shorter traceback format for failed tests
+# -n 8: Run tests in parallel using 8 workers (optimal for local development)
 
 # Linting and formatting
 uv run ruff check .           # Check
@@ -291,7 +296,7 @@ cd backend
 uv run ruff format --check .
 uv run ruff check .
 uv run pyright
-uv run pytest tests/test_unit.py -v --tb=short -n auto
+uv run pytest tests/test_unit.py -vv --tb=short -n 8
 
 # Frontend
 cd frontend

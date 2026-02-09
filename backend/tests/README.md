@@ -12,8 +12,8 @@ Unit tests don't require the backend to be running:
 # Using pytest directly
 pytest tests/test_unit.py
 
-# Or with verbose output
-pytest tests/test_unit.py -v
+# With verbose output and parallelization (recommended)
+pytest tests/test_unit.py -vv --tb=short -n 8
 ```
 
 ### Integration Tests
@@ -31,7 +31,7 @@ python main.py
 # Terminal 2: Run integration tests
 cd backend
 source venv/bin/activate
-pytest tests/test_integration.py -v
+pytest tests/test_integration.py -vv --tb=short -n 8
 ```
 
 ### All Tests
@@ -40,17 +40,17 @@ Run all tests (unit + integration):
 
 ```bash
 # Make sure backend is running first!
-pytest tests/ -v
+pytest tests/ -vv --tb=short -n 8
 ```
 
 ### Run Tests by Marker
 
 ```bash
 # Only integration tests
-pytest tests/ -m integration -v
+pytest tests/ -m integration -vv --tb=short -n 8
 
 # Only unit tests (exclude integration)
-pytest tests/ -m "not integration" -v
+pytest tests/ -m "not integration" -vv --tb=short -n 8
 ```
 
 ### Manual Live API Check (Not a Pytest Test)
@@ -99,15 +99,22 @@ ensure you installed the dev dependencies (so `pytest-asyncio` is available) and
 
 ## Running tests in parallel
 
-You can run tests in parallel using `pytest-xdist`:
+You can run tests in parallel using `pytest-xdist` **for local development only**:
 
 ```bash
-# Use one worker per CPU core (CI / powerful machines)
-pytest -n auto
+# Recommended for local development (high-end PC)
+pytest -n 8 -vv --tb=short
 
-# Use a fixed number of workers (safer when tests load heavy resources)
-pytest -n 2
-pytest -n 4
+# Alternative: Use one worker per CPU core (NOT recommended - can lock system)
+pytest -n auto  # Avoid this - spawns too many workers
 ```
 
-Pre-commit runs backend tests with `-n 2` (not `-n auto`) because some unit tests load PyTorch and the Whisper model. Using one worker per CPU can spawn many processes each loading a model and lock the system.
+**Why not `-n auto`?** Some unit tests load PyTorch and the Whisper model. Using one worker per CPU core can spawn many processes, each loading a model, which can overwhelm memory and lock up the system.
+
+**Why not use `-n` in CI?** pytest-xdist hangs in GitHub Actions environment without producing any output. CI runs tests sequentially for reliability.
+
+**Recommended settings:**
+- **Local development**: `-n 8` provides good parallelization without overwhelming resources
+- **GitHub Actions**: Sequential (no `-n` flag) for stability
+- **Pre-commit hooks**: `-n 2` with `--timeout=120` to catch hung tests
+- **Verbosity flags**: `-vv --tb=short` shows test progress and concise failure info
