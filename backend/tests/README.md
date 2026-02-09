@@ -12,8 +12,8 @@ Unit tests don't require the backend to be running:
 # Using pytest directly
 pytest tests/test_unit.py
 
-# Or with verbose output
-pytest tests/test_unit.py -v
+# With verbose output and parallelization (recommended)
+pytest tests/test_unit.py -vv --tb=short -n 8
 ```
 
 ### Integration Tests
@@ -31,7 +31,7 @@ python main.py
 # Terminal 2: Run integration tests
 cd backend
 source venv/bin/activate
-pytest tests/test_integration.py -v
+pytest tests/test_integration.py -vv --tb=short -n 8
 ```
 
 ### All Tests
@@ -40,17 +40,17 @@ Run all tests (unit + integration):
 
 ```bash
 # Make sure backend is running first!
-pytest tests/ -v
+pytest tests/ -vv --tb=short -n 8
 ```
 
 ### Run Tests by Marker
 
 ```bash
 # Only integration tests
-pytest tests/ -m integration -v
+pytest tests/ -m integration -vv --tb=short -n 8
 
 # Only unit tests (exclude integration)
-pytest tests/ -m "not integration" -v
+pytest tests/ -m "not integration" -vv --tb=short -n 8
 ```
 
 ### Manual Live API Check (Not a Pytest Test)
@@ -102,12 +102,19 @@ ensure you installed the dev dependencies (so `pytest-asyncio` is available) and
 You can run tests in parallel using `pytest-xdist`:
 
 ```bash
-# Use one worker per CPU core (CI / powerful machines)
-pytest -n auto
+# Recommended for local development (high-end PC)
+pytest -n 8 -vv --tb=short
 
-# Use a fixed number of workers (safer when tests load heavy resources)
-pytest -n 2
-pytest -n 4
+# For CI environments (GitHub Actions)
+pytest -n 2 -vv --tb=short
+
+# Alternative: Use one worker per CPU core (NOT recommended - can lock system)
+pytest -n auto  # Avoid this - spawns too many workers
 ```
 
-Pre-commit runs backend tests with `-n 2` (not `-n auto`) because some unit tests load PyTorch and the Whisper model. Using one worker per CPU can spawn many processes each loading a model and lock the system.
+**Why not `-n auto`?** Some unit tests load PyTorch and the Whisper model. Using one worker per CPU core can spawn many processes, each loading a model, which can overwhelm memory and lock up the system.
+
+**Recommended settings:**
+- **Local development**: `-n 8` provides good parallelization without overwhelming resources
+- **GitHub Actions**: `-n 2` is appropriate for CI runner resources
+- **Verbosity flags**: `-vv --tb=short` shows test progress and concise failure info

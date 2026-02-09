@@ -148,8 +148,8 @@ jobs:
       - name: Run unit tests
         working-directory: backend
         run: |
-          # Sequential run, verbose: clear pass/fail per test, no duration report
-          uv run pytest tests/test_unit.py -vv --tb=short
+          # Parallel run with 2 workers (optimal for CI), verbose output for progress tracking
+          uv run pytest tests/test_unit.py -vv --tb=short -n 2
 
   # Frontend linting and tests
   frontend-test:

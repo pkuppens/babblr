@@ -43,14 +43,16 @@ runs:
       run: |
         case "${{ inputs.test-type }}" in
           unit)
-            # Sequential, verbose: clear pass/fail per test
-            uv run pytest tests/test_unit.py -vv --tb=short
+            # Parallel with 2 workers (optimal for CI), verbose output for progress tracking
+            uv run pytest tests/test_unit.py -vv --tb=short -n 2
             ;;
           integration)
-            uv run pytest tests/test_integration.py -vv --tb=short
+            # Parallel with 2 workers, verbose output for progress tracking
+            uv run pytest tests/test_integration.py -vv --tb=short -n 2
             ;;
           llm_providers)
-            uv run pytest tests/test_llm_providers.py -vv --tb=short
+            # Parallel with 2 workers, verbose output for progress tracking
+            uv run pytest tests/test_llm_providers.py -vv --tb=short -n 2
             ;;
           *)
             echo "Unknown test type: ${{ inputs.test-type }}"
