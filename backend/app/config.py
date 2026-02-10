@@ -8,7 +8,7 @@ class Settings(BaseSettings):
     """Application settings loaded from environment variables."""
 
     # LLM Provider selection (runtime swappable)
-    llm_provider: str = "ollama"  # "ollama", "claude", "gemini", "mock"
+    llm_provider: str = "ollama"  # "ollama", "claude", "gemini", "openai", "mock"
 
     # Ollama settings (MVP primary)
     ollama_base_url: str = "http://localhost:11434"
@@ -25,7 +25,7 @@ class Settings(BaseSettings):
     google_api_key: str = ""
     gemini_model: str = "gemini-2.0-flash"  # or gemini-1.5-flash-latest, gemini-1.5-pro
 
-    # OpenAI settings (for future BYS support)
+    # OpenAI settings (for future BYOK support)
     openai_api_key: str = ""
     openai_model: str = "gpt-4o-mini"
 
