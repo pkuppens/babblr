@@ -89,8 +89,8 @@ def main():
     print(f"[DONE] Exported {total_rows} total rows to {args.output_dir}")
     print()
     print("Next steps:")
-    print("  1. Upload Parquet files to Databricks DBFS:")
-    print("     /FileStore/babblr/bronze/")
+    print("  1. Upload Parquet files to Unity Catalog Volume:")
+    print("     /Volumes/<catalog>/babblr/bronze/")
     print("  2. Run notebook 01_bronze_layer.py to create Delta tables")
 
     return 0

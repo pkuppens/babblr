@@ -474,7 +474,7 @@ def main():
 
     print()
     print("Next steps:")
-    print("  1. Upload files to Databricks DBFS: /FileStore/babblr/bronze/")
+    print("  1. Upload files to Unity Catalog Volume: /Volumes/<catalog>/babblr/bronze/")
     print("  2. Run notebook 01_bronze_layer.py")
 
 
