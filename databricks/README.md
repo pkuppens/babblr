@@ -271,17 +271,17 @@ The tutorial helps answer these business questions:
 
 ### "Public DBFS root is disabled" Error
 
-Community Edition restricts some storage paths. Solutions:
+Free Edition restricts DBFS root storage paths. Solutions:
 
-1. **Use Volumes** (recommended) - see Step 2.4 above
+1. **Use Unity Catalog Volumes** (recommended) - see Step 2.4 above
 2. **Use /tmp/** - Upload to `/tmp/babblr/bronze/` and update the notebook path
 3. **Use notebook upload** - Click the paperclip icon in the notebook to upload files
 
-### Cluster Won't Start
+### Serverless Compute Issues
 
-- Community Edition clusters auto-terminate after 2 hours of inactivity
-- Click "Start" to restart a terminated cluster
-- If it fails, try creating a new cluster
+- Free Edition uses serverless compute (no manual cluster management)
+- If compute disconnects, click **Connect** → **Serverless** to reconnect
+- Daily usage quota resets the next day if exceeded
 
 ### Data Generation Produces Same Data
 
