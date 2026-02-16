@@ -2,15 +2,13 @@
 
 ## What Exists
 
-### 1. Branch and Workflow Cleanup Script
+### 1. Branch Cleanup Script
 **File**: `scripts/cleanup-merged-branches.sh`
 
-A comprehensive bash script that:
-- Identifies merged local and remote branches
-- Finds GitHub Actions runs for deleted branches
-- Identifies superseded workflow runs
-- Provides dry-run validation mode (default)
-- Executes cleanup with `--execute` flag
+Cleans merged branches only (workflow runs handled by cleanup-github-actions.sh):
+- Local and remote branches merged into main
+- Dry-run by default, `--execute` to run
+- Options: `--local-only`, `--remote-only`
 
 ### 2. Workflow Run Cleanup Script
 **File**: `scripts/cleanup-github-actions.sh`

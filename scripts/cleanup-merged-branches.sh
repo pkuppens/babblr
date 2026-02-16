@@ -1,340 +1,237 @@
 #!/bin/bash
 # cleanup-merged-branches.sh
-# Cleans up merged git branches and their GitHub Actions workflow runs
+# Cleans up branches that have been merged into the main branch
+#
+# Features:
+# 1. Deletes local branches that have been merged into main
+# 2. Deletes remote branches that have been merged into main
+# 3. Protects important branches (main, master, develop, etc.)
+# 4. Works both locally and in GitHub Actions environment
 #
 # Usage:
-#   ./cleanup-merged-branches.sh                    # Dry-run mode (validation)
-#   ./cleanup-merged-branches.sh --execute          # Execute cleanup
-#   ./cleanup-merged-branches.sh --help             # Show help
+#   ./cleanup-merged-branches.sh              # Dry-run (show what would be cleaned)
+#   ./cleanup-merged-branches.sh --execute    # Execute cleanup
+#   ./cleanup-merged-branches.sh --local-only # Only clean local branches
+#   ./cleanup-merged-branches.sh --remote-only# Only clean remote branches
+#   ./cleanup-merged-branches.sh --help       # Show help
+#
+# Workflow run cleanup: use cleanup-github-actions.sh (no overlap)
+# Based on: pkuppens/on_prem_rag
 
 set -e
 
-# ASCII-only output per CLAUDE.md
 DRY_RUN=true
+CLEAN_LOCAL=true
+CLEAN_REMOTE=true
 MAIN_BRANCH="main"
-PROTECTED_BRANCHES="main|master|develop|HEAD"
 
-# Colors for output (optional, works in most terminals)
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
-NC='\033[0m' # No Color
+NC='\033[0m'
 
-function print_info() {
-    echo -e "${BLUE}[INFO]${NC} $1"
-}
+print_info() { echo -e "${BLUE}[INFO]${NC} $1"; }
+print_success() { echo -e "${GREEN}[OK]${NC} $1"; }
+print_warning() { echo -e "${YELLOW}[WARNING]${NC} $1"; }
+print_error() { echo -e "${RED}[ERROR]${NC} $1"; }
 
-function print_success() {
-    echo -e "${GREEN}[OK]${NC} $1"
-}
+show_help() {
+  cat << EOF
+Branch Cleanup Script
 
-function print_warning() {
-    echo -e "${YELLOW}[WARNING]${NC} $1"
-}
+Cleans up branches that have been merged into the main branch:
+- Local branches that have been merged
+- Remote branches that have been merged
 
-function print_error() {
-    echo -e "${RED}[ERROR]${NC} $1"
-}
-
-function show_help() {
-    cat << EOF
-GitHub Branch and Workflow Run Cleanup Script
-
-This script cleans up:
-1. Local branches merged into main
-2. Remote branches merged into main (via GitHub API)
-3. GitHub Actions runs for deleted branches
-4. Superseded GitHub Actions runs (older runs when newer successful run exists)
+Protected branches (never deleted):
+- main, master, develop, development, staging, production
+- Any branch matching: release/*, hotfix/*
 
 Usage:
-    $0                    # Dry-run mode (shows what would be cleaned)
-    $0 --execute          # Execute cleanup
-    $0 --help             # Show this help
-
-Protected branches (never deleted): $PROTECTED_BRANCHES
+  $0 # Dry-run (shows what would be deleted)
+  $0 --execute # Execute cleanup
+  $0 --local-only # Only clean local branches
+  $0 --remote-only # Only clean remote branches
+  $0 --help # Show this help
 
 Requirements:
-- gh CLI (GitHub CLI) installed and authenticated
-- git repository
-- Write access to repository (for --execute mode)
-
+- git installed
+- Write permissions for remote branch deletion (gh CLI or git credentials)
+- Must be run from within a git repository
 EOF
-    exit 0
+  exit 0
 }
 
-# Parse arguments
 for arg in "$@"; do
-    case $arg in
-        --execute)
-            DRY_RUN=false
-            shift
-            ;;
-        --help|-h)
-            show_help
-            ;;
-        *)
-            print_error "Unknown argument: $arg"
-            echo "Use --help for usage information"
-            exit 1
-            ;;
-    esac
+  case $arg in
+    --execute) DRY_RUN=false ;;
+    --local-only) CLEAN_LOCAL=true; CLEAN_REMOTE=false ;;
+    --remote-only) CLEAN_LOCAL=false; CLEAN_REMOTE=true ;;
+    --help|-h) show_help ;;
+    *) print_error "Unknown argument: $arg"; exit 1 ;;
+  esac
 done
+
+git rev-parse --git-dir >/dev/null 2>&1 || { print_error "Not in a git repository"; exit 1; }
 
 if [ "$DRY_RUN" = true ]; then
-    print_warning "DRY-RUN MODE - No changes will be made"
-    print_info "Run with --execute to perform actual cleanup"
-    echo ""
+  print_warning "DRY-RUN MODE - No changes will be made"
+  print_info "Run with --execute to perform cleanup"
+  echo ""
 fi
 
-# Check if gh CLI is installed
-if ! command -v gh &> /dev/null; then
-    print_error "gh CLI is not installed. Install from: https://cli.github.com/"
-    exit 1
-fi
-
-# Check if we're in a git repository
-if ! git rev-parse --git-dir > /dev/null 2>&1; then
-    print_error "Not in a git repository"
-    exit 1
-fi
-
-# Get repository info
-REPO=$(gh repo view --json nameWithOwner --jq .nameWithOwner)
-print_info "Repository: $REPO"
-print_info "Main branch: $MAIN_BRANCH"
+print_info "Fetching latest refs from remote..."
+git fetch origin --prune 2>/dev/null || print_warning "Failed to fetch from remote"
 echo ""
 
-# ============================================================================
-# STEP 1: Find merged local branches
-# ============================================================================
-print_info "STEP 1: Checking local merged branches..."
-MERGED_LOCAL_BRANCHES=$(git branch --merged "$MAIN_BRANCH" | grep -v "^\*" | grep -vE "^\s*($PROTECTED_BRANCHES)\s*$" | sed 's/^[* ]*//' || true)
-
-if [ -z "$MERGED_LOCAL_BRANCHES" ]; then
-    print_success "No local merged branches to clean up"
+# Determine the default branch
+if git show-ref --verify --quiet refs/heads/main; then
+  MAIN_BRANCH="main"
+  MAIN_REF="main"
+elif git show-ref --verify --quiet refs/heads/master; then
+  MAIN_BRANCH="master"
+  MAIN_REF="master"
+elif git show-ref --verify --quiet refs/remotes/origin/main; then
+  MAIN_BRANCH="main"
+  MAIN_REF="origin/main"
+elif git show-ref --verify --quiet refs/remotes/origin/master; then
+  MAIN_BRANCH="master"
+  MAIN_REF="origin/master"
 else
-    BRANCH_COUNT=$(echo "$MERGED_LOCAL_BRANCHES" | wc -l)
-    print_warning "Found $BRANCH_COUNT local merged branch(es):"
-    echo "$MERGED_LOCAL_BRANCHES" | while read -r branch; do
-        echo "  - $branch"
-    done
-
-    if [ "$DRY_RUN" = false ]; then
-        echo "$MERGED_LOCAL_BRANCHES" | while read -r branch; do
-            print_info "Deleting local branch: $branch"
-            git branch -d "$branch"
-        done
-        print_success "Deleted $BRANCH_COUNT local branch(es)"
-    fi
+  print_error "Could not find main or master branch"
+  exit 1
 fi
+
+print_info "Using base branch: $MAIN_BRANCH"
 echo ""
 
-# ============================================================================
-# STEP 2: Find remote branches merged into main
-# ============================================================================
-print_info "STEP 2: Checking remote merged branches..."
-
-# Get all remote branches
-REMOTE_BRANCHES=$(git branch -r --merged "origin/$MAIN_BRANCH" | grep -v "HEAD" | grep -vE "($PROTECTED_BRANCHES)" | sed 's/origin\///' | sed 's/^[* ]*//' || true)
-
-if [ -z "$REMOTE_BRANCHES" ]; then
-    print_success "No remote merged branches to clean up"
-else
-    REMOTE_COUNT=$(echo "$REMOTE_BRANCHES" | wc -l)
-    print_warning "Found $REMOTE_COUNT remote merged branch(es):"
-    echo "$REMOTE_BRANCHES" | while read -r branch; do
-        echo "  - $branch"
-    done
-
-    if [ "$DRY_RUN" = false ]; then
-        echo "$REMOTE_BRANCHES" | while read -r branch; do
-            print_info "Deleting remote branch: $branch"
-            git push origin --delete "$branch" || print_warning "Failed to delete $branch (may already be deleted)"
-        done
-        print_success "Attempted to delete $REMOTE_COUNT remote branch(es)"
-    fi
-fi
-echo ""
+is_protected_branch() {
+  local branch=$1
+  case "$branch" in
+    main|master|develop|development|staging|production)
+      return 0
+      ;;
+    release/*|hotfix/*)
+      return 0
+      ;;
+    *)
+      return 1
+      ;;
+  esac
+}
 
 # ============================================================================
-# STEP 3: Clean up GitHub Actions runs for deleted branches
+# STEP 1: Clean up local merged branches
 # ============================================================================
-print_info "STEP 3: Checking GitHub Actions runs for deleted branches..."
+if [ "$CLEAN_LOCAL" = true ]; then
+  print_info "STEP 1: Checking local branches merged into $MAIN_BRANCH..."
 
-# Get all existing branches (local + remote)
-EXISTING_BRANCHES=$(git branch -a | sed 's/remotes\/origin\///' | sed 's/^[* ]*//' | grep -v "HEAD" | sort -u)
+  LOCAL_COUNT=0
+  LOCAL_DELETED=0
 
-# Get unique branches from workflow runs
-print_info "Fetching workflow runs (this may take a moment)..."
-WORKFLOW_BRANCHES=$(gh run list --limit 1000 --json headBranch --jq 'map(.headBranch) | unique | .[]')
+  MERGED_BRANCHES=$(git branch --merged "$MAIN_REF" | grep -v "^\*" | grep -v "^  $MAIN_BRANCH$" | sed 's/^[ *]*//' || true)
 
-DELETED_BRANCH_RUNS=0
-DELETED_BRANCH_SUCCESS=0
-FIRST_DELETION_ATTEMPT=true
-
-while IFS= read -r branch; do
-    # Check if branch still exists
-    if ! echo "$EXISTING_BRANCHES" | grep -qx "$branch"; then
-        # Branch doesn't exist anymore, find its runs
-        RUN_IDS=$(gh run list --branch "$branch" --limit 1000 --json databaseId --jq '.[].databaseId')
-
-        if [ -n "$RUN_IDS" ]; then
-            RUN_COUNT=$(echo "$RUN_IDS" | wc -l)
-            DELETED_BRANCH_RUNS=$((DELETED_BRANCH_RUNS + RUN_COUNT))
-            print_warning "Branch '$branch' deleted, has $RUN_COUNT workflow run(s)"
-
-            if [ "$DRY_RUN" = false ]; then
-                echo "$RUN_IDS" | while read -r run_id; do
-                    print_info "Deleting run $run_id for branch: $branch"
-                    DELETE_OUTPUT=$(echo "y" | gh run delete "$run_id" 2>&1)
-                    DELETE_EXIT=$?
-
-                    if [ $DELETE_EXIT -eq 0 ]; then
-                        DELETED_BRANCH_SUCCESS=$((DELETED_BRANCH_SUCCESS + 1))
-                    else
-                        print_warning "Failed to delete run $run_id"
-                        print_error "Error: $DELETE_OUTPUT"
-
-                        # If first deletion fails, likely a permission issue - abort
-                        if [ "$FIRST_DELETION_ATTEMPT" = true ]; then
-                            print_error "First deletion attempt failed - likely permission issue"
-                            print_error "Please check that you have 'workflow' scope in GitHub token"
-                            print_error "Run: gh auth refresh -s workflow"
-                            exit 1
-                        fi
-                    fi
-                    FIRST_DELETION_ATTEMPT=false
-                done
-            fi
-        fi
-    fi
-done <<< "$WORKFLOW_BRANCHES"
-
-if [ $DELETED_BRANCH_RUNS -eq 0 ]; then
-    print_success "No workflow runs for deleted branches"
-else
-    print_warning "Found $DELETED_BRANCH_RUNS workflow run(s) for deleted branches"
-    if [ "$DRY_RUN" = false ]; then
-        print_success "Successfully deleted $DELETED_BRANCH_SUCCESS of $DELETED_BRANCH_RUNS run(s)"
-    fi
-fi
-echo ""
-
-# ============================================================================
-# STEP 4: Clean up superseded workflow runs
-# ============================================================================
-print_info "STEP 4: Checking for superseded workflow runs..."
-print_info "Strategy: Keep only most recent completed run per workflow+branch combination"
-
-# Get all workflow runs and save to temp file
-# Use a temp file in the current directory to avoid Git Bash/Windows Python path translation issues
-# The file will be cleaned up at the end of the script
-TEMP_RUNS_FILE="cleanup_runs_temp_$$.json"
-gh run list --limit 1000 --json databaseId,status,conclusion,workflowName,headBranch,createdAt > "$TEMP_RUNS_FILE"
-
-# Find runs to keep (most recent per workflow+branch)
-# Use Python for JSON processing since jq may not be available
-KEEP_RUNS=$(python << EOF
-import json, sys
-with open("$TEMP_RUNS_FILE") as f:
-    data = json.load(f)
-
-from collections import defaultdict
-groups = defaultdict(list)
-for run in data:
-    key = run['workflowName'] + '|' + run['headBranch']
-    groups[key].append(run)
-
-keep_ids = []
-for key, runs in groups.items():
-    completed = [r for r in runs if r['status'] == 'completed']
-    if completed:
-        completed.sort(key=lambda x: x['createdAt'], reverse=True)
-        keep_ids.append(str(completed[0]['databaseId']))
-
-print('\n'.join(keep_ids))
-EOF
-)
-
-KEEP_COUNT=$(echo "$KEEP_RUNS" | wc -l)
-print_info "Will keep $KEEP_COUNT run(s) (most recent completed per workflow+branch)"
-
-# Get all run IDs
-ALL_RUN_IDS=$(python << EOF
-import json
-with open("$TEMP_RUNS_FILE") as f:
-    data = json.load(f)
-print('\n'.join([str(r['databaseId']) for r in data]))
-EOF
-)
-TOTAL_RUNS=$(echo "$ALL_RUN_IDS" | wc -l)
-
-SUPERSEDED_COUNT=0
-SUPERSEDED_DELETED=0
-
-FIRST_SUPERSEDED_ATTEMPT=true
-
-echo "$ALL_RUN_IDS" | while read -r run_id; do
-    # Check if this run should be kept
-    if echo "$KEEP_RUNS" | grep -qx "$run_id"; then
+  if [ -n "$MERGED_BRANCHES" ]; then
+    while IFS= read -r branch; do
+      [ -z "$branch" ] && continue
+      if is_protected_branch "$branch"; then
+        print_info "Skipping protected branch: $branch"
         continue
-    fi
+      fi
 
-    SUPERSEDED_COUNT=$((SUPERSEDED_COUNT + 1))
+      LOCAL_COUNT=$((LOCAL_COUNT + 1))
 
-    # Get details for this run
-    RUN_INFO=$(python << EOF
-import json
-with open("$TEMP_RUNS_FILE") as f:
-    data = json.load(f)
-run = next((r for r in data if r['databaseId'] == $run_id), None)
-if run:
-    print(run['workflowName'] + ' [' + (run.get('conclusion') or run['status']) + '] on ' + run['headBranch'])
-else:
-    print('Unknown')
-EOF
-)
-
-    if [ "$DRY_RUN" = false ]; then
-        print_info "Deleting superseded run $run_id: $RUN_INFO"
-        DELETE_OUTPUT=$(echo "y" | gh run delete "$run_id" 2>&1)
-        DELETE_EXIT=$?
-
-        if [ $DELETE_EXIT -eq 0 ]; then
-            SUPERSEDED_DELETED=$((SUPERSEDED_DELETED + 1))
+      if [ "$DRY_RUN" = false ]; then
+        print_info "Deleting local branch: $branch"
+        if git branch -d "$branch" 2>/dev/null; then
+          LOCAL_DELETED=$((LOCAL_DELETED + 1))
+          print_success "Deleted: $branch"
         else
-            print_warning "Failed to delete run $run_id"
-            print_error "Error: $DELETE_OUTPUT"
-
-            # If first deletion fails and we haven't successfully deleted anything yet
-            if [ "$FIRST_SUPERSEDED_ATTEMPT" = true ] && [ $DELETED_BRANCH_SUCCESS -eq 0 ]; then
-                print_error "No runs have been deleted - likely permission issue"
-                print_error "Please check that you have 'workflow' scope in GitHub token"
-                print_error "Run: gh auth refresh -s workflow"
-                exit 1
-            fi
+          print_warning "Failed to delete: $branch (may have unmerged commits)"
         fi
-        FIRST_SUPERSEDED_ATTEMPT=false
-    fi
-done
+      else
+        print_warning "Would delete local branch: $branch"
+      fi
+    done <<< "$MERGED_BRANCHES"
+  fi
 
-SUPERSEDED_COUNT=$(echo "$ALL_RUN_IDS" | wc -l)
-SUPERSEDED_COUNT=$((SUPERSEDED_COUNT - KEEP_COUNT))
-
-if [ $SUPERSEDED_COUNT -eq 0 ]; then
-    print_success "No superseded workflow runs to clean up"
-else
-    print_warning "Found $SUPERSEDED_COUNT superseded workflow run(s)"
+  if [ $LOCAL_COUNT -eq 0 ]; then
+    print_success "No local merged branches to clean"
+  else
     if [ "$DRY_RUN" = false ]; then
-        print_success "Deleted $SUPERSEDED_DELETED superseded run(s)"
+      print_success "Deleted $LOCAL_DELETED of $LOCAL_COUNT local branches"
+    else
+      print_warning "Found $LOCAL_COUNT local branch(es) to clean"
     fi
+  fi
+  echo ""
 fi
 
-# Cleanup temp file
-rm -f "$TEMP_RUNS_FILE"
+# ============================================================================
+# STEP 2: Clean up remote merged branches
+# ============================================================================
+if [ "$CLEAN_REMOTE" = true ]; then
+  print_info "STEP 2: Checking remote branches merged into origin/$MAIN_BRANCH..."
 
-echo ""
+  REMOTE_COUNT=0
+  REMOTE_DELETED=0
+
+  if ! git show-ref --verify --quiet "refs/remotes/origin/$MAIN_BRANCH"; then
+    git fetch origin "$MAIN_BRANCH:refs/remotes/origin/$MAIN_BRANCH" 2>/dev/null || print_warning "Could not fetch origin/$MAIN_BRANCH"
+  fi
+
+  MERGED_REMOTE_BRANCHES=$(git branch -r --merged "origin/$MAIN_BRANCH" 2>/dev/null | grep "origin/" | grep -v "origin/$MAIN_BRANCH$" | grep -v "origin/HEAD" | sed 's/^[ ]*//' | sed 's|origin/||' || true)
+
+  if [ -n "$MERGED_REMOTE_BRANCHES" ]; then
+    while IFS= read -r branch; do
+      [ -z "$branch" ] && continue
+      if is_protected_branch "$branch"; then
+        print_info "Skipping protected remote branch: $branch"
+        continue
+      fi
+
+      REMOTE_COUNT=$((REMOTE_COUNT + 1))
+
+      if [ "$DRY_RUN" = false ]; then
+        print_info "Deleting remote branch: origin/$branch"
+
+        if git push origin --delete "$branch" 2>/dev/null; then
+          REMOTE_DELETED=$((REMOTE_DELETED + 1))
+          print_success "Deleted: origin/$branch"
+        elif command -v gh >/dev/null 2>&1; then
+          REPO=$(gh repo view --json nameWithOwner --jq .nameWithOwner 2>/dev/null || echo "")
+          if [ -n "$REPO" ]; then
+            print_info "Trying to delete with gh CLI..."
+            if gh api --method DELETE "/repos/$REPO/git/refs/heads/$branch" 2>/dev/null; then
+              REMOTE_DELETED=$((REMOTE_DELETED + 1))
+              print_success "Deleted: origin/$branch (via gh CLI)"
+            else
+              print_warning "Failed to delete: origin/$branch (may lack permissions)"
+            fi
+          else
+            print_warning "Failed to delete: origin/$branch"
+          fi
+        else
+          print_warning "Failed to delete: origin/$branch (need gh CLI or push access)"
+        fi
+      else
+        print_warning "Would delete remote branch: origin/$branch"
+      fi
+    done <<< "$MERGED_REMOTE_BRANCHES"
+  fi
+
+  if [ $REMOTE_COUNT -eq 0 ]; then
+    print_success "No remote merged branches to clean"
+  else
+    if [ "$DRY_RUN" = false ]; then
+      print_success "Deleted $REMOTE_DELETED of $REMOTE_COUNT remote branches"
+    else
+      print_warning "Found $REMOTE_COUNT remote branch(es) to clean"
+    fi
+  fi
+  echo ""
+fi
 
 # ============================================================================
 # SUMMARY
@@ -342,62 +239,18 @@ echo ""
 echo "========================================"
 print_success "CLEANUP SUMMARY"
 echo "========================================"
-echo ""
 
 if [ "$DRY_RUN" = true ]; then
-    echo "DRY-RUN MODE - No changes were made"
-    echo ""
-    echo "Would clean up:"
+  TOTAL=$((${LOCAL_COUNT:-0} + ${REMOTE_COUNT:-0}))
+  echo "Would clean: $TOTAL branches (local: ${LOCAL_COUNT:-0}, remote: ${REMOTE_COUNT:-0})"
+  echo ""
+  print_info "Run with --execute to perform cleanup: $0 --execute"
 else
-    echo "EXECUTION MODE - Changes were made"
-    echo ""
-    echo "Results:"
+  TOTAL_DELETED=$((${LOCAL_DELETED:-0} + ${REMOTE_DELETED:-0}))
+  TOTAL_FOUND=$((${LOCAL_COUNT:-0} + ${REMOTE_COUNT:-0}))
+  echo "Deleted: $TOTAL_DELETED of $TOTAL_FOUND branches"
+  if [ $TOTAL_DELETED -lt $TOTAL_FOUND ]; then
+    print_warning "Some branches could not be deleted (check permissions or unmerged commits)"
+  fi
 fi
-
-TOTAL_BRANCHES=$(echo "$MERGED_LOCAL_BRANCHES" | wc -l)
-TOTAL_REMOTE=$(echo "$REMOTE_BRANCHES" | wc -l)
-[ -z "$MERGED_LOCAL_BRANCHES" ] && TOTAL_BRANCHES=0
-[ -z "$REMOTE_BRANCHES" ] && TOTAL_REMOTE=0
-
-if [ "$DRY_RUN" = true ]; then
-    echo "  - Local merged branches: $TOTAL_BRANCHES"
-    echo "  - Remote merged branches: $TOTAL_REMOTE"
-    echo "  - Workflow runs for deleted branches: $DELETED_BRANCH_RUNS"
-    echo "  - Superseded workflow runs: $SUPERSEDED_COUNT"
-else
-    echo "  - Local merged branches: deleted $TOTAL_BRANCHES of $TOTAL_BRANCHES"
-    echo "  - Remote merged branches: deleted $TOTAL_REMOTE of $TOTAL_REMOTE"
-    echo "  - Workflow runs for deleted branches: deleted $DELETED_BRANCH_SUCCESS of $DELETED_BRANCH_RUNS"
-    echo "  - Superseded workflow runs: deleted $SUPERSEDED_DELETED of $SUPERSEDED_COUNT"
-fi
-echo ""
-
-TOTAL_CLEANUP=$((TOTAL_BRANCHES + TOTAL_REMOTE + DELETED_BRANCH_RUNS + SUPERSEDED_COUNT))
-
-if [ $TOTAL_CLEANUP -eq 0 ]; then
-    print_success "Repository is clean! No cleanup needed."
-else
-    if [ "$DRY_RUN" = true ]; then
-        print_warning "Total items to clean: $TOTAL_CLEANUP"
-        echo ""
-        print_info "Run with --execute to perform cleanup:"
-        echo "    $0 --execute"
-    else
-        TOTAL_DELETED=$((TOTAL_BRANCHES + TOTAL_REMOTE + DELETED_BRANCH_SUCCESS + SUPERSEDED_DELETED))
-        print_success "Successfully deleted $TOTAL_DELETED of $TOTAL_CLEANUP items"
-
-        TOTAL_FAILED=$((TOTAL_CLEANUP - TOTAL_DELETED))
-        if [ $TOTAL_FAILED -gt 0 ]; then
-            print_warning "$TOTAL_FAILED deletion(s) failed"
-            echo ""
-            print_info "Common reasons for failures:"
-            echo "  - Insufficient permissions (need 'workflow' scope)"
-            echo "  - Runs already deleted"
-            echo "  - Network issues"
-            echo ""
-            print_info "To add workflow scope: gh auth refresh -s workflow"
-        fi
-    fi
-fi
-
 echo ""

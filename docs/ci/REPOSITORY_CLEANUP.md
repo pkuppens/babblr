@@ -26,11 +26,9 @@ The Repository Cleanup workflow runs after CI completes on `main`. It removes me
 
 **Location**: `scripts/cleanup-merged-branches.sh`
 
-**Cleans**:
+**Cleans** (branches only):
 - Local branches merged into main
 - Remote branches merged into main (via `git push --delete`)
-- GitHub Actions runs for branches that no longer exist
-- Superseded runs (keeps most recent completed per workflow+branch)
 
 ### 2. cleanup-github-actions.sh
 

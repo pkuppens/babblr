@@ -4,80 +4,31 @@ This directory contains maintenance and utility scripts for the Babblr project.
 
 ## Available Scripts
 
-### cleanup-merged-branches.sh
+### Repository Cleanup (two scripts, no overlap)
 
-**Purpose**: Clean up merged git branches and stale GitHub Actions workflow runs.
+Clean up merged branches and obsolete GitHub Actions runs. Run both for full cleanup.
 
-**What it cleans**:
-- Local branches merged into main
-- Remote branches merged into main
-- GitHub Actions runs for branches that no longer exist
-- Superseded workflow runs (older runs when a newer completed run exists)
+| Script | Cleans | Requirements |
+|--------|--------|--------------|
+| `cleanup-merged-branches.sh` | Local + remote branches merged into main | git, push access (gh optional) |
+| `cleanup-github-actions.sh` | Workflow runs: obsolete, PR refs, deleted branches, superseded, orphaned | gh + workflow scope, Python 3 |
 
-**Usage**:
-```bash
-# Validation mode (dry-run, default)
-./scripts/cleanup-merged-branches.sh
-
-# Execute cleanup
-./scripts/cleanup-merged-branches.sh --execute
-
-# Show help
-./scripts/cleanup-merged-branches.sh --help
-```
-
-**Requirements**:
-- `gh` CLI (GitHub CLI) installed and authenticated
-- Write access to repository (for --execute mode)
-
-**Safety Features**:
-- Protected branches (main, master, develop, HEAD) are never deleted
-- Dry-run mode by default - must explicitly use `--execute` to make changes
-
-**When to use**:
-- After merging multiple PRs
-- Weekly/monthly repository maintenance
-- When GitHub Actions runs accumulate
-
-### cleanup-github-actions.sh
-
-**Purpose**: Clean up obsolete GitHub Actions workflow runs.
-
-**What it cleans**:
-1. Obsolete approval runs (queued/waiting older than 7 days)
-2. Runs on PR refs (refs/pull/*)
-3. Runs for branches that no longer exist
-4. Superseded runs (keeps most recent completed + failed for debugging)
-5. Orphaned runs (workflow file deleted, runs still exist)
-
-**Usage**:
+**Usage** (both scripts):
 ```bash
 # Dry-run (default)
+./scripts/cleanup-merged-branches.sh
 ./scripts/cleanup-github-actions.sh
 
-# Execute cleanup
+# Execute
+./scripts/cleanup-merged-branches.sh --execute
 ./scripts/cleanup-github-actions.sh --execute
-
-# Show help
-./scripts/cleanup-github-actions.sh --help
 ```
 
-**Requirements**:
-- `gh` CLI with workflow scope: `gh auth refresh -s workflow`
-- Python 3 (for JSON processing)
-- Run from repository root
+**cleanup-merged-branches.sh** also supports `--local-only`, `--remote-only`. Protected: main, master, develop, release/*, hotfix/*.
 
-**When to use**:
-- When GitHub Actions runs accumulate
-- After merging many PRs
-- Before major releases
+**cleanup-github-actions.sh** keeps failed runs for debugging; needs `gh auth refresh -s workflow`.
 
-### Repository Cleanup (GitHub Action)
-
-Both scripts run automatically via `.github/workflows/cleanup.yml`:
-- **Trigger**: After CI completes on main, or manually via workflow_dispatch
-- **Runs**: Branch cleanup first, then workflow run cleanup
-- See [docs/ci/REPOSITORY_CLEANUP.md](../docs/ci/REPOSITORY_CLEANUP.md) for full documentation
+**Automated**: Both run via `.github/workflows/cleanup.yml` after CI on main. See [docs/ci/REPOSITORY_CLEANUP.md](../docs/ci/REPOSITORY_CLEANUP.md).
 
 ### no-commit-to-main.sh
 
