@@ -2,12 +2,11 @@ name: Security Scanning
 
 on:
   pull_request:
-    # Only run on PRs to avoid duplication - PRs are scanned before merge
-    # Post-merge verification happens via weekly scheduled scans
+    # PRs to main are scanned before merge (includes Dependabot PRs)
     branches: [main]
-  schedule:
-    # Run weekly on Mondays at 00:00 UTC for post-merge verification
-    - cron: '0 0 * * 1'
+  push:
+    # CodeQL requires on.push to show alerts on Security tab (default branch)
+    branches: [main]
   workflow_dispatch:
 
 # Concurrency control: Use PR number for PRs to prevent duplicate runs

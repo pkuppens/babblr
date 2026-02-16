@@ -4,56 +4,31 @@ This directory contains maintenance and utility scripts for the Babblr project.
 
 ## Available Scripts
 
-### cleanup-merged-branches.sh
+### Repository Cleanup (two scripts, no overlap)
 
-**Purpose**: Clean up merged git branches and stale GitHub Actions workflow runs.
+Clean up merged branches and obsolete GitHub Actions runs. Run both for full cleanup.
 
-**What it cleans**:
-- Local branches merged into main
-- Remote branches merged into main
-- GitHub Actions runs for branches that no longer exist
-- Superseded workflow runs (older runs when a newer successful run exists)
+| Script | Cleans | Requirements |
+|--------|--------|--------------|
+| `cleanup-merged-branches.sh` | Local + remote branches merged into main | git, push access (gh optional) |
+| `cleanup-github-actions.sh` | Workflow runs: obsolete, PR refs, deleted branches, superseded, orphaned | gh + workflow scope, Python 3 |
 
-**Usage**:
+**Usage** (both scripts):
 ```bash
-# Validation mode (dry-run, default)
+# Dry-run (default)
 ./scripts/cleanup-merged-branches.sh
+./scripts/cleanup-github-actions.sh
 
-# Execute cleanup
+# Execute
 ./scripts/cleanup-merged-branches.sh --execute
-
-# Show help
-./scripts/cleanup-merged-branches.sh --help
+./scripts/cleanup-github-actions.sh --execute
 ```
 
-**Requirements**:
-- `gh` CLI (GitHub CLI) installed and authenticated
-- Write access to repository (for --execute mode)
+**cleanup-merged-branches.sh** also supports `--local-only`, `--remote-only`. Protected: main, master, develop, release/*, hotfix/*.
 
-**Safety Features**:
-- Protected branches (main, master, develop, HEAD) are never deleted
-- Dry-run mode by default - must explicitly use `--execute` to make changes
-- Progress reporting shows what's being deleted
-- Continues even if individual deletions fail
+**cleanup-github-actions.sh** keeps failed runs for debugging; needs `gh auth refresh -s workflow`.
 
-**When to use**:
-- After merging multiple PRs
-- Weekly/monthly repository maintenance
-- When GitHub Actions runs accumulate
-- Before major releases
-
-**Example output**:
-```
-[WARNING] DRY-RUN MODE - No changes will be made
-[INFO] Repository: pkuppens/babblr
-
-[OK] No local merged branches to clean up
-[OK] No remote merged branches to clean up
-[WARNING] Found 70 workflow run(s) for deleted branches
-[WARNING] Found 48 superseded workflow run(s)
-
-Total items to clean: 118
-```
+**Automated**: Both run via `.github/workflows/cleanup.yml` after CI on main. See [docs/ci/REPOSITORY_CLEANUP.md](../docs/ci/REPOSITORY_CLEANUP.md).
 
 ### no-commit-to-main.sh
 

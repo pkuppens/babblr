@@ -1,0 +1,102 @@
+name: Repository Cleanup
+
+# Trigger after CI completes on main.
+# This ensures cleanup can accurately detect superseded runs.
+#
+# Self-cleaning: This workflow's own old runs are cleaned up by Step 4
+# (superseded runs) in cleanup-github-actions.sh — it keeps only the most
+# recent completed run per workflow+branch, so at most 2 Repository Cleanup
+# runs coexist at any time (the currently running one + the previous completed).
+#
+# Orphaned workflows: Step 5 cleans up runs for deleted workflow files.
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:  # Allow manual triggering
+
+# Permissions needed for cleanup operations
+permissions:
+  contents: write  # For deleting branches
+  actions: write  # For deleting workflow runs
+
+jobs:
+  cleanup:
+    name: Clean up merged branches and old workflow runs
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check CI has completed
+        id: check-complete
+        if: github.event_name == 'workflow_run'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          HEAD_SHA="${{ github.event.workflow_run.head_sha }}"
+          echo "Checking if CI completed for commit $HEAD_SHA"
+
+          # Check if CI has completed for this commit
+          PENDING=$(gh run list \
+            --repo "${{ github.repository }}" \
+            --json headSha,status,workflowName \
+            --jq "[.[] | select(.headSha == \"$HEAD_SHA\" and .status != \"completed\" and .workflowName == \"CI\")] | length")
+
+          if [ "$PENDING" != "0" ]; then
+            echo "CI has not completed yet ($PENDING still running). Skipping cleanup."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "CI completed for $HEAD_SHA. Proceeding with cleanup."
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Skip if workflow not done
+        if: github.event_name == 'workflow_run' && steps.check-complete.outputs.skip == 'true'
+        run: echo "Exiting early - cleanup will run when CI completes."
+
+      - name: Checkout repository
+        if: github.event_name == 'workflow_dispatch' || steps.check-complete.outputs.skip == 'false'
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0  # Fetch all history for branch analysis
+
+      - name: Set up Python
+        if: github.event_name == 'workflow_dispatch' || steps.check-complete.outputs.skip == 'false'
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Configure git
+        if: github.event_name == 'workflow_dispatch' || steps.check-complete.outputs.skip == 'false'
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email \
+            "github-actions[bot]@users.noreply.github.com"
+
+      - name: Authenticate GitHub CLI
+        if: github.event_name == 'workflow_dispatch' || steps.check-complete.outputs.skip == 'false'
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | gh auth login --with-token
+
+      - name: Clean up merged branches
+        if: github.event_name == 'workflow_dispatch' || steps.check-complete.outputs.skip == 'false'
+        run: |
+          echo "::group::Branch Cleanup"
+          bash scripts/cleanup-merged-branches.sh --execute
+          echo "::endgroup::"
+
+      - name: Clean up old workflow runs
+        if: github.event_name == 'workflow_dispatch' || steps.check-complete.outputs.skip == 'false'
+        run: |
+          echo "::group::Workflow Run Cleanup"
+          bash scripts/cleanup-github-actions.sh --execute
+          echo "::endgroup::"
+
+      - name: Summary
+        if: github.event_name == 'workflow_dispatch' || steps.check-complete.outputs.skip == 'false'
+        run: |
+          echo "### Cleanup Complete" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- Merged branches deleted" >> $GITHUB_STEP_SUMMARY
+          echo "- Old workflow runs cleaned" >> $GITHUB_STEP_SUMMARY
+          echo "- Failed runs kept for debugging" >> $GITHUB_STEP_SUMMARY

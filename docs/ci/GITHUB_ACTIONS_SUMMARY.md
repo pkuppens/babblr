@@ -30,14 +30,13 @@ This document summarizes the comprehensive GitHub Actions enhancement implemente
 
 #### `security.yml` - Security Scanning
 **Purpose**: Proactive vulnerability detection
-**Triggers**: Push to main, PRs, weekly schedule (Mondays), manual
+**Triggers**: Push to main, PRs, manual
 **Runtime**: ~10 min
 
 **Features**:
 - Static analysis with CodeQL (Python, TypeScript)
 - Secret scanning with Gitleaks
 - Dependency audits (pip-audit, npm audit)
-- Weekly scheduled scans
 
 **Jobs**:
 1. `codeql` - CodeQL analysis for Python and TypeScript
@@ -45,6 +44,20 @@ This document summarizes the comprehensive GitHub Actions enhancement implemente
 3. `pip-audit` - Python dependency vulnerability scanning
 4. `npm-audit` - Node.js dependency vulnerability scanning
 5. `security-summary` - Aggregated security results
+
+#### `cleanup.yml` - Repository Cleanup
+**Purpose**: Keep repository and Actions tab tidy
+**Triggers**: After CI completes on main, manual dispatch
+**Runtime**: ~2–5 min
+
+**Features**:
+- Merged branch deletion (local + remote)
+- Workflow run cleanup (obsolete, PR refs, deleted branches, superseded, orphaned)
+- Self-cleaning (cleans its own old runs)
+- Based on [on_prem_rag/cleanup.yml](https://github.com/pkuppens/on_prem_rag/actions/workflows/cleanup.yml)
+
+**Scripts**: `scripts/cleanup-merged-branches.sh`, `scripts/cleanup-github-actions.sh`
+**Docs**: [REPOSITORY_CLEANUP.md](REPOSITORY_CLEANUP.md)
 
 #### `release.yml` - Release Automation
 **Purpose**: Automated release creation with attestations
@@ -95,7 +108,7 @@ This document summarizes the comprehensive GitHub Actions enhancement implemente
 
 #### `.github/dependabot.yml`
 **Purpose**: Automated dependency updates
-**Schedule**: Weekly (Mondays 00:00 UTC)
+**Schedule**: Monthly (first Sunday at 03:00 UTC)
 **Coverage**: Python deps, npm deps, GitHub Actions
 
 #### `.github/CODEOWNERS`
@@ -173,7 +186,7 @@ Added section: "GitHub Actions and CI/CD"
 **Schedule**:
 - Every PR
 - Every push to main
-- Weekly scheduled scans (Mondays)
+- Event-driven; no schedule
 
 ### 4. Smart Caching (90%+ hit rate)
 
@@ -343,7 +356,7 @@ Complete troubleshooting guide available at `docs/ci/TROUBLESHOOTING_CI.md` with
 ### Governance
 
 - CODEOWNERS requires approval for workflow changes
-- Security scans on every PR + weekly schedule
+- Security scans on every PR and push to main
 - Clear policies in POLICIES.md
 
 ## Scalability

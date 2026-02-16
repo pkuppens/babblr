@@ -177,20 +177,20 @@ updates:
   - package-ecosystem: "pip"
     directory: "/backend"
     schedule:
-      interval: "weekly"
+      interval: "0 3 1-7 * 0"  # First Sunday of month at 03:00 UTC
   - package-ecosystem: "npm"
     directory: "/frontend"
     schedule:
-      interval: "weekly"
+      interval: "0 3 1-7 * 0"  # First Sunday of month at 03:00 UTC
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "weekly"
+      interval: "0 3 1-7 * 0"  # First Sunday of month at 03:00 UTC
 ```
 
 ### How It Works
 
-1. Checks for updates weekly (Mondays 00:00 UTC)
+1. Checks for updates monthly (first Sunday at 03:00 UTC)
 2. Creates PR for each update
 3. Runs CI on PR
 4. Reviewer approves and merges
@@ -206,16 +206,13 @@ updates:
 
 The security workflow runs:
 
-- On every push to main
-- On every pull request
-- Weekly on Mondays at 00:00 UTC
+- On every push to main (required for CodeQL Security tab alerts)
+- On every pull request to main (including Dependabot dependency-update PRs)
 - Manually via workflow dispatch
 
-### Why Weekly?
+### Why No Scheduled Cron?
 
-- New vulnerabilities discovered regularly
-- Catches issues even without code changes
-- Provides regular security posture check
+Security issues come from code and dependencies. New code triggers push or PR. New dependency vulnerabilities trigger Dependabot PRs, which run the security scan before merge. A separate schedule is redundant.
 
 ## Security Summary
 
@@ -255,7 +252,7 @@ Store secrets in:
 
 ### 4. Keep Dependencies Updated
 
-- Review Dependabot PRs weekly
+- Review Dependabot PRs monthly (first Sunday)
 - Test updates before merging
 - Monitor release notes for breaking changes
 
@@ -334,6 +331,17 @@ View attestations in GitHub UI on release page.
 2. Check if fix available
 3. Assess risk if no fix
 4. Document exception if safe
+
+### Dependabot PR Causes npm ci to Fail (Peer Dependency)
+
+**Symptom**: Node.js Dependency Audit job fails with `ERESOLVE could not resolve` or peer dependency conflict
+
+**Cause**: Dependabot updated a package (e.g. eslint) to a major version that is not yet supported by peer dependencies (e.g. @typescript-eslint only supports eslint ^8 || ^9).
+
+**Solutions**:
+1. Add the package to `ignore` in `.github/dependabot.yml` for `version-update:semver-major` until peers support it
+2. Close the Dependabot PR and wait for a new one without the incompatible update
+3. Manually update only the compatible packages and skip the breaking one
 
 ## Resources
 
