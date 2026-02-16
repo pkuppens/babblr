@@ -107,7 +107,7 @@ Integration tests normally only run on the `main` branch. To run them on a PR:
 **Triggers**:
 - Push to main
 - Pull requests to main
-- Weekly schedule (Mondays 00:00 UTC)
+- Push and PR only; no schedule (event-driven)
 - Manual dispatch
 
 **Jobs**:

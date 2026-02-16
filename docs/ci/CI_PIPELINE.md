@@ -154,7 +154,7 @@ env:
 
 ### 2. Security Workflow (`security.yml`)
 
-**Trigger**: Push to main, PRs, weekly schedule (Mondays 00:00 UTC), manual
+**Trigger**: Push to main, PRs, manual (event-driven; no schedule)
 **Purpose**: Proactive vulnerability detection
 
 #### Jobs

@@ -2,12 +2,12 @@
 # See: https://docs.github.com/en/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
 #
 # Review Strategy:
-# - Maximum simplification: ONE PR per ecosystem weekly (3 PRs total)
-# - All backend updates → 1 PR on Monday 03:00 UTC
-# - All frontend updates → 1 PR on Monday 03:00 UTC
-# - All GitHub Actions updates → 1 PR on Monday 03:00 UTC
+# - Maximum simplification: ONE PR per ecosystem monthly (3 PRs total)
+# - All ecosystems check on first Sunday of month at 03:00 UTC
+# - Cron: 0 3 1-7 * 0 = minute 0, hour 3, days 1-7, any month, Sunday
 # - Updates reviewed and manually merged with attribution to @pkuppens
 # - Failed/problematic updates are deferred and tracked in CHANGELOG.md
+# - Cron expressions: https://docs.github.com/en/code-security/dependabot/working-with-dependabot/dependabot-options-reference#schedule-
 
 version: 2
 updates:
@@ -15,10 +15,7 @@ updates:
   - package-ecosystem: "pip"
     directory: "/backend"
     schedule:
-      interval: "weekly"
-      day: "monday"
-      time: "03:00"
-      timezone: "UTC"
+      interval: "0 3 1-7 * 0"  # First Sunday of month at 03:00 UTC
     open-pull-requests-limit: 1
     commit-message:
       prefix: "deps(backend)"
@@ -32,8 +29,8 @@ updates:
     assignees:
       - "pkuppens"
     groups:
-      # Group ALL backend updates into a single weekly PR
-      weekly-updates:
+      # Group ALL backend updates into a single monthly PR
+      monthly-updates:
         patterns:
           - "*"
 
@@ -41,10 +38,7 @@ updates:
   - package-ecosystem: "npm"
     directory: "/frontend"
     schedule:
-      interval: "weekly"
-      day: "monday"
-      time: "03:00"
-      timezone: "UTC"
+      interval: "0 3 1-7 * 0"  # First Sunday of month at 03:00 UTC
     open-pull-requests-limit: 1
     commit-message:
       prefix: "deps(frontend)"
@@ -58,8 +52,8 @@ updates:
     assignees:
       - "pkuppens"
     groups:
-      # Group ALL frontend updates into a single weekly PR
-      weekly-updates:
+      # Group ALL frontend updates into a single monthly PR
+      monthly-updates:
         patterns:
           - "*"
     # Ignore patterns for problematic updates
@@ -69,15 +63,15 @@ updates:
         update-types: ["version-update:semver-major"]
       - dependency-name: "react-dom"
         update-types: ["version-update:semver-major"]
+      # ESLint 10 incompatible with @typescript-eslint 8.x (peer dep)
+      - dependency-name: "eslint"
+        update-types: ["version-update:semver-major"]
 
   # GitHub Actions dependencies
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "weekly"
-      day: "monday"
-      time: "03:00"
-      timezone: "UTC"
+      interval: "0 3 1-7 * 0"  # First Sunday of month at 03:00 UTC
     open-pull-requests-limit: 5
     commit-message:
       prefix: "ci"
@@ -90,7 +84,7 @@ updates:
     assignees:
       - "pkuppens"
     groups:
-      # Group ALL GitHub Actions updates into a single weekly PR
-      weekly-updates:
+      # Group ALL GitHub Actions updates into a single monthly PR
+      monthly-updates:
         patterns:
           - "*"

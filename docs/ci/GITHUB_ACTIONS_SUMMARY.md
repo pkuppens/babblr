@@ -30,14 +30,13 @@ This document summarizes the comprehensive GitHub Actions enhancement implemente
 
 #### `security.yml` - Security Scanning
 **Purpose**: Proactive vulnerability detection
-**Triggers**: Push to main, PRs, weekly schedule (Mondays), manual
+**Triggers**: Push to main, PRs, manual
 **Runtime**: ~10 min
 
 **Features**:
 - Static analysis with CodeQL (Python, TypeScript)
 - Secret scanning with Gitleaks
 - Dependency audits (pip-audit, npm audit)
-- Weekly scheduled scans
 
 **Jobs**:
 1. `codeql` - CodeQL analysis for Python and TypeScript
@@ -95,7 +94,7 @@ This document summarizes the comprehensive GitHub Actions enhancement implemente
 
 #### `.github/dependabot.yml`
 **Purpose**: Automated dependency updates
-**Schedule**: Weekly (Mondays 00:00 UTC)
+**Schedule**: Monthly (first Sunday at 03:00 UTC)
 **Coverage**: Python deps, npm deps, GitHub Actions
 
 #### `.github/CODEOWNERS`
@@ -173,7 +172,7 @@ Added section: "GitHub Actions and CI/CD"
 **Schedule**:
 - Every PR
 - Every push to main
-- Weekly scheduled scans (Mondays)
+- Event-driven; no schedule
 
 ### 4. Smart Caching (90%+ hit rate)
 
@@ -343,7 +342,7 @@ Complete troubleshooting guide available at `docs/ci/TROUBLESHOOTING_CI.md` with
 ### Governance
 
 - CODEOWNERS requires approval for workflow changes
-- Security scans on every PR + weekly schedule
+- Security scans on every PR and push to main
 - Clear policies in POLICIES.md
 
 ## Scalability
