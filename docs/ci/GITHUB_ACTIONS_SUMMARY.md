@@ -45,6 +45,20 @@ This document summarizes the comprehensive GitHub Actions enhancement implemente
 4. `npm-audit` - Node.js dependency vulnerability scanning
 5. `security-summary` - Aggregated security results
 
+#### `cleanup.yml` - Repository Cleanup
+**Purpose**: Keep repository and Actions tab tidy
+**Triggers**: After CI completes on main, manual dispatch
+**Runtime**: ~2–5 min
+
+**Features**:
+- Merged branch deletion (local + remote)
+- Workflow run cleanup (obsolete, PR refs, deleted branches, superseded, orphaned)
+- Self-cleaning (cleans its own old runs)
+- Based on [on_prem_rag/cleanup.yml](https://github.com/pkuppens/on_prem_rag/actions/workflows/cleanup.yml)
+
+**Scripts**: `scripts/cleanup-merged-branches.sh`, `scripts/cleanup-github-actions.sh`
+**Docs**: [REPOSITORY_CLEANUP.md](REPOSITORY_CLEANUP.md)
+
 #### `release.yml` - Release Automation
 **Purpose**: Automated release creation with attestations
 **Triggers**: Git tags (`v*.*.*`), manual dispatch

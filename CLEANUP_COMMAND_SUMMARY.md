@@ -1,8 +1,8 @@
 # Repository Cleanup Command - Summary
 
-## What Was Created
+## What Exists
 
-### 1. Main Cleanup Script
+### 1. Branch and Workflow Cleanup Script
 **File**: `scripts/cleanup-merged-branches.sh`
 
 A comprehensive bash script that:
@@ -12,17 +12,32 @@ A comprehensive bash script that:
 - Provides dry-run validation mode (default)
 - Executes cleanup with `--execute` flag
 
-### 2. Claude Code Command
+### 2. Workflow Run Cleanup Script
+**File**: `scripts/cleanup-github-actions.sh`
+
+Extended cleanup for workflow runs (from [on_prem_rag](https://github.com/pkuppens/on_prem_rag)):
+- Obsolete queued/waiting runs (> 7 days)
+- PR ref runs (refs/pull/*)
+- Runs for deleted branches
+- Superseded runs (keeps most recent + failed for debugging)
+- Orphaned runs (workflow file deleted)
+
+### 3. GitHub Actions Workflow
+**File**: `.github/workflows/cleanup.yml`
+
+Runs automatically after CI completes on main, or manually via workflow_dispatch. See [docs/ci/REPOSITORY_CLEANUP.md](docs/ci/REPOSITORY_CLEANUP.md).
+
+### 4. Claude Code Command
 **File**: `.claude/commands/cleanup.md`
 
 Registered as `/cleanup` command in Claude Code for easy invocation.
 
-### 3. Git Workflow Integration
+### 5. Git Workflow Integration
 **Updated**: `.claude/skills/git-workflow/SKILL.md`
 
 Added cleanup section to existing git workflow documentation.
 
-### 4. Scripts Documentation
+### 6. Scripts Documentation
 **File**: `scripts/README.md`
 
 Comprehensive documentation for all scripts in the repository.

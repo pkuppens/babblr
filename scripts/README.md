@@ -12,7 +12,7 @@ This directory contains maintenance and utility scripts for the Babblr project.
 - Local branches merged into main
 - Remote branches merged into main
 - GitHub Actions runs for branches that no longer exist
-- Superseded workflow runs (older runs when a newer successful run exists)
+- Superseded workflow runs (older runs when a newer completed run exists)
 
 **Usage**:
 ```bash
@@ -33,27 +33,51 @@ This directory contains maintenance and utility scripts for the Babblr project.
 **Safety Features**:
 - Protected branches (main, master, develop, HEAD) are never deleted
 - Dry-run mode by default - must explicitly use `--execute` to make changes
-- Progress reporting shows what's being deleted
-- Continues even if individual deletions fail
 
 **When to use**:
 - After merging multiple PRs
 - Weekly/monthly repository maintenance
 - When GitHub Actions runs accumulate
+
+### cleanup-github-actions.sh
+
+**Purpose**: Clean up obsolete GitHub Actions workflow runs.
+
+**What it cleans**:
+1. Obsolete approval runs (queued/waiting older than 7 days)
+2. Runs on PR refs (refs/pull/*)
+3. Runs for branches that no longer exist
+4. Superseded runs (keeps most recent completed + failed for debugging)
+5. Orphaned runs (workflow file deleted, runs still exist)
+
+**Usage**:
+```bash
+# Dry-run (default)
+./scripts/cleanup-github-actions.sh
+
+# Execute cleanup
+./scripts/cleanup-github-actions.sh --execute
+
+# Show help
+./scripts/cleanup-github-actions.sh --help
+```
+
+**Requirements**:
+- `gh` CLI with workflow scope: `gh auth refresh -s workflow`
+- Python 3 (for JSON processing)
+- Run from repository root
+
+**When to use**:
+- When GitHub Actions runs accumulate
+- After merging many PRs
 - Before major releases
 
-**Example output**:
-```
-[WARNING] DRY-RUN MODE - No changes will be made
-[INFO] Repository: pkuppens/babblr
+### Repository Cleanup (GitHub Action)
 
-[OK] No local merged branches to clean up
-[OK] No remote merged branches to clean up
-[WARNING] Found 70 workflow run(s) for deleted branches
-[WARNING] Found 48 superseded workflow run(s)
-
-Total items to clean: 118
-```
+Both scripts run automatically via `.github/workflows/cleanup.yml`:
+- **Trigger**: After CI completes on main, or manually via workflow_dispatch
+- **Runs**: Branch cleanup first, then workflow run cleanup
+- See [docs/ci/REPOSITORY_CLEANUP.md](../docs/ci/REPOSITORY_CLEANUP.md) for full documentation
 
 ### no-commit-to-main.sh
 

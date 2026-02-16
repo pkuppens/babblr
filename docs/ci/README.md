@@ -30,6 +30,7 @@ Located in `.github/workflows/`:
 |------|---------|---------|
 | `ci.yml` | Main CI pipeline | Push, PR |
 | `security.yml` | Security scanning | Push, PR |
+| `cleanup.yml` | Repository cleanup | After CI on main, manual |
 | `release.yml` | Release automation | Tags, manual |
 
 ## Composite Actions
