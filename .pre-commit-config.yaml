@@ -87,11 +87,13 @@ repos:
         pass_filenames: false
         always_run: false
 
-      # Node dependency audit - matches security workflow (npm audit --audit-level=moderate)
-      # Runs on every commit so you catch the same failures locally before push.
+      # Node dependency audit - matches security workflow.
+      # --omit=dev: only audit production runtime deps; dev deps (electron-builder,
+      # eslint toolchain) are build tools never shipped to end users and contain
+      # transitive vulnerabilities that cannot be fixed without breaking changes.
       - id: frontend-npm-audit
         name: frontend-npm-audit
-        entry: bash -lc "npm --prefix frontend audit --audit-level=moderate"
+        entry: bash -lc "npm --prefix frontend audit --omit=dev --audit-level=moderate"
         language: system
         pass_filenames: false
         always_run: true

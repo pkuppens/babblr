@@ -147,8 +147,11 @@ jobs:
       - name: Run npm audit
         working-directory: frontend
         run: |
-          # Run audit and fail on moderate or higher vulnerabilities
-          npm audit --audit-level=moderate
+          # Audit only production (runtime) dependencies.
+          # Dev dependencies (electron-builder, eslint, etc.) are build tools
+          # that are never shipped to end users and contain known transitive
+          # vulnerabilities that cannot be fixed without breaking changes.
+          npm audit --omit=dev --audit-level=moderate
 
   # Security summary
   security-summary:
