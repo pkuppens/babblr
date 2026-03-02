@@ -68,7 +68,7 @@ jobs:
           uv build
 
       - name: Upload backend artifacts
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: backend-dist
           path: backend/dist/*
@@ -103,7 +103,7 @@ jobs:
         run: npm run electron:build
 
       - name: Upload frontend artifacts
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: frontend-dist
           path: frontend/release/*
@@ -120,24 +120,24 @@ jobs:
       id-token: write
     steps:
       - name: Download backend artifacts
-        uses: actions/download-artifact@v7.0.0
+        uses: actions/download-artifact@v8.0.0
         with:
           name: backend-dist
           path: backend-dist
 
       - name: Download frontend artifacts
-        uses: actions/download-artifact@v7.0.0
+        uses: actions/download-artifact@v8.0.0
         with:
           name: frontend-dist
           path: frontend-dist
 
       - name: Generate attestations for backend
-        uses: actions/attest-build-provenance@v3
+        uses: actions/attest-build-provenance@v4
         with:
           subject-path: 'backend-dist/*'
 
       - name: Generate attestations for frontend
-        uses: actions/attest-build-provenance@v3
+        uses: actions/attest-build-provenance@v4
         with:
           subject-path: 'frontend-dist/*'
 
@@ -153,13 +153,13 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Download backend artifacts
-        uses: actions/download-artifact@v7.0.0
+        uses: actions/download-artifact@v8.0.0
         with:
           name: backend-dist
           path: backend-dist
 
       - name: Download frontend artifacts
-        uses: actions/download-artifact@v7.0.0
+        uses: actions/download-artifact@v8.0.0
         with:
           name: frontend-dist
           path: frontend-dist
