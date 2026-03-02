@@ -63,8 +63,12 @@ updates:
         update-types: ["version-update:semver-major"]
       - dependency-name: "react-dom"
         update-types: ["version-update:semver-major"]
-      # ESLint 10 incompatible with @typescript-eslint 8.x (peer dep)
+      # ESLint 10 ecosystem not ready: @typescript-eslint, eslint-plugin-react lack support
       - dependency-name: "eslint"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@eslint/js"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "eslint-plugin-react"
         update-types: ["version-update:semver-major"]
 
   # GitHub Actions dependencies
