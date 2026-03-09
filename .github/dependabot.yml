@@ -3,8 +3,8 @@
 #
 # Review Strategy:
 # - Maximum simplification: ONE PR per ecosystem monthly (3 PRs total)
-# - All ecosystems check on first Sunday of month at 03:00 UTC
-# - Cron: 0 3 1-7 * 0 = minute 0, hour 3, days 1-7, any month, Sunday
+# - All ecosystems check on first Saturday of month at 03:00 UTC
+# - Cron: 0 3 1-7 * 6 = minute 0, hour 3, days 1-7, any month, Saturday
 # - Updates reviewed and manually merged with attribution to @pkuppens
 # - Failed/problematic updates are deferred and tracked in CHANGELOG.md
 # - Cron expressions: https://docs.github.com/en/code-security/dependabot/working-with-dependabot/dependabot-options-reference#schedule-
@@ -15,7 +15,7 @@ updates:
   - package-ecosystem: "pip"
     directory: "/backend"
     schedule:
-      interval: "0 3 1-7 * 0"  # First Sunday of month at 03:00 UTC
+      interval: "0 3 1-7 * 6"  # First Saturday of month at 03:00 UTC
     open-pull-requests-limit: 1
     commit-message:
       prefix: "deps(backend)"
@@ -38,7 +38,7 @@ updates:
   - package-ecosystem: "npm"
     directory: "/frontend"
     schedule:
-      interval: "0 3 1-7 * 0"  # First Sunday of month at 03:00 UTC
+      interval: "0 3 1-7 * 6"  # First Saturday of month at 03:00 UTC
     open-pull-requests-limit: 1
     commit-message:
       prefix: "deps(frontend)"
@@ -75,7 +75,7 @@ updates:
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "0 3 1-7 * 0"  # First Sunday of month at 03:00 UTC
+      interval: "0 3 1-7 * 6"  # First Saturday of month at 03:00 UTC
     open-pull-requests-limit: 5
     commit-message:
       prefix: "ci"
