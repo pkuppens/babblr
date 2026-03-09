@@ -19,6 +19,8 @@ export default tseslint.config(
     },
     rules: {
       ...reactHooks.configs.recommended.rules,
+      // ES2020 target lacks Error cause option; disable until we upgrade lib.
+      'preserve-caught-error': 'off',
       // Keep files tidy (similar to "ruff format" expectations).
       'eol-last': ['error', 'always'],
       'no-multiple-empty-lines': ['error', { max: 1, maxBOF: 0, maxEOF: 0 }],
