@@ -78,19 +78,22 @@ const TabBar: React.FC<TabBarProps> = ({ activeTab, onTabChange, language }) => 
   const uiStrings = getUIStrings(language || 'english');
   const handleKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>, tabKey: TabKey) => {
     const currentIndex = TABS.findIndex(tab => tab.key === activeTab);
-    let newIndex = currentIndex;
 
     switch (event.key) {
       case 'ArrowLeft':
+      {
         event.preventDefault();
-        newIndex = currentIndex > 0 ? currentIndex - 1 : TABS.length - 1;
+        const newIndex = currentIndex > 0 ? currentIndex - 1 : TABS.length - 1;
         onTabChange(TABS[newIndex].key);
         break;
+      }
       case 'ArrowRight':
+      {
         event.preventDefault();
-        newIndex = currentIndex < TABS.length - 1 ? currentIndex + 1 : 0;
-        onTabChange(TABS[newIndex].key);
+        const nextIndex = currentIndex < TABS.length - 1 ? currentIndex + 1 : 0;
+        onTabChange(TABS[nextIndex].key);
         break;
+      }
       case 'Home':
         event.preventDefault();
         onTabChange(TABS[0].key);

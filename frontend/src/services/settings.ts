@@ -90,7 +90,8 @@ class SettingsService {
     } catch (error) {
       console.error(`Failed to save ${provider} API key:`, error);
       throw new Error(
-        `Failed to save API key: ${error instanceof Error ? error.message : 'Unknown error'}`
+        `Failed to save API key: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        { cause: error }
       );
     }
   }
