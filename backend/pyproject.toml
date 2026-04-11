@@ -15,8 +15,8 @@ dependencies = [
     "python-multipart>=0.0.26",
     "anthropic>=0.94.0",
     # PyTorch with CUDA support - uv will use the pytorch-cu121 index (see [tool.uv.sources])
-    # Keep this below 2.11.0 so uv can resolve against the existing CUDA 12.1 source.
-    "torch>=2.10.0,<2.11.0",
+    # CUDA 12.1 wheels currently resolve up to the 2.5.x line in CI.
+    "torch>=2.5.1,<2.6.0",
     "openai-whisper>=20231117",
     # Provides a bundled FFmpeg binary for many platforms. We use it as a fallback
     # on Windows so Whisper can decode audio without a system-wide FFmpeg install.

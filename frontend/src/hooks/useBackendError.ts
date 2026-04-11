@@ -26,7 +26,7 @@ export function useBackendError() {
     message: '',
     code: '',
   });
-  const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const pollingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   /**
    * Check backend health by calling the /health endpoint.
