@@ -422,9 +422,9 @@ python check_cuda.py
 
 **Expected (with GPU):**
 ```
-[OK] PyTorch version: 2.x.x+cu121
+[OK] PyTorch version: 2.x.x+cu130
      CUDA available in PyTorch: True
-[OK] CUDA version: 12.1
+[OK] CUDA version: 13.x (or driver-reported)
 [OK] GPU device: NVIDIA ...
 ```
 
@@ -436,7 +436,7 @@ python check_cuda.py
    ```bash
    cd backend
    uv pip uninstall torch torchvision torchaudio
-   uv pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+   uv pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu130
    ```
 </details>
 
