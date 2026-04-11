@@ -14,9 +14,8 @@ dependencies = [
     "uvicorn[standard]>=0.32.1",
     "python-multipart>=0.0.26",
     "anthropic>=0.94.0",
-    # PyTorch with CUDA support - uv will use the pytorch-cu121 index (see [tool.uv.sources])
-    # Keep this below 2.11.0 so uv can resolve against the existing CUDA 12.1 source.
-    "torch>=2.10.0,<2.11.0",
+    # PyTorch with CUDA 13.0 wheels (Linux CI + Windows dev). See [tool.uv.sources].
+    "torch>=2.11.0",
     "openai-whisper>=20231117",
     # Provides a bundled FFmpeg binary for many platforms. We use it as a fallback
     # on Windows so Whisper can decode audio without a system-wide FFmpeg install.
@@ -50,7 +49,7 @@ dev = [
     "httpx>=0.28.1",
     "pre-commit>=4.5.1",
     "ruff>=0.15.10",
-    "pyright>=1.1.0",
+    "pyright>=1.1.408",
 ]
 
 [project.scripts]
@@ -61,16 +60,16 @@ babblr-test-prompt-system = "app.scripts.test_prompt_system:main"
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
-# Use PyTorch CUDA index for torch packages
+# Use PyTorch CUDA 13.0 index for torch packages (torch 2.11+ wheels for Linux + Windows).
 [[tool.uv.index]]
-name = "pytorch-cu121"
-url = "https://download.pytorch.org/whl/cu121"
+name = "pytorch-cu130"
+url = "https://download.pytorch.org/whl/cu130"
 explicit = true
 
 [tool.uv.sources]
-torch = { index = "pytorch-cu121" }
-torchvision = { index = "pytorch-cu121" }
-torchaudio = { index = "pytorch-cu121" }
+torch = { index = "pytorch-cu130" }
+torchvision = { index = "pytorch-cu130" }
+torchaudio = { index = "pytorch-cu130" }
 
 [tool.hatch.build.targets.wheel]
 packages = ["app"]

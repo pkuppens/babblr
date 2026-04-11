@@ -32,7 +32,7 @@ This script will:
 Then install PyTorch with CUDA (optional but recommended):
 ```bash
 cd backend
-uv pip install --upgrade torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+uv pip install --upgrade torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu130
 ```
 
 ## Detailed Setup
@@ -113,8 +113,8 @@ cd backend
 # Uninstall CPU-only PyTorch
 uv pip uninstall torch torchvision torchaudio
 
-# Install CUDA-enabled PyTorch (CUDA 12.1 - compatible with CUDA 13.0+ drivers)
-uv pip install --upgrade torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+# Install CUDA-enabled PyTorch (CUDA 13.0 wheels; use recent NVIDIA drivers)
+uv pip install --upgrade torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu130
 ```
 
 **Verify CUDA:**
@@ -125,7 +125,7 @@ python check_cuda.py
 
 Expected output:
 ```
-[OK] PyTorch version: 2.5.1+cu121
+[OK] PyTorch version: 2.11.0+cu130
      CUDA available in PyTorch: True
 [OK] CUDA version: 12.1
 [OK] GPU device: NVIDIA GeForce GTX 1070
@@ -234,7 +234,7 @@ python check_cuda.py
 
 **Common causes:**
 1. **PyTorch installed in wrong location** → Check "Virtual environment" in output
-2. **CPU-only PyTorch** → Reinstall with `--index-url https://download.pytorch.org/whl/cu121`
+2. **CPU-only PyTorch** → Reinstall with `--index-url https://download.pytorch.org/whl/cu130`
 3. **NVIDIA drivers missing** → Run `nvidia-smi` to verify
 
 **Solution:**
@@ -246,7 +246,7 @@ pwd  # Should end with /backend
 
 # Reinstall CUDA PyTorch
 uv pip uninstall torch torchvision torchaudio
-uv pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+uv pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu130
 
 # Verify
 python -c "import torch; print('CUDA:', torch.cuda.is_available())"
@@ -293,7 +293,7 @@ uv pip install -e ".[dev]"
 - [ ] uv package manager installed
 - [ ] Virtual environment in `backend/.venv` only
 - [ ] Dependencies installed: `uv pip install -e ".[dev]"`
-- [ ] PyTorch with CUDA: `uv pip install torch... --index-url .../cu121`
+- [ ] PyTorch with CUDA: `uv pip install torch... --index-url .../cu130`
 - [ ] CUDA verified: `python check_cuda.py` shows GPU
 - [ ] Environment configured: `.env` file with API key
 - [ ] Backend runs successfully with GPU detection

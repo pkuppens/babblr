@@ -130,11 +130,11 @@ def main() -> None:
             logger.info("")
             logger.info("2. Install CUDA-enabled PyTorch using uv (recommended):")
             logger.info("")
-            logger.info("   For CUDA 12.1 (recommended for CUDA 13.0 drivers):")
+            logger.info("   For CUDA 13.0 PyTorch wheels (matches backend/pyproject.toml):")
             logger.info("   cd backend")
             logger.info("   uv pip uninstall torch torchvision torchaudio")
             logger.info(
-                "   uv pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121"
+                "   uv pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu130"
             )
             logger.info("")
             logger.info("   For CUDA 11.8 (fallback for older systems):")
