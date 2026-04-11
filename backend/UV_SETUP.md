@@ -95,6 +95,8 @@ cp .env.example .env
 
 **Note:** Never create a `.venv` in the project root directory. It should only exist in `backend/.venv`.
 
+**Slow internet / large CUDA downloads:** The backend pulls PyTorch CUDA wheels from `pyproject.toml` (multi-gigabyte). If downloads time out locally, you can still validate changes by **opening a pull request**: CI runs `uv sync --dev` and the test jobs on GitHub. Install the full CUDA stack on your machine when your connection can handle it.
+
 ### Running the Backend
 
 **Option 1: Using the convenience script (recommended)**
