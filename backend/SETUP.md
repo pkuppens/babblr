@@ -117,6 +117,8 @@ uv pip uninstall torch torchvision torchaudio
 uv pip install --upgrade torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu130
 ```
 
+**Slow internet:** CUDA PyTorch wheels are large (often well over 1 GB). If local `uv sync` / `uv pip install` times out, that is fine: **GitHub Actions** runs `uv sync --dev` on Linux for every PR and is the supported way to confirm dependency resolution and tests when you cannot download GPU wheels locally. Retry the install when you have a better connection, or use CPU-only PyTorch for lighter local work (Whisper will be slower).
+
 **Verify CUDA:**
 ```bash
 cd backend
