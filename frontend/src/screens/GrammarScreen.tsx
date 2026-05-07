@@ -74,13 +74,6 @@ const GrammarScreen: React.FC<GrammarScreenProps> = ({ selectedLanguage, selecte
   const languageCode = languageToCode(language);
   const level = difficulty;
 
-  // Load lessons on mount and when filters change
-  useEffect(() => {
-    loadLessons();
-    loadRecaps();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [language, difficulty, lessonType]);
-
   const loadLessons = async () => {
     try {
       setLoading(true);
@@ -103,6 +96,13 @@ const GrammarScreen: React.FC<GrammarScreenProps> = ({ selectedLanguage, selecte
       console.error('Error loading recaps:', err);
     }
   };
+
+  // Load lessons on mount and when filters change
+  useEffect(() => {
+    loadLessons();
+    loadRecaps();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [language, difficulty, lessonType]);
 
   const handleLessonClick = async (lessonId: number) => {
     try {

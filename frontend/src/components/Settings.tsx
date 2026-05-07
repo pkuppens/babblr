@@ -101,13 +101,6 @@ function Settings({ isOpen, onClose, inline = false }: SettingsProps) {
   );
 
   useEffect(() => {
-    if (isOpen) {
-      loadSettings();
-      loadSttConfig();
-    }
-  }, [isOpen]);
-
-  useEffect(() => {
     return () => {
       if (modelSwitchTimerRef.current !== null) {
         window.clearInterval(modelSwitchTimerRef.current);
@@ -206,6 +199,13 @@ function Settings({ isOpen, onClose, inline = false }: SettingsProps) {
       setIsLoadingSttConfig(false);
     }
   };
+
+  useEffect(() => {
+    if (isOpen) {
+      loadSettings();
+      loadSttConfig();
+    }
+  }, [isOpen]);
 
   const validateAnthropicKey = async (key: string): Promise<boolean> => {
     setIsValidatingAnthropic(true);
