@@ -57,7 +57,7 @@ restore-keys: |
 
 **Key strategy**:
 ```yaml
-- uses: actions/setup-node@v4
+- uses: actions/setup-node@v5
   with:
     cache: 'npm'
     cache-dependency-path: frontend/package-lock.json
