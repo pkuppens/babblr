@@ -107,13 +107,6 @@ const AssessmentsScreen: React.FC<AssessmentsScreenProps> = ({
 
   const languageCode = languageToCode(selectedLanguage);
 
-  // Load assessments and attempts on mount and language change
-  useEffect(() => {
-    loadAssessments();
-    loadAttempts();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedLanguage]);
-
   const loadAssessments = async () => {
     try {
       setLoading(true);
@@ -136,6 +129,13 @@ const AssessmentsScreen: React.FC<AssessmentsScreenProps> = ({
       console.error('Error loading attempts:', err);
     }
   };
+
+  // Load assessments and attempts on mount and language change
+  useEffect(() => {
+    loadAssessments();
+    loadAttempts();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedLanguage]);
 
   const handleStartAssessment = async (assessmentId: number) => {
     try {
