@@ -1,7 +1,7 @@
 fastapi==0.136.1
 uvicorn[standard]==0.47.0
-python-multipart==0.0.28
-anthropic==0.102.0
+python-multipart==0.0.29
+anthropic==0.104.1
 openai-whisper==20250625
 imageio-ffmpeg==0.6.0
 python-dotenv==1.2.2
