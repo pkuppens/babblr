@@ -1,0 +1,19 @@
+# Non-secret backend config. STT is wired to the external Whisper webservice so it
+# can scale independently (STT_PROVIDER=whisper_webservice).
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: babblr-config
+  namespace: babblr
+data:
+  BABBLR_API_HOST: "0.0.0.0"
+  BABBLR_API_PORT: "8000"
+  LLM_PROVIDER: "ollama"
+  OLLAMA_BASE_URL: "http://ollama:11434"
+  OLLAMA_MODEL: "llama3.2:latest"
+  BABBLR_AUDIO_STORAGE_PATH: "/data/audio"
+  WHISPER_MODEL: "base"
+  STT_PROVIDER: "whisper_webservice"
+  STT_WEBSERVICE_URL: "http://babblr-whisper:9000"
+  STT_WEBSERVICE_TIMEOUT: "300"
+  STT_WEBSERVICE_DEVICE: "auto"

@@ -1,0 +1,46 @@
+# GPU overlay: schedule ollama and whisper on a GPU node and request 1 GPU each.
+# Apply where GPU nodes exist (labelled gpu=true, tainted nvidia.com/gpu):
+#   kubectl apply -k k8s/overlays/gpu
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../../base
+
+patches:
+  - target:
+      kind: Deployment
+      name: ollama
+    patch: |
+      - op: add
+        path: /spec/template/spec/nodeSelector
+        value:
+          gpu: "true"
+      - op: add
+        path: /spec/template/spec/tolerations
+        value:
+          - key: "nvidia.com/gpu"
+            operator: "Exists"
+            effect: "NoSchedule"
+      - op: add
+        path: /spec/template/spec/containers/0/resources/limits/nvidia.com~1gpu
+        value: 1
+  - target:
+      kind: Deployment
+      name: babblr-whisper
+    patch: |
+      - op: replace
+        path: /spec/template/spec/containers/0/env/3/value
+        value: "cuda"
+      - op: add
+        path: /spec/template/spec/nodeSelector
+        value:
+          gpu: "true"
+      - op: add
+        path: /spec/template/spec/tolerations
+        value:
+          - key: "nvidia.com/gpu"
+            operator: "Exists"
+            effect: "NoSchedule"
+      - op: add
+        path: /spec/template/spec/containers/0/resources/limits/nvidia.com~1gpu
+        value: 1

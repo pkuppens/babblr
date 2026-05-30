@@ -1,0 +1,97 @@
+# External Whisper STT webservice as an INDEPENDENTLY SCALABLE Deployment.
+# The backend calls it via STT_PROVIDER=whisper_webservice + STT_WEBSERVICE_URL.
+# This is the "scale STT separately" showcase (HPA below). GPU via the gpu overlay.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: whisper-models
+  namespace: babblr
+spec:
+  accessModes: ["ReadWriteOnce"]
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: babblr-whisper
+  namespace: babblr
+  labels:
+    app: babblr-whisper
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: babblr-whisper
+  template:
+    metadata:
+      labels:
+        app: babblr-whisper
+    spec:
+      containers:
+        - name: whisper
+          image: onerahmet/openai-whisper-asr-webservice:latest
+          ports:
+            - containerPort: 9000
+          env:
+            - name: ASR_ENGINE
+              value: "openai_whisper"
+            - name: ASR_MODEL
+              value: "base"
+            - name: ASR_MODEL_PATH
+              value: "/data/whisper"
+            - name: ASR_DEVICE
+              value: "cpu"
+          readinessProbe:
+            httpGet:
+              path: /docs
+              port: 9000
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              cpu: "2"
+              memory: 2Gi
+          volumeMounts:
+            - name: models
+              mountPath: /data/whisper
+      volumes:
+        - name: models
+          persistentVolumeClaim:
+            claimName: whisper-models
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: babblr-whisper
+  namespace: babblr
+spec:
+  selector:
+    app: babblr-whisper
+  ports:
+    - port: 9000
+      targetPort: 9000
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: babblr-whisper
+  namespace: babblr
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: babblr-whisper
+  minReplicas: 1
+  maxReplicas: 5
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
