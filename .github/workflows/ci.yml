@@ -19,10 +19,12 @@ concurrency:
 
 # Global environment variables with semantic names
 env:
-  # Python version configuration
-  SUPPORTED_PYTHON_VERSIONS: '["3.11", "3.12"]'
-  RELEASE_PYTHON_VERSION: "3.12"
-  NODE_VERSION: "24"  # Node.js 24 LTS (Active until 2027-04-30, maintenance until 2030-04-30)
+  # Python: backend-lint uses SUPPORTED_PYTHON_VERSIONS as a matrix (all in-support LTS).
+  # RELEASE_PYTHON_VERSION is intentionally not matrixed: unit tests and markdown-check
+  # run once on the newest LTS to keep CI fast and match the version we target for releases.
+  SUPPORTED_PYTHON_VERSIONS: '["3.12", "3.13", "3.14"]'
+  RELEASE_PYTHON_VERSION: "3.14"
+  NODE_VERSION: "24"  # Node.js 24 LTS (default; Active until 2027-04-30)
   NPM_VERSION: "11.8.0"  # npm 11.8.0 (compatible with Node.js 24)
   
   # Cache configuration
@@ -48,9 +50,8 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        # Lint on multiple Python versions to catch version-specific syntax issues
-        # Uses hardcoded JSON to avoid dependency on repository variables
-        python-version: ${{ fromJSON('["3.11", "3.12"]') }}
+        # Lint matrix: keep in sync with SUPPORTED_PYTHON_VERSIONS (not RELEASE_PYTHON_VERSION)
+        python-version: ${{ fromJSON('["3.12", "3.13", "3.14"]') }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
@@ -91,9 +92,9 @@ jobs:
         run: |
           uv run pyright
 
-  # Backend unit tests - runs after lint passes (single Python version for efficiency and stable CI)
+  # Backend unit tests: RELEASE_PYTHON_VERSION only (no matrix; see env comment above)
   backend-test-unit:
-    name: Backend Unit Tests (Python 3.12)
+    name: Backend Unit Tests (Python 3.14)
     runs-on: ubuntu-latest
     timeout-minutes: 15
     needs: backend-lint
@@ -152,20 +153,24 @@ jobs:
           # (parallelization with -n causes pytest-xdist to hang in CI environment)
           uv run pytest tests/test_unit.py -vv --tb=short
 
-  # Frontend linting and tests
+  # Frontend linting and tests (Node 24 LTS + 26 Current; CI runner only, not app runtime)
   frontend-test:
-    name: Frontend Lint & Test
+    name: Frontend Lint & Test (Node ${{ matrix.node-version }})
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        node-version: ${{ fromJSON('["24", "26"]') }}
     permissions:
       contents: read
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
 
-      - name: Set up Node.js ${{ env.NODE_VERSION }}
+      - name: Set up Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v6
         with:
-          node-version: ${{ env.NODE_VERSION }}
+          node-version: ${{ matrix.node-version }}
           cache: 'npm'
           cache-dependency-path: frontend/package-lock.json
 
@@ -257,7 +262,7 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "## Configuration" >> $GITHUB_STEP_SUMMARY
           echo "- Python versions: ${{ env.SUPPORTED_PYTHON_VERSIONS }}" >> $GITHUB_STEP_SUMMARY
-          echo "- Node.js version: ${{ env.NODE_VERSION }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Node.js versions (frontend matrix): 24, 26" >> $GITHUB_STEP_SUMMARY
           echo "- Note: Integration tests run separately in pre-release workflow" >> $GITHUB_STEP_SUMMARY
 
       - name: Check overall status
