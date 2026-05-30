@@ -1,0 +1,113 @@
+# Backend (FastAPI). Audio + whisper-cache on PVCs. /health probes. HPA for scaling.
+#   docker build -t babblr-backend:dev backend && kind load docker-image babblr-backend:dev --name ckad
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: audio-files
+  namespace: babblr
+spec:
+  accessModes: ["ReadWriteOnce"]
+  resources:
+    requests:
+      storage: 2Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  namespace: babblr
+  labels:
+    app: backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+        - name: backend
+          image: babblr-backend:dev
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8000
+          envFrom:
+            - configMapRef:
+                name: babblr-config
+          env:
+            - name: BABBLR_CONVERSATION_DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: babblr-secrets
+                  key: BABBLR_CONVERSATION_DATABASE_URL
+            - name: ANTHROPIC_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: babblr-secrets
+                  key: ANTHROPIC_API_KEY
+            - name: GOOGLE_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: babblr-secrets
+                  key: GOOGLE_API_KEY
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 40
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              cpu: "2"
+              memory: 2Gi
+          volumeMounts:
+            - name: audio
+              mountPath: /data/audio
+      volumes:
+        - name: audio
+          persistentVolumeClaim:
+            claimName: audio-files
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend
+  namespace: babblr
+spec:
+  selector:
+    app: backend
+  ports:
+    - port: 8000
+      targetPort: 8000
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: backend
+  namespace: babblr
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: backend
+  minReplicas: 2
+  maxReplicas: 6
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
