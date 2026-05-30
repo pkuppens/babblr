@@ -19,7 +19,9 @@ concurrency:
 
 # Global environment variables with semantic names
 env:
-  # Python: lint on supported LTS (>=1 year security support); test on latest LTS only
+  # Python: backend-lint uses SUPPORTED_PYTHON_VERSIONS as a matrix (all in-support LTS).
+  # RELEASE_PYTHON_VERSION is intentionally not matrixed: unit tests and markdown-check
+  # run once on the newest LTS to keep CI fast and match the version we target for releases.
   SUPPORTED_PYTHON_VERSIONS: '["3.12", "3.13", "3.14"]'
   RELEASE_PYTHON_VERSION: "3.14"
   NODE_VERSION: "24"  # Node.js 24 LTS (default; Active until 2027-04-30)
@@ -48,9 +50,8 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        # Lint on multiple Python versions to catch version-specific syntax issues
-        # Uses hardcoded JSON to avoid dependency on repository variables
-        python-version: ${{ fromJSON('["3.12", "3.13", "3.14"]') }}
+        # Lint matrix: keep in sync with SUPPORTED_PYTHON_VERSIONS (not RELEASE_PYTHON_VERSION)
+        python-version: ${{ fromJSON(env.SUPPORTED_PYTHON_VERSIONS) }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
@@ -91,7 +92,7 @@ jobs:
         run: |
           uv run pyright
 
-  # Backend unit tests - runs after lint passes (single Python version for efficiency and stable CI)
+  # Backend unit tests: RELEASE_PYTHON_VERSION only (no matrix; see env comment above)
   backend-test-unit:
     name: Backend Unit Tests (Python 3.14)
     runs-on: ubuntu-latest
