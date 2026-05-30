@@ -51,7 +51,7 @@ jobs:
       fail-fast: true
       matrix:
         # Lint matrix: keep in sync with SUPPORTED_PYTHON_VERSIONS (not RELEASE_PYTHON_VERSION)
-        python-version: ${{ fromJSON(env.SUPPORTED_PYTHON_VERSIONS) }}
+        python-version: ${{ fromJSON('["3.12", "3.13", "3.14"]') }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
