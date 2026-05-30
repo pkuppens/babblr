@@ -1,5 +1,4 @@
-# Auto-merge Dependabot PRs when CI and Security checks pass.
-# Requires branch protection: "Require status checks" with CI and Security Scanning.
+# Dependabot PRs require manual review; this job satisfies the required check without enabling auto-merge.
 name: Dependabot Auto-merge
 
 on:
@@ -7,8 +6,8 @@ on:
     branches: [main]
 
 permissions:
-  contents: write
-  pull-requests: write
+  contents: read
+  pull-requests: read
 
 jobs:
   dependabot-automerge:
@@ -17,14 +16,7 @@ jobs:
     if: github.actor == 'dependabot[bot]'
 
     steps:
-      - name: Fetch Dependabot metadata
-        id: metadata
-        uses: dependabot/fetch-metadata@v3
-        with:
-          github-token: "${{ secrets.GITHUB_TOKEN }}"
-
-      - name: Enable auto-merge
+      - name: Manual review required (auto-merge disabled)
         run: |
-          gh pr merge --auto --squash "${{ github.event.pull_request.html_url }}"
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          echo "Dependabot PRs are not auto-merged in this repository."
+          echo "A maintainer will review and merge after CI passes."
