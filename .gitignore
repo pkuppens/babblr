@@ -252,3 +252,8 @@ docker/.env.local
 docker/.env.*.local
 
 /nul
+
+# Understand-Anything codebase analysis (intermediate/scratch only; knowledge-graph.json is committed)
+.understand-anything/intermediate/
+.understand-anything/tmp/
+.understand-anything/.trash-*/
