@@ -328,6 +328,53 @@ View results in Security tab → Code scanning.
 
 See `docs/ci/SECURITY_SCANNING.md` for details.
 
+## Codebase Analysis with Understand-Anything
+
+[Understand-Anything](https://github.com/Egonex-AI/Understand-Anything) is a Claude Code plugin that produces an interactive knowledge graph of this repo's architecture.
+
+### Global setup (one-time, per developer machine)
+
+The plugin is installed as a Claude Code plugin — it is NOT a project dependency:
+
+```bash
+# In a Claude Code session
+/plugin marketplace add Egonex-AI/Understand-Anything
+/plugin install understand-anything
+```
+
+**Prerequisite**: Node.js ≥ 22.13 and pnpm ≥ 10 must be available when the skill first builds its core (`packages/core/dist/`). If pnpm is missing, install it:
+
+```bash
+npm install -g pnpm@10   # if Node is < 22.13 (pnpm@11 requires ≥ 22.13)
+```
+
+### Running the analysis (within a Claude Code session)
+
+```
+/understand-anything:understand
+```
+
+This produces `.understand-anything/knowledge-graph.json`. Re-run after significant structural changes; subsequent runs are incremental.
+
+### Output files
+
+| Path | Tracked in git? | Purpose |
+|---|---|---|
+| `.understand-anything/knowledge-graph.json` | Yes | Shareable graph — commit so all contributors can use the dashboard |
+| `.understand-anything/meta.json` | Yes | Records last-analyzed commit hash for incremental updates |
+| `.understand-anything/config.json` | Yes | Stores language and auto-update preferences |
+| `.understand-anything/.understandignore` | Yes | Controls which files are excluded from analysis |
+| `.understand-anything/intermediate/` | No (gitignored) | Scratch files — cleaned up after each run |
+| `.understand-anything/tmp/` | No (gitignored) | Scratch files — cleaned up after each run |
+
+### Viewing the dashboard
+
+After generating the graph, launch the interactive dashboard in a Claude Code session:
+
+```
+/understand-anything:understand-dashboard
+```
+
 ## Documentation Location
 
 Documentation files are currently in the project root. Key files:
