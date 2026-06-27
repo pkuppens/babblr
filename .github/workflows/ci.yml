@@ -67,7 +67,7 @@ jobs:
           echo "$HOME/.cargo/bin" >> $GITHUB_PATH
 
       - name: Cache UV dependencies
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: |
             ~/.cache/uv
@@ -113,7 +113,7 @@ jobs:
           echo "$HOME/.cargo/bin" >> $GITHUB_PATH
 
       - name: Cache UV dependencies
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: |
             ~/.cache/uv
@@ -125,7 +125,7 @@ jobs:
 
       - name: Cache Whisper models
         if: env.CACHE_WHISPER_MODELS == 'true'
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: |
             ${{ github.workspace }}/.cache/whisper
@@ -139,7 +139,7 @@ jobs:
           uv sync --dev
 
       - name: Cache pytest cache
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: backend/.pytest_cache
           key: pytest-${{ runner.os }}-py${{ env.RELEASE_PYTHON_VERSION }}-${{ hashFiles('backend/tests/**/*.py') }}
