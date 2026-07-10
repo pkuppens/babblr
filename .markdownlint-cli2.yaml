@@ -22,7 +22,8 @@ config:
   MD033: false # no-inline-html
 
   # Still useful signals.
-  MD009: true # trailing spaces
+  MD009:
+    br_spaces: 2 # allow two trailing spaces for intentional Markdown line breaks
 
 ignores:
   - "**/node_modules/**"
