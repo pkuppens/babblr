@@ -21,6 +21,20 @@ However, **the user remains in control**. After voicing concerns:
 
 This applies to code, architecture, documentation, and process decisions.
 
+## Agent skills
+
+### Issue tracker
+
+Issues are tracked as GitHub Issues on `pkuppens/babblr` via the `gh` CLI. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Uses the five default canonical labels (`needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`) as-is. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context layout: one `CONTEXT.md` + `docs/adr/` at the repo root. See `docs/agents/domain.md`.
+
 ## Startup: Branch Check
 
 **At the start of every conversation**, check which git branch you're on:
