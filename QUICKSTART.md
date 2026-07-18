@@ -37,10 +37,23 @@ The setup script will:
 - Install **uv** (fast Python package manager) if not present
 - Create a Python virtual environment in `backend/.venv` (not root)
 - Install backend dependencies with uv
-- Install frontend dependencies with npm
+- Attempt to install frontend dependencies with npm (see troubleshooting below if this fails)
 - Create configuration file
 
 **Note:** The virtual environment is created in `backend/.venv` only. There should be no `.venv` in the project root directory.
+
+Known issue and recommended workaround:
+- On some systems the automated frontend install may fail due to npm peer dependency resolution (ERESOLVE). If that happens, run the frontend install manually with the legacy peer-deps option (safe for local development):
+
+  Windows (PowerShell/CMD):
+  cd frontend
+  npm install --legacy-peer-deps
+
+  macOS/Linux:
+  cd frontend
+  npm install --legacy-peer-deps
+
+  If `--legacy-peer-deps` is not acceptable for your environment, update `frontend/package.json` to use versions of ESLint / plugins that satisfy peer dependency constraints and re-run `npm install`.
 
 **What is uv?** uv is a blazingly fast Python package installer (10-100x faster than pip). The setup script installs it automatically. See [backend/UV_SETUP.md](backend/UV_SETUP.md) for details.
 
@@ -80,6 +93,16 @@ INFO:     Application startup complete.
 ```
 
 **Keep this terminal open!**
+
+Note: To run the backend with a specific LLM provider (for example, Ollama) set the LLM_PROVIDER environment variable before starting the server or edit `backend/.env`. Example (PowerShell):
+
+```powershell
+# Use Ollama for local inference
+$env:LLM_PROVIDER = 'ollama'
+.\run-backend.bat dev
+```
+
+If Ollama is installed and reachable at the configured `OLLAMA_BASE_URL`, the backend will use it. Otherwise the backend may fall back to the configured default provider (e.g., `mock`). Restart the backend after changing `backend/.env` or the environment variable.
 
 ## Step 4: Start Frontend (30 seconds)
 
@@ -172,7 +195,10 @@ lsof -i :5173
 # Try reinstalling dependencies
 cd frontend
 rm -rf node_modules
-npm install
+npm install --legacy-peer-deps
+# If that still fails, try:
+# npm install --force
+# or update package.json to use compatible ESLint/plugin versions and retry
 ```
 
 ### "API key not configured" error
