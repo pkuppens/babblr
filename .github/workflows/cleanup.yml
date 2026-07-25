@@ -62,7 +62,7 @@ jobs:
 
       - name: Set up Python
         if: github.event_name == 'workflow_dispatch' || steps.check-complete.outputs.skip == 'false'
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v7
         with:
           python-version: "3.12"
 
