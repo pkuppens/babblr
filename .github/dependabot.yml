@@ -74,6 +74,9 @@ updates:
         update-types: ["version-update:semver-major"]
       - dependency-name: "eslint-plugin-react"
         update-types: ["version-update:semver-major"]
+      # @typescript-eslint has no TS7 support yet (see 8931d25)
+      - dependency-name: "typescript"
+        update-types: ["version-update:semver-major"]
 
   # GitHub Actions dependencies
   - package-ecosystem: "github-actions"

@@ -141,7 +141,7 @@ prompt = builder.build_prompt(
     topic="introducing yourself",
     native_language="English",
     recent_vocab=["hola", "gracias", "por favor"],
-    common_mistakes=["mixing ser and estar"]
+    common_mistakes=["mixing ser and estar"],
 )
 ```
 
@@ -149,8 +149,8 @@ prompt = builder.build_prompt(
 
 ```python
 builder.normalize_level("beginner")  # Returns "A1"
-builder.normalize_level("b2")        # Returns "B2"
-builder.normalize_level("invalid")   # Returns "A1" (default)
+builder.normalize_level("b2")  # Returns "B2"
+builder.normalize_level("invalid")  # Returns "A1" (default)
 ```
 
 ### Correction Strategies
