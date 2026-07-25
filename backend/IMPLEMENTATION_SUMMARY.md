@@ -223,14 +223,14 @@ prompt = builder.build_prompt(
     topic="greetings and introductions",
     native_language="English",
     recent_vocab=["hola", "gracias", "adiós"],
-    common_mistakes=["confusing ser/estar"]
+    common_mistakes=["confusing ser/estar"],
 )
 
 # Get correction strategy
 strategy = builder.get_correction_strategy("A1")
 # Returns: {
 #   "ignore_punctuation": true,
-#   "ignore_capitalization": true, 
+#   "ignore_capitalization": true,
 #   "ignore_diacritics": true,
 #   "focus_on": ["basic_grammar", "core_vocabulary"]
 # }
