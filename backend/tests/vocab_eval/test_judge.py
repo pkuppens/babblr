@@ -2,6 +2,8 @@ import json
 from pathlib import Path
 
 import pytest
+
+from app.services.llm.base import LLMResponse
 from experiments.vocab_eval import judge as judge_module
 from experiments.vocab_eval.judge import (
     Verdict,
@@ -12,8 +14,6 @@ from experiments.vocab_eval.judge import (
     render_transcript_for_judge,
 )
 from experiments.vocab_eval.transcript import Transcript, Turn
-
-from app.services.llm.base import LLMResponse
 
 
 class FakeJudgeProvider:

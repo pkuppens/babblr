@@ -109,8 +109,8 @@ ignore = ["E501", "E402"]
 # after some imports but before others, especially when configuring logging early.
 
 [tool.ruff.lint.isort]
-# Ensure 'app' is always recognized as first-party regardless of working directory
-known-first-party = ["app"]
+# Ensure 'app' and 'experiments' are always recognized as first-party regardless of working directory
+known-first-party = ["app", "experiments"]
 # Allow logger initialization between import groups by treating it as a separator
 split-on-trailing-comma = true
 
