@@ -1,5 +1,5 @@
 fastapi==0.141.1
-uvicorn[standard]==0.52.0
+uvicorn[standard]==0.52.1
 python-multipart==0.0.32
 anthropic==0.120.2
 openai-whisper==20250625
