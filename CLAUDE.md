@@ -23,6 +23,8 @@ This applies to code, architecture, documentation, and process decisions.
 
 ## Agent skills
 
+These `docs/agents/*.md` files are not preloaded into context — they're read on demand (e.g. by a skill like `/to-tickets` or `/triage`) when the specifics they contain are actually needed.
+
 ### Issue tracker
 
 Issues are tracked as GitHub Issues on `pkuppens/babblr` via the `gh` CLI. See `docs/agents/issue-tracker.md`.
@@ -53,8 +55,10 @@ git branch --show-current
    # Switch to existing branch
    git checkout feature/existing-branch
 
-   # Or create new branch
-   git checkout -b feature/new-feature-name
+   # Or create new branch from the latest origin/main
+   # (local main can be behind if PRs were merged elsewhere)
+   git fetch origin
+   git checkout -b feature/new-feature-name origin/main
    ```
 3. **Do not make any code changes until on a feature branch**
 
