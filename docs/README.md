@@ -6,6 +6,8 @@ This folder contains technical documentation for Babblr.
 
 - [ARCHITECTURE.md](ARCHITECTURE.md) - System architecture and design decisions
 - [adr/](adr/) - Architecture Decision Records (ADRs) documenting key technical decisions
+- [agents/](agents/) - Focused guides for AI coding agents; [CLAUDE.md](../CLAUDE.md) at the repo root is the index
+- [ci/](ci/) - CI/CD pipeline, GitHub Actions guide, and security scanning
 
 ## Documentation Guidelines
 
