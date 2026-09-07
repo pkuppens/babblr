@@ -21,6 +21,37 @@ However, **the user remains in control**. After voicing concerns:
 
 This applies to code, architecture, documentation, and process decisions.
 
+## Language and Writing Style
+
+Babblr is multilingual by nature. To keep the product and its history easy to read and to translate, write all natural language in **ASD-STE100 Simplified Technical English (STE)**, unless this document or the task says otherwise.
+
+**Apply STE to:**
+
+- Code comments and docstrings
+- Names of variables, functions, classes, and files, as far as clear English allows
+- Commit messages, pull request titles and descriptions
+- Issue text and code review comments
+- Repository documentation (Markdown files)
+- English user-facing interface text that the app shows
+
+**STE in short:**
+
+- Use short sentences. Keep each instruction to one action.
+- Use the active voice ("Run the tests", not "The tests should be run").
+- Use simple tenses. Do not use the present perfect or the future perfect.
+- Use common, approved words. Use one word for one meaning.
+- Keep articles ("the", "a") and other words that make the sentence clear. Do not drop them.
+- Avoid idioms, slang, and long noun clusters (no more than three nouns in a row).
+- Write positive instructions. State what to do, not only what to avoid.
+
+**Do not force STE here:**
+
+- Language-learning content and example dialogues in the target languages (Spanish, Italian, German, French, Dutch, English).
+- English content that a task asks for at a set CEFR level, most notably C1-C2 tutor material. Write this content to the conventions of that level instead.
+- Third-party text that you quote without change (error messages, library output, text from a standard).
+
+When you are not sure whether STE applies, ask.
+
 ## Agent skills
 
 These `docs/agents/*.md` files are not preloaded into context — they're read on demand (e.g. by a skill like `/to-tickets` or `/triage`) when the specifics they contain are actually needed.
