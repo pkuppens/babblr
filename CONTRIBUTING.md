@@ -228,7 +228,7 @@ const Conversation: React.FC<ConversationProps> = ({
 - **Add comments sparingly** - Comment the "why", not the "what"
 - **Handle errors gracefully** - Provide meaningful error messages
 - **Test edge cases** - Consider and test boundary conditions
-- **Write in Simplified Technical English** - Babblr is multilingual, so use ASD-STE100 style for comments, docs, commit messages, and English UI text: short active sentences, simple tenses, common words, no long noun clusters. Language-learning content in the target languages and English written to a specific CEFR level (for example C2 tutor material) are exempt. See the "Language and Writing Style" section in [CLAUDE.md](CLAUDE.md).
+- **Write in Simplified Technical English** - Babblr is multilingual, so use ASD-STE100 style for comments, docs, commit messages, and English UI text: short active sentences, simple tenses, common words, no long noun clusters. Language-learning content in the target languages and English written to a specific CEFR level (for example C2 tutor material) are exempt. See [docs/agents/writing-style.md](docs/agents/writing-style.md).
 
 ## AI-Assisted Development
 
