@@ -1,13 +1,13 @@
 fastapi==0.141.1
-uvicorn[standard]==0.52.4
+uvicorn[standard]==0.53.0
 python-multipart==0.0.32
-anthropic==1.4.0
+anthropic==1.6.0
 openai-whisper==20250625
 imageio-ffmpeg==0.6.0
 python-dotenv==1.2.3
-sqlalchemy==2.0.52
+sqlalchemy==2.0.54
 aiosqlite==0.22.1
 pydantic==2.13.5
 pydantic-settings==2.15.0
 edge-tts==7.2.8
-tzdata==2026.3
+tzdata==2026.4
