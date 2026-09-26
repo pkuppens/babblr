@@ -70,7 +70,7 @@ jobs:
       - name: Install dependencies
         working-directory: backend
         run: |
-          uv sync --dev
+          uv sync --frozen --dev
 
       - name: Run integration tests
         working-directory: backend
