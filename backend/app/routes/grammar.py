@@ -501,7 +501,7 @@ async def get_recaps(
             mastery = getattr(progress, "mastery_score", None)  # type: ignore[attr-defined]
             last_reviewed = progress.last_accessed_at  # type: ignore[attr-defined]
 
-            if last_reviewed:
+            if last_reviewed is not None:
                 next_review_date = calculate_next_review_date(mastery, last_reviewed)
                 if now >= next_review_date:
                     due_lessons.append(lesson)

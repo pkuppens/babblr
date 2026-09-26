@@ -151,7 +151,8 @@ env.bak/
 venv.bak/
 
 # uv
-uv.lock
+# backend/uv.lock is intentionally committed for reproducible CI/dev installs
+# (see uv sync --frozen in ci.yml and issue #316) - do not ignore it here.
 .python-version
 
 # Spyder project settings

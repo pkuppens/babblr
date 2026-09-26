@@ -108,7 +108,7 @@ jobs:
       - name: Install dependencies
         working-directory: backend
         run: |
-          uv sync --dev
+          uv sync --frozen --dev
 
       - name: Install pip-audit
         run: |

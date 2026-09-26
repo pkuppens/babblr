@@ -48,7 +48,7 @@ Run these local checks before you push. They predict the CI result.
 uv run ruff format --check .
 uv run ruff check .
 uv run pyright
-uv run pytest tests/test_unit.py -vv --tb=short -n 8
+uv run pytest tests/test_unit.py -vv --tb=short
 
 # Frontend (from frontend/)
 npm run lint
@@ -56,6 +56,14 @@ npm run format -- --check
 npm run test
 npm audit --audit-level=moderate
 ```
+
+Do not add `-n <workers>` (pytest-xdist) to the backend test command. CI runs
+it sequentially on purpose (see `ci.yml`'s `backend-test-unit` job) because
+xdist can hang there, and the same command run with `-n` locally spawns one
+full interpreter per worker — each re-importing the backend's heavy ML stack
+(torch, langchain, whisper). That has been observed to push total memory into
+the tens of GB and stall the machine, for a test file that runs in under a
+second single-process.
 
 ## When CI fails
 

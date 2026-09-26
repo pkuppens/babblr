@@ -80,7 +80,7 @@ jobs:
       - name: Install dependencies
         working-directory: backend
         run: |
-          uv sync --dev
+          uv sync --frozen --dev
 
       - name: Run Ruff format and lint
         uses: ./.github/actions/ruff
@@ -136,7 +136,7 @@ jobs:
       - name: Install dependencies
         working-directory: backend
         run: |
-          uv sync --dev
+          uv sync --frozen --dev
 
       - name: Cache pytest cache
         uses: actions/cache@v6
