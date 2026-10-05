@@ -4,7 +4,7 @@ python-multipart==0.0.32
 anthropic==1.11.0
 openai-whisper==20250625
 imageio-ffmpeg==0.6.0
-python-dotenv==1.2.3
+python-dotenv==1.2.4
 sqlalchemy==2.1.1
 aiosqlite==0.22.1
 pydantic==2.13.5
