@@ -10,4 +10,4 @@ aiosqlite==0.22.1
 pydantic==2.13.5
 pydantic-settings==2.15.0
 edge-tts==7.2.8
-tzdata==2026.4
+tzdata==2026.5
