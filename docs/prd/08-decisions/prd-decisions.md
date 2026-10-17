@@ -13,6 +13,7 @@ Decision log for product decisions with rationale.
 | 2026-02-02 | Dual licensing (AGPL + Commercial) | Balance open-source with sustainability | Business |
 | 2026-02-02 | BYOAPI model | User controls costs, no subscription lock-in | Product |
 | 2026-02-02 | CEFR framework | Standardized proficiency measurement, evidence-based | Product |
+| 2026-10-17 | Add principle 9: durable learning over in-the-moment ease | Review of the `/teach` skill (#247): retrieval practice, spacing, and prompts give better long-term retention than exposure and recasts alone | Product |
 
 ## Decision Framework
 
