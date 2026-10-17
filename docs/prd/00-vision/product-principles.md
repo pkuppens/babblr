@@ -174,6 +174,32 @@ This document defines Babblr's core design principles and decision-making framew
 
 ---
 
+### 9. Durable Learning Over In-the-Moment Ease
+
+**Principle**: Build long-term retention (storage strength), not only easy recall during the session (retrieval strength).
+
+A learner who recognizes a word in the conversation that uses it can feel that they know it. A week later, the word can be gone. Easy recall during practice is not a good measure of learning. Some difficulty during practice makes the learning last longer ("desirable difficulty").
+
+**What This Means**:
+- Make the learner produce the language from memory (retrieval practice). Do not only show it to them again.
+- Bring words and structures back across sessions, with time between them (spacing). Do not repeat them many times in one session.
+- Mix related topics and structures in practice when the learner already knows each one (interleaving).
+- Count an item as learned only when the learner uses it correctly. Exposure is not learning.
+- Keep difficulty low when the learner meets something new. Increase difficulty when the learner practises it.
+
+**Real Examples**:
+- ✅ **YES**: The tutor makes a situation where the learner must use a word from an earlier session
+- ✅ **YES**: The tutor gives a hint so the learner can correct the error themselves, when the learner probably knows the correct form (from A2 level)
+- ✅ **YES**: Grammar review dates that move further apart as mastery goes up
+- ❌ **NO**: A word counts as "learned" because it occurred in a conversation
+- ❌ **NO**: The tutor repeats the same new word many times in one conversation and stops there
+
+**Terminology**: Use "retrieval strength" for easy recall in the moment. Do not use "fluency" for this. In Babblr, "fluency" means speaking fluency, which is a learner goal.
+
+**Research Basis**: Bjork & Bjork (1992), new theory of disuse; Roediger & Karpicke (2006), retrieval practice; Cepeda et al. (2006), spacing; Lyster & Ranta (1997), recasts compared to prompts. See [language-learning-context.md](../03-context/language-learning-context.md).
+
+---
+
 ## Decision Framework
 
 When evaluating new features, changes, or trade-offs, ask:
@@ -185,9 +211,9 @@ When evaluating new features, changes, or trade-offs, ask:
 - If NO → Reconsider or justify deviation
 
 ### 2. Principle Check
-**Question**: Does this align with our 8 core principles?
+**Question**: Does this align with our 9 core principles?
 
-- Check against: Natural conversation, adaptive difficulty, immersive, affordable, privacy-first, evidence-based, open-source, modular
+- Check against: Natural conversation, adaptive difficulty, immersive, affordable, privacy-first, evidence-based, open-source, modular, durable learning
 - If conflicts with principle → Document trade-off in [trade-offs.md](../08-decisions/trade-offs.md)
 
 ### 3. User Impact
@@ -373,7 +399,7 @@ Principles are not set in stone. They evolve as we learn:
 
 ---
 
-**Version**: 1.0.0
-**Last Updated**: 2026-02-02
+**Version**: 1.1.0
+**Last Updated**: 2026-10-17
 **Owner**: Product Management
 **Review Frequency**: Quarterly
