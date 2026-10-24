@@ -1,13 +1,13 @@
-fastapi==0.143.0
+fastapi==0.156.7
 uvicorn[standard]==0.54.0
 python-multipart==0.0.32
-anthropic==1.13.0
+anthropic==1.17.0
 openai-whisper==20250625
 imageio-ffmpeg==0.6.0
 python-dotenv==1.2.4
-sqlalchemy==2.1.4
+sqlalchemy==2.1.5
 aiosqlite==0.22.1
 pydantic==2.14.1
-pydantic-settings==2.15.0
+pydantic-settings==2.16.1
 edge-tts==7.3.1
 tzdata==2026.5
