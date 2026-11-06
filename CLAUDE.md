@@ -80,6 +80,7 @@ adaptive CEFR difficulty levels (A1-C2).
 | [`architecture.md`](docs/agents/architecture.md) | Code layout, the LLM provider pattern, how to add an endpoint or provider, the test strategy |
 | [`ci-cd.md`](docs/agents/ci-cd.md) | Workflow overview, pre-push checks, the rule that workflow changes need @pkuppens approval |
 | [`understand-anything.md`](docs/agents/understand-anything.md) | To build or view the codebase knowledge graph |
+| [`codegraph.md`](docs/agents/codegraph.md) | To set up CodeGraph (local code graph and MCP server) for semantic code queries |
 | [`issue-tracker.md`](docs/agents/issue-tracker.md) | GitHub Issues conventions (the `gh` CLI) |
 | [`triage-labels.md`](docs/agents/triage-labels.md) | The five canonical triage labels |
 | [`domain.md`](docs/agents/domain.md) | To read `CONTEXT.md` and `docs/adr/` before you explore the code |

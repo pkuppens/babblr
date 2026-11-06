@@ -259,3 +259,6 @@ docker/.env.*.local
 .understand-anything/tmp/
 .understand-anything/.trash-*/
 .understand-anything/.understandignore
+
+# CodeGraph local index (machine-specific, not committed)
+.codegraph/
