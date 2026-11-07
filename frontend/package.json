@@ -36,7 +36,7 @@
   },
   "dependencies": {
     "axios": "^1.21.0",
-    "lucide-react": "^1.66.0",
+    "lucide-react": "^1.67.0",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
     "react-hot-toast": "^2.6.1"
@@ -56,7 +56,7 @@
     "@vitest/ui": "^5.1.0",
     "autoprefixer": "^10.6.2",
     "concurrently": "^10.0.6",
-    "electron": "^45.2.1",
+    "electron": "^45.2.2",
     "electron-builder": "^26.18.0",
     "eslint": "^10.14.0",
     "eslint-config-prettier": "^10.1.8",
