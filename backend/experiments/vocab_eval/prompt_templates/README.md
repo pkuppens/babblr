@@ -14,6 +14,7 @@ Selected by stem name via `--tutor-prompt <name>` on `generate.py` and
 | `default.txt` | Minimal baseline: level-appropriate vocabulary, short responses, one new word per turn, implicit correction. |
 | `variant_a.txt` | Stricter "Level+1" constraints (top-500-word vocabulary, 5-10 word sentences, present tense only) plus an explicit error-correction script. |
 | `variant_b.txt` | Same Level+1 target ratio as `variant_a` but framed around teaching philosophy/encouragement first, with a more detailed correction script. |
+| `variant_retrieval.txt` | `variant_b` plus retrieval practice (student produces the word first) and self-repair prompts for A2-B2 corrections (hint instead of recast). Candidate for #339; not yet judged against `variant_b`. |
 
 Compare template output with the batch runner (below); which one wins is a
 judged, empirical question — not decided by reading the prompts.

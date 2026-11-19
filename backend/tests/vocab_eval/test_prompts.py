@@ -24,3 +24,11 @@ def test_load_tutor_prompt_fills_placeholders():
 
 def test_prompt_name_returns_stem():
     assert prompt_name("default") == "default"
+
+
+def test_retrieval_variant_loads_and_keeps_a1_recast():
+    prompt = load_tutor_prompt("variant_retrieval", language="Spanish", level="A1", topic="food")
+    assert "Spanish" in prompt
+    assert "{" not in prompt
+    assert "Retrieval Practice" in prompt
+    assert "recast" in prompt
