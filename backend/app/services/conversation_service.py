@@ -536,6 +536,8 @@ Provide ONLY the translation, no explanations, no brackets, just the translation
         conversation_history: list[dict[str, str]] | None = None,
         topic: str = "general conversation",
         roleplay_context: str | None = None,
+        recent_vocab: list[str] | None = None,
+        common_mistakes: list[str] | None = None,
     ) -> str:
         """Generate a conversational response from the AI tutor.
 
@@ -546,6 +548,8 @@ Provide ONLY the translation, no explanations, no brackets, just the translation
             conversation_history: Previous messages in the conversation.
             topic: Current conversation topic.
             roleplay_context: Optional roleplay context (language-specific persona).
+            recent_vocab: Recently learned vocabulary, for the personalization section.
+            common_mistakes: The learner's common mistakes, for the personalization section.
 
         Returns:
             Assistant response message.
@@ -561,7 +565,12 @@ Provide ONLY the translation, no explanations, no brackets, just the translation
 
         # Build system prompt with topic context and roleplay
         system_prompt = self._build_system_prompt(
-            language, difficulty_level, topic=topic, roleplay_context=roleplay_context
+            language,
+            difficulty_level,
+            topic=topic,
+            roleplay_context=roleplay_context,
+            recent_vocab=recent_vocab,
+            common_mistakes=common_mistakes,
         )
 
         # Build messages for the provider
