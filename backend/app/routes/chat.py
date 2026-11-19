@@ -10,6 +10,7 @@ from app.database.db import get_db
 from app.models.models import Conversation, Message
 from app.models.schemas import ChatRequest, ChatResponse, InitialMessageRequest
 from app.services.conversation_service import get_conversation_service
+from app.services.learner_context import get_learner_context
 from app.services.llm.exceptions import LLMAuthenticationError, LLMError, RateLimitError
 from app.utils.performance import async_perf_timer
 
@@ -234,6 +235,9 @@ async def chat(request: ChatRequest, db: AsyncSession = Depends(get_db)):
             f"(before adding current user message)"
         )
 
+        # Learner history for the "Your Student's Learning Context" prompt section
+        recent_vocab, common_mistakes = await get_learner_context(db, conversation.language)
+
         # Generate AI response with topic context and roleplay persona
         # Pass corrected_text as user_message - generate_response will add it to the history
         async with async_perf_timer("chat.generate_response_llm", logging.INFO):
@@ -244,6 +248,8 @@ async def chat(request: ChatRequest, db: AsyncSession = Depends(get_db)):
                 conversation_history,
                 topic=topic_name,
                 roleplay_context=roleplay_context,
+                recent_vocab=recent_vocab,
+                common_mistakes=common_mistakes,
             )
 
         # Save assistant message
